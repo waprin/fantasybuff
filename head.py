@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from bs4 import Tag
 import itertools
 import sys
-f = open('standings.html')
+f = open('local_scrapes/standings.html')
 html = f.read()
 
 pool = BeautifulSoup(html)

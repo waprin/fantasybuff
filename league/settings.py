@@ -1,4 +1,8 @@
 # Django settings for league project.
+import os
+import django
+
+SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -115,10 +119,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'south',
-    'teams',
-    'southtut',
-    # Uncomment the next line to enable the admin:
+    'south', 'teams', 'southtut', # Uncomment the next line to enable the admin:
      'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
      #'django.contrib.admindocs',
@@ -131,24 +132,36 @@ INSTALLED_APPS = (
 # more details on how to customize your logging configuration.
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+    'formatters': {
+        'verbose' : {
+            'format' : '%(levelname)s %(asctime)s [%(module)s.%(funcName)s] %(message)s'
+        },
+        'simple': {
+            'format' : '%(levelname)s %(message)s'
+         }
     },
     'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
+        'django': {
+            'handlers': ['console'],
+            'propogate' : True,
+            'level': 'DEBUG',
+         },
+         'django.request': {
+            'handlers': ['console'],
+            'propogate' : True,
+            'level' : 'INFO',
+           },
+         'teams' : {
+            'handlers' : ['console'],
+            'propogate' : True,
+            'level' : 'INFO',
+         }
     }
 }

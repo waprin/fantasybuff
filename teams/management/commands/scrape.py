@@ -25,7 +25,7 @@ class EspnScraper:
         html = r.read()
         return html
 
-     def login(self, username, password):
+    def login(self, username, password):
         r = self.br.open("http://m.espn.go.com/wireless/login")
         self.br.select_form(nr=0)
         self.br.form['username'] = username
@@ -50,5 +50,4 @@ class EspnScraper:
         f.write(html)
 
 
-class MockBrowser():
     
