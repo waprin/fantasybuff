@@ -19,6 +19,58 @@ class Team(models.Model):
     def __unicode__(self):
         return self.team_name
 
-class StandingsPage(models.Model):
-    html = models.CharField(max_length=10000)
+class Player(models.Model):
+    POSITIONS = (
+        (u'QB', 'Quarterback'),
+        (u'WR', 'Wide Receiver'),
+        (u'RB', 'Running Back'),
+        (u'TE', 'Tight End'),
+        (u'D/ST', 'Defense/Special Teams'),
+        (u'K', 'Kicker'),
+    )
+    name = models.CharField(max_length=100)
+    position = models.CharField(max_length=20, choices=POSITIONS)
+
+    def __unicode__(self):
+        return self.name
+
+class Scorecard(models.Model):
+    team = models.ForeignKey(Team)
+
+class Game(models.Model):
     league = models.ForeignKey(League)
+    week = models.IntegerField()
+    first_scorecard = models.ForeignKey(Scorecard, related_name='first_scorecard')
+    second_scorecard = models.ForeignKey(Scorecard, related_name='second_scorecard')
+
+class ScorecardEntry(models.Model):
+    SLOT_TYPES = (
+        (u'QB', 'Quarterback'),
+        (u'WR', 'Wide Receiver'),
+        (u'RB', 'Running Back'),
+        (u'TE', 'Tight End'),
+        (u'FLEX', 'Flex'),
+        (u'D/ST', 'Defense/Special Teams'),
+        (u'K', 'Kicker'),
+        (u'B', 'Bench')
+    )
+
+    scorecard = models.ForeignKey(Scorecard)
+    player = models.ForeignKey(Player)
+    slot = models.CharField(max_length=20, choices=SLOT_TYPES)
+    points = models.DecimalField(decimal_places=4, max_digits=7)
+
+class MatchupPage(models.Model):
+    html = models.TextField()
+    week = models.IntegerField()
+    league = models.ForeignKey(League)
+
+class EntrancePage(models.Model):
+    html = models.TextField()
+    league = models.ForeignKey(League)
+
+class StandingsPage(models.Model):
+    html = models.TextField()
+    league = models.ForeignKey(League)
+
+

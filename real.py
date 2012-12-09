@@ -4,7 +4,7 @@ from bs4 import Tag
 import itertools
 import sys
   
-f = open("realboard.html")
+f = open("local_scrapes/realboard.html")
 html = f.read()
 
 pool = BeautifulSoup(html)

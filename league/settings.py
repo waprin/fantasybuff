@@ -119,7 +119,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'south', 'teams', 'southtut', # Uncomment the next line to enable the admin:
+    'south', 'teams', 'southtut', 'explore',# Uncomment the next line to enable the admin:
      'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
      #'django.contrib.admindocs',
@@ -161,7 +161,7 @@ LOGGING = {
          'teams' : {
             'handlers' : ['console'],
             'propogate' : True,
-            'level' : 'INFO',
+            'level' : 'DEBUG',
          }
     }
 }
