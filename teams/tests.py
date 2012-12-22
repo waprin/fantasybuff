@@ -38,8 +38,8 @@ class TeamsTest(unittest.TestCase):
         self.assertTrue(any(team.team_name == 'Gotham City Rogues' and team.espn_id == '6' and team.owner_name == 'bill prin' for team in teams))
 
     @clear_test_database
-    def test_get_num_games(self):
-        logger.info('test_get_num_games')
+    def test_get_num_weeks(self):
+        logger.info('test_get_num_weeks')
         f = open('local_scrapes/realboard.html')
         html = f.read()
         num_weeks = get_num_weeks_from_scoreboard(html)
@@ -84,4 +84,36 @@ class TeamsTest(unittest.TestCase):
         game = Game.objects.create(league=league, week=1, first_scorecard=first_scorecard, second_scorecard=second_scorecard)
         load_scores(html, game)
 
+        first_score = sum(entry.points for entry in ScorecardEntry.objects.filter(scorecard=first_scorecard).exclude(slot='Bench'))
+        self.assertEqual(first_score, 74)
+        second_score = sum(entry.points for entry in ScorecardEntry.objects.filter(scorecard=second_scorecard).exclude(slot='Bench'))
+        self.assertEqual(second_score, 62)
+
+class TestSaveGame(unittest.TestCase):
+    @clear_test_database
+    def test_save_game(self):
+        user = init_user()
+
+        logger.info('handling command')
+        f = open('local_scrapes/realboard.html', 'r')
+        html = f.read()
+        league, created = League.objects.get_or_create(name='test league 2', espn_id=54321, year=2012)
+        standings_html = open('local_scrapes/standings.html')
+        load_teams_from_standings(standings_html, league)
+        load_games_from_scoreboard(html, league, 1)
+
+        games = Game.objects.all()
+        logger.info("handle(): %d games loaded" % (len(games)))
+
+        browser = EspnScraper()
+        browser.login(user.email, user.password)
+
+        logger.info("handles(): successfully logged in")
+        browser.save_week(games[0])
+
+        #html = browser.scrape_entrance()
+        #league = load_league_from_entrance(html)
+
+        #  load_team_from_standings(html, league)
+        #  html = browser.scrape_week(league, 1ma)
 

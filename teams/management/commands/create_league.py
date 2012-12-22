@@ -1,8 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from teams.management.commands.scrape import EspnScraper
 from teams.models import User, League, Team, Player, ScorecardEntry, Scorecard, Game
 from bs4 import BeautifulSoup
+from scrape import EspnScraper
 import re
 import logging
 
@@ -28,7 +28,7 @@ def load_teams_from_standings(html, league):
         matched_name = re.search("(.*)\s*\((.*)\)", fullname)
         team_name = matched_name.group(1)
         owner_name = matched_name.group(2)
-        team = Team(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league)
+        team = Team(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league, league_espn_id=league.espn_id)
         team.save()
 
 def get_num_weeks_from_scoreboard(html):
@@ -84,7 +84,6 @@ def load_games_from_scoreboard(html, league, week):
         logger.debug('creating scorecards')
         first_scorecard = Scorecard.objects.create(team=first_team)
         second_scorecard = Scorecard.objects.create(team=second_team)
-
         game = Game.objects.create(league=league, week=week, first_scorecard=first_scorecard, second_scorecard=second_scorecard)
 
         games.append(game)
@@ -137,22 +136,17 @@ def load_scores(html, game):
                 points = str(points)
             ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
 
-def save_week(html, browser, league, week):
+def save_weeks(html, browser, league):
     num_weeks = get_num_weeks_from_scoreboard(html)
     for week_num in range(1, num_weeks+1):
         week_html = browser.scrape_week(league, week_num)
+        logger.info("save week(): saved match-up page")
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        user = init_user()
-        browser = EspnScraper()
-        browser.login(user.team_name, user.password)
-        html = browser.scrape_entrance()
-        league = load_league_from_entrance(html)
-        html = browser.scrape_standings()
-      #  load_team_from_standings(html, league)
-       #  html = browser.scrape_week(league, 1)
+        pass
+
 
 
 
