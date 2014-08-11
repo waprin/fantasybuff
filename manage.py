@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/opt/virtualenvs/league/bin/python
 import os
 import sys
 
