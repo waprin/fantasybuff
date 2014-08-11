@@ -9,10 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def init_user():
-    try:
-        user = User.objects.get(email='waprin@gmail.com')
-    except User.DoesNotExist:
-        user = User.objects.create(email='waprin@gmail.com', password='terrible')
+    user, created = User.objects.get_or_create(email='waprin@gmail.com', defaults={'password': 'terrible'})
     return user
 
 def load_teams_from_standings(html, league):
@@ -34,7 +31,7 @@ def load_teams_from_standings(html, league):
 def get_num_weeks_from_scoreboard(html):
     pool = BeautifulSoup(html)
     body_copy = pool.find('div', 'bodyCopy')
-    matchups = body_copy.find_all('a')
+    matchups = body_copy.find_all('a', title=re.compile(r'Week'))
     for matchup in matchups:
         m = matchup
     return int(m.string)
@@ -144,8 +141,8 @@ def save_weeks(html, browser, league):
 
 class Command(BaseCommand):
 
-    def handle(self, *args, **options):
-        pass
+	def handle(self, *args, **options):
+		pass
 
 
 

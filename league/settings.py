@@ -145,7 +145,12 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
-        },
+        }, 'file': {
+            'level' : 'DEBUG',
+            'class' : 'logging.FileHandler',
+            'formatter': 'verbose',
+            'filename' : 'leagues.log',
+        }
     },
     'loggers': {
         'django': {
@@ -159,9 +164,11 @@ LOGGING = {
             'level' : 'INFO',
            },
          'teams' : {
-            'handlers' : ['console'],
+            'handlers' : ['console', 'file'],
             'propogate' : True,
             'level' : 'DEBUG',
          }
     }
 }
+
+LIVE_SCRAPE=False

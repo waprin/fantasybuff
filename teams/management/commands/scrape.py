@@ -1,6 +1,7 @@
 import mechanize
 import cookielib
 import os
+import time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -31,7 +32,8 @@ class EspnScraper:
         html = r.read()
         return html
 
-    def scrape_week(self, game):
+    def scrape_game(self, game):
+        time.sleep(1)
         logger.debug('scrape week(): begin .. ')
         team_id = game.first_scorecard.team.espn_id
         url = "http://games.espn.go.com/ffl/boxscorefull?leagueId=%s&teamId=%s&scoringPeriodId=%d&seasonId=2012&view=scoringperiod&version=full" % (game.league.espn_id, team_id, game.week)
@@ -59,20 +61,25 @@ class EspnScraper:
         self.br.form['gspw'] = password
         self.br.submit()
 
-    def save_scoreboard(self):
-        r = self.br.open("http://games.espn.go.com/ffl/boxscorefull?leagueId=930248&teamId=6&scoringPeriodId=11&seasonId=2012&view=scoringperiod&version=full")
-        html = r.read()
-        f = open("scoreboard.html", "w")
-        f.write(html)
-
-    def scrape_standings(self, league_id):
-        r = self.br.open("http://games.espn.go.com/ffl/standings?leagueId=%s&seasonId=2012", league_id)
+    def scrape_standings(self, league):
+        url = "http://games.espn.go.com/ffl/standings?leagueId=%s&seasonId=2012" % (league.espn_id)
+        logger.debug("scrape_standings(): url is %s" % url)
+        r = self.br.open(url)
         html = r.read()
         return html
 
-    def save_realboard(self):
-        r = self.br.open("http://games.espn.go.com/ffl/scoreboard?leagueId=930248&matchupPeriodId=1")
+    def scrape_scoreboard(self, league, week):
+        r = self.br.open("http://games.espn.go.com/ffl/scoreboard?leagueId=%s&matchupPeriodId=%d" % (league.espn_id, week))
         html = r.read()
-        f = open("realboard.html", "w")
-        f.write(html)
+        return html
+
+
+"""
+    def scrape_matchup(self, league):
+        url = "http://games.espn.go.com/ffl/boxscorefull?leagueId=%s&teamId=6&scoringPeriodId=1&seasonId=2012&view=scoringperiod&version=full" % (league.espn_id)
+        logger.info("scrape_matchup(): url is %s " % url)
+        r = self.br.open(url)
+        html = r.read()
+        return html
+"""
 

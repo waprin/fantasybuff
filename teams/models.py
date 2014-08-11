@@ -1,7 +1,7 @@
 from django.db import models
 
 class User(models.Model):
-    email = models.CharField(max_length=200, primary_key=True)
+    email = models.CharField(max_length=200, unique=True)
     password = models.CharField(max_length=200)
 
 class League(models.Model):
@@ -54,6 +54,9 @@ class Game(models.Model):
     second_scorecard = models.ForeignKey(Scorecard, related_name='second_scorecard')
     html = models.TextField()
     loaded = models.BooleanField()
+
+    def __unicode__(self):
+        return "week %d: team %s vs team %s" % (self.week, self.first_scorecard.team.team_name, self.second_scorecard.team.team_name)
 
 class ScorecardEntry(models.Model):
     SLOT_TYPES = (
