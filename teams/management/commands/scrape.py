@@ -1,14 +1,13 @@
 import mechanize
 import cookielib
 import os
-import time
 
 import logging
 logger = logging.getLogger(__name__)
 
+DEFAULT_DIRECTORY = 'local_scrapes/'
 
 class EspnScraper:
-    DEFAULT_DIRECTORY = 'local_scrapes/'
 
     def __init__(self):
         self.br = mechanize.Browser()
@@ -25,7 +24,7 @@ class EspnScraper:
 
         self.br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
 
-        self.d = self.DEFAULT_DIRECTORY
+        self.d = DEFAULT_DIRECTORY
 
     def scrape_entrance(self):
         r = self.br.open("http://games.espn.go.com/frontpage/football")
@@ -61,8 +60,8 @@ class EspnScraper:
         self.br.form['gspw'] = password
         self.br.submit()
 
-    def scrape_standings(self, league):
-        url = "http://games.espn.go.com/ffl/standings?leagueId=%s&seasonId=2012" % (league.espn_id)
+    def scrape_standings(self, espn_id):
+        url = "http://games.espn.go.com/ffl/standings?leagueId=%s&seasonId=2012" % (espn_id)
         logger.debug("scrape_standings(): url is %s" % url)
         r = self.br.open(url)
         html = r.read()
@@ -73,13 +72,40 @@ class EspnScraper:
         html = r.read()
         return html
 
-
-"""
-    def scrape_matchup(self, league):
-        url = "http://games.espn.go.com/ffl/boxscorefull?leagueId=%s&teamId=6&scoringPeriodId=1&seasonId=2012&view=scoringperiod&version=full" % (league.espn_id)
-        logger.info("scrape_matchup(): url is %s " % url)
-        r = self.br.open(url)
+    def save_realboard(self):
+        r = self.br.open("http://games.espn.go.com/ffl/scoreboard?leagueId=930248&matchupPeriodId=1")
         html = r.read()
-        return html
-"""
+        f = open("realboard.html", "w")
+        f.write(html)
+
+class FileScraper:
+
+    def __init__(self):
+        self.d = DEFAULT_DIRECTORY
+
+    def scrape_entrance(self):
+        filename = os.path.join(self.d, "entrance.html")
+        return open(filename).read()
+
+    def scrape_realboard(self):
+        filename = os.path.join(self.d, "realboard.html")
+        return open(filename).read()
+
+    def scrape_standings(self):
+        filename = os.path.join(self.d, "leagues/")
+        return open(filename).read()
+
+
+def get_scraper(local):
+    if local:
+        return FileScraper()
+    else:
+        return EspnScraper()
+
+
+
+if __name__ == '__main__':
+    scraper = EspnScraper()
+    scraper.login('gothamcityrogues', 'sincere1')
+    scraper.save_scoreboard()
 

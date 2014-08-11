@@ -1,10 +1,12 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from teams.scraper.scraper import LeagueScraper
 from teams.models import User, League, Team, Player, ScorecardEntry, Scorecard, Game
 from bs4 import BeautifulSoup
-from scrape import EspnScraper
+import scrape
 import re
 import logging
+import teams.scraper
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +48,7 @@ def load_league_from_entrance(html, user):
     logger.debug('pool successfully initialized')
     league_name = pool.find('a', 'leagueoffice-link').string
     logger.debug('league name found is ' + league_name)
-    
+
     try:
         league = League.objects.get(espn_id=league_id)
     except League.DoesNotExist:
@@ -55,6 +57,8 @@ def load_league_from_entrance(html, user):
         league.users.add(user)
         league.save()
     return league
+
+
 
 @transaction.commit_on_success
 def load_games_from_scoreboard(html, league, week):
@@ -139,10 +143,38 @@ def save_weeks(html, browser, league):
         week_html = browser.scrape_week(league, week_num)
         logger.info("save week(): saved match-up page")
 
-class Command(BaseCommand):
+def command_setup_league():
+    logger.info("in create_league command")
+    browser = scrape.get_scraper(True)
+    html = browser.scrape_entrance()
+    user = User.objects.get(email='waprin@gmail.com')
+    load_league_from_entrance(html, user)
+    logger.info("finishing create_league command")
 
-	def handle(self, *args, **options):
-		pass
+def command_setup_teams():
+    logger.info("in command_setup_teams")
+    browser = scrape.get_scraper(True)
+    html = browser.scrape_realboard()
+    league = League.objects.get(name='Inglorious Basterds')
+    load_teams_from_standings(html, league)
+    logger.info("finishing command_setup_teams")
+
+
+class Command(BaseCommand):
+    def handle(self, *args, **options):
+        lc = LeagueScraper()
+        lc.create_league('gothamcityrogues', 'sincere1')
+
+
+"""
+        browser = scrape.get_scraper(False)
+        browser.login('gothamcityrogues', 'sincere1')
+        html = browser.scrape_entrance()
+        f = open('local_scrapes2/entrance.html', 'w')
+        f.write(html)
+        f.close()
+"""
+
 
 
 

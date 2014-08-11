@@ -53,7 +53,6 @@ class Game(models.Model):
     first_scorecard = models.ForeignKey(Scorecard, related_name='first_scorecard')
     second_scorecard = models.ForeignKey(Scorecard, related_name='second_scorecard')
     html = models.TextField()
-    loaded = models.BooleanField()
 
     def __unicode__(self):
         return "week %d: team %s vs team %s" % (self.week, self.first_scorecard.team.team_name, self.second_scorecard.team.team_name)

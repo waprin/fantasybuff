@@ -38,31 +38,25 @@ def save_scoreboard():
     f = open("scoreboard.html", "w")
     f.write(html)
 
-
-
-#save_scoreboard()
-
 def save_standings():
     r = br.open("http://games.espn.go.com/ffl/standings?leagueId=930248&seasonId=2012")
     html = r.read()
     f = open("standings.html", "w")
     f.write(html)
 
-#save_standings()
 def save_realboard():
     r = br.open("http://games.espn.go.com/ffl/scoreboard?leagueId=930248&matchupPeriodId=1")
     html = r.read()
     f = open("realboard.html", "w")
     f.write(html)
 
-#save_realboard()
+save_realboard()
 
 r = br.open("http://games.espn.go.com/frontpage/football")
 html = r.read()
 
 f = open("entrance.html", "w")
 f.write(html)
-sys.exit()
 
 p = re.compile(r"leagueId=(\d*)&teamId=(\d*)&seasonId=(\d*)")
 m = p.search(html)
@@ -75,11 +69,13 @@ link_url = link["href"]
 print m.group(0)
 leagueId= m.group(1)
 teamId = m.group(2)
-seasonId = m.group(3)
+# seasonId = m.group(3)
+
+seasonId = "2013"
+
 
 r = br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%s&seasonId=%s" % (leagueId, teamId, seasonId))
 html = r.read()
-
 
 #page = BeautifulSoup(html)
 p = re.compile("pncInitPlayersAndSlots.*script>")
@@ -95,6 +91,7 @@ for match in  m:
 
 print players
 
+"""
 transactions = "http://games.espn.go.com/ffl/recentactivity?leagueId=%s&seasonId=%s&activityType=2&startDate=20120825&endDate=20121120&teamId=%s&tranType=-1" % (leagueId, seasonId, teamId)
 
 r = br.open(transactions)
@@ -102,4 +99,5 @@ html = r.read()
 
 f = open('waivers.html', 'w')
 f.write(html)
+"""
 
