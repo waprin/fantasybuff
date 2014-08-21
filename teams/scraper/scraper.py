@@ -1,60 +1,46 @@
-from management.commands.create_league import get_num_weeks_from_scoreboard, load_league_from_entrance, \
-    load_teams_from_standings
-
 __author__ = 'bill'
 
-import re, time, os
+import re, os
+from bs4 import BeautifulSoup
 import logging
 logger = logging.getLogger(__name__)
-import scrape
+from teams.management.commands import scrape
+from teams.utils.league_files import choose_league_directory, create_league_directory
+
+def get_num_weeks_from_scoreboard(html):
+    pool = BeautifulSoup(html)
+    body_copy = pool.find('div', 'bodyCopy')
+    matchups = body_copy.find_all('a', title=re.compile(r'Week'))
+    for matchup in matchups:
+        m = matchup
+    return int(m.string)
+
 
 def get_league_id_from_entrance(html):
     m = re.search(r'leagueId=(\d*)&teamId=(\d*)&seasonId=(\d*)', html)
     return m.group(1)
 
+def get_teams_from_scoreboard(html):
+    soup = BeautifulSoup(html)
+    matchups = soup.find_all('table', 'matchup')
 
-def choose_league_directory(listings):
-    r = re.compile(r'league_(\d+)')
-    l = [int(re.search(r, o).group(1)) for o in listings if re.search(r, o)]
-    logger.debug("league directory is %s" % str(l))
-    if len(l) == 0:
-        logger.debug("no leagues matched")
-        return None
-    l.sort(reverse=True)
-    logger.info("choose_directory(): %s" % (str(l)))
-    n = str(l[0])
-    n = n.zfill(3)
-    for listing in listings:
-        search = 'league_' + n
-        logger.debug('choose_directory(): trying to match on ' + search)
-        if re.search(search, listing):
-            logger.debug("choose_directory(): found match on %s " % listing)
-            return listing
-    return None
-
-def create_league_directory(number):
-    logger.debug('create_league_directory(): begin .. %d ' % number)
-    datestr = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-    logger.debug('create_league_directory(): date str is  ' + datestr)
-    numberstr = str(number).zfill(3)
-    name = 'league_' + numberstr + '_' + datestr
-    leagues_dir = os.path.join(os.getcwd(), 'leagues')
-    if not os.path.exists(leagues_dir):
-        os.mkdir(leagues_dir)
-    league_path = os.path.join(leagues_dir, name)
-    logger.debug('create_league_directory(): creating league dir %s ' % league_path)
-    if not os.path.isdir(league_path):
-        if os.path.exists(league_path):
-            raise Exception("league path %s already exists " % league_path)
-        os.mkdir(league_path)
-    return league_path
-
-
+    games = []
+    for matchup in matchups:
+        teams = matchup.find_all(id=re.compile('teamscrg'))
+        logger.debug("teams is " + str(teams))
+        first_id_string = teams[0]['id']
+        first_id = re.search(r'teamscrg_(\d*)_', first_id_string).group(1)
+        games.append(first_id)
+    return games
 
 class LeagueScraper(object):
 
-    def __init__(self):
+    def __init__(self, username, password):
         logger.debug("FiledCachedBrowser(): __init__ begin")
+
+        self.username = username
+        self.password = password
+
         self.d = choose_league_directory(os.listdir(os.path.join(os.getcwd(), 'leagues')))
         logger.debug("FileCachedBrowser(): __init__ self.d is %s" % self.d)
         if self.d == None:
@@ -71,31 +57,13 @@ class LeagueScraper(object):
         self.d = create_league_directory(n+1)
         self.initialized = False
 
-    def create_cached_league(self, username, password):
-        self.username = username
-        self.password = password
+    def create_league_directory(self):
+        if self.initialized:
+            raise Exception("trying load already created directory")
 
-        entrance_html = self.scrape_entrance()
-        logger.debug('create_cached_league() scraped entrance')
-
-
-        logger.debug('create_cached_league(): loaded league %s' % self.league.name)
-        standings_html = self.scrape_standings(self.league)
-
-        logger.debug('create_cached_league(): loaded team from standings')
-
-        first_scoreboard_html = self.scrape_scoreboard(self.league, 1)
-        self.num_weeks = get_num_weeks_from_scoreboard(first_scoreboard_html)
-        logger.debug('create_cached_league(): num weeks is %d' % self.num_weeks)
-
-#        for i in range(1, self.num_weeks+1):
-#            load_games_from_scoreboard(first_scoreboard_html, self.league, i)
-
-
-    def create_league(self, username, password):
-        self.browser = scrape.get_scraper(False)
+        self.browser = scrape.EspnBrowser()
         logger.debug("create_league(): created browser")
-        self.browser.login(username, password)
+        self.browser.login(self.username, self.password)
         logger.debug("create_league(): sucessfully logged in")
         filepath = os.path.join(self.d, 'entrance.html')
         logger.debug("create_league(): entrance filepath is " + filepath)
@@ -105,16 +73,16 @@ class LeagueScraper(object):
         f.write(entrance_html)
 
         logger.debug("create_league(): loading league")
-        league = get_league_id_from_entrance(entrance_html)
-        logger.debug("create_league(): loaded league %s" % league.name)
+        espn_id = get_league_id_from_entrance(entrance_html)
+
         filepath = os.path.join(self.d, 'standings.html')
         f = open(filepath, 'w')
-        standings_html = self.browser.scrape_standings()
+        standings_html = self.browser.scrape_standings(espn_id)
         f.write(standings_html)
 
         logger.debug("create_league(): loading teams from standings")
 
-        first_scoreboard_html = self.browser.scrape_scoreboard(league, 1)
+        first_scoreboard_html = self.browser.scrape_scoreboard(espn_id, 1)
         num_weeks = get_num_weeks_from_scoreboard(first_scoreboard_html)
         logger.debug('create_league(): num weeks is %d' % num_weeks)
         week_path = os.path.join(self.d, 'week_1')
@@ -129,22 +97,31 @@ class LeagueScraper(object):
                 os.mkdir(week_path)
             filepath = os.path.join(week_path, 'scoreboard.html')
             logger.debug('scraping week %d to path %s' % (i, filepath))
-            html = self.browser.scrape_scoreboard(league, week=i)
+            html = self.browser.scrape_scoreboard(espn_id, week=i)
             logger.debug('html for week scraped')
             f = open(filepath, 'w')
             f.write(html)
 
-    def create_game(self, game):
-        self.browser = scrape.get_scraper(False)
-        logger.debug("create_game(): created browser")
+    def create_games(self, file_browser, espn_id, week_num):
+        self.browser =  scrape.EspnBrowser()
+        logger.debug("create_league(): created browser")
         self.browser.login(self.username, self.password)
-        logger.debug("create_game(): logged in successfully")
+        logger.debug("create_league(): sucessfully logged in")
 
-        filepath = os.path.join(self.d, 'week_%d' % game.week, 'game_%s.html' % game.first_scorecard.team.espn_id)
-        f = open(filepath, 'w')
+        scoreboard_html = file_browser.scrape_scoreboard(espn_id, week_num)
+        team_ids = get_teams_from_scoreboard(scoreboard_html)
 
-        game_html = self.browser.scrape_game(game)
-        logger.debug("create_game(): scaped game")
-        f.write(game_html)
+        print "team ids: "
+        print team_ids
+        for team_id in team_ids:
+            html = self.browser.scrape_game(espn_id, team_id, week_num)
+            print "team id is %s" % team_id
+            filepath = os.path.join(self.d, 'week_%d' % week_num, 'games', 'game_%s.html' % team_id)
+            logger.debug("writing game html to filepath %s" % filepath)
+            f = open(filepath, 'w')
+            f.write(html)
+
+
+
 
 

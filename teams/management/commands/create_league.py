@@ -1,12 +1,12 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.scraper import LeagueScraper
 from teams.models import User, League, Team, Player, ScorecardEntry, Scorecard, Game
 from bs4 import BeautifulSoup
 import scrape
 import re
 import logging
-import teams.scraper
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +30,6 @@ def load_teams_from_standings(html, league):
         team = Team(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league, league_espn_id=league.espn_id)
         team.save()
 
-def get_num_weeks_from_scoreboard(html):
-    pool = BeautifulSoup(html)
-    body_copy = pool.find('div', 'bodyCopy')
-    matchups = body_copy.find_all('a', title=re.compile(r'Week'))
-    for matchup in matchups:
-        m = matchup
-    return int(m.string)
 
 def load_league_from_entrance(html, user):
     m = re.search(r'leagueId=(\d*)&teamId=(\d*)&seasonId=(\d*)', html)
@@ -58,7 +51,7 @@ def load_league_from_entrance(html, user):
         league.save()
     return league
 
-
+#def scrape_teams_from_scoreboard(html)
 
 @transaction.commit_on_success
 def load_games_from_scoreboard(html, league, week):
@@ -88,18 +81,23 @@ def load_games_from_scoreboard(html, league, week):
         game = Game.objects.create(league=league, week=week, first_scorecard=first_scorecard, second_scorecard=second_scorecard)
 
         games.append(game)
+
     return games
 
 def load_scores(html, game):
     logger.debug('load scores(): begin ... ')
     pool = BeautifulSoup(html)
-    team_tables = pool.find_all(text=re.compile(r'(?<!Full)(?<!Quick) Box Score.*'))
-    team_tables = filter(lambda t : not 'at' in t, team_tables)
-    logger.debug('found ' + str(len(team_tables)) + ' teams')
+    #team_tables = pool.find_all(text=re.compile(r'(?<!Full)(?<!Quick) Box Score.*'))
+    #team_tables = filter(lambda t : not 'at' in t, team_tables)
+    #
+    # logger.debug('found ' + str(len(team_tables)) + ' teams')
+    pool.find(id='teamInfos')
     for team_table in team_tables:
         # TODO find by team ID, not team name
-        team_name = team_table[:team_table.find('Box')].strip()
+
+        team_name = team_table[:team_table.find('Box')]
         logger.debug('team name is ' + team_name + '.')
+        team_name = team_name.strip()
         team = Team.objects.get(team_name=team_name)
 
         if team == game.first_scorecard.team:
@@ -114,8 +112,11 @@ def load_scores(html, game):
 
         logger.debug("team_name is " + team_name)
         player_table = team_table.findParent('div')
-        player_rows = player_table.find_all('td', 'playertablePlayerName')
+        #player_rows = player_table.find_all('td', 'playertablePlayerName')
+        player_rows = player_table.find_all('td', 'pncPlayerRow')
+        logger.debug(player_rows)
         for player_row in player_rows:
+            logger.debug("slot is %s" % player_row.previous_sibling)
             slot = player_row.previous_sibling.string
             logger.debug("slot cell is " + slot)
 
@@ -137,15 +138,9 @@ def load_scores(html, game):
                 points = str(points)
             ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
 
-def save_weeks(html, browser, league):
-    num_weeks = get_num_weeks_from_scoreboard(html)
-    for week_num in range(1, num_weeks+1):
-        week_html = browser.scrape_week(league, week_num)
-        logger.info("save week(): saved match-up page")
-
 def command_setup_league():
     logger.info("in create_league command")
-    browser = scrape.get_scraper(True)
+    browser = FileBrowser()
     html = browser.scrape_entrance()
     user = User.objects.get(email='waprin@gmail.com')
     load_league_from_entrance(html, user)
@@ -153,27 +148,32 @@ def command_setup_league():
 
 def command_setup_teams():
     logger.info("in command_setup_teams")
-    browser = scrape.get_scraper(True)
-    html = browser.scrape_realboard()
+    browser = FileBrowser()
+    html = browser.scrape_standings()
     league = League.objects.get(name='Inglorious Basterds')
     load_teams_from_standings(html, league)
     logger.info("finishing command_setup_teams")
 
+def command_setup_games():
+    logger.info("in command_setup_games")
+
+    browser = FileBrowser()
+    html = browser.scrape_scoreboard(None, 1)
+
+    league = League.objects.get(name='Inglorious Basterds')
+    load_games_from_scoreboard(html, league, 1)
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        lc = LeagueScraper()
-        lc.create_league('gothamcityrogues', 'sincere1')
+        command_setup_league()
+        command_setup_teams()
+        command_setup_games()
 
-
-"""
-        browser = scrape.get_scraper(False)
-        browser.login('gothamcityrogues', 'sincere1')
-        html = browser.scrape_entrance()
-        f = open('local_scrapes2/entrance.html', 'w')
-        f.write(html)
-        f.close()
-"""
+#        lc = LeagueScraper('gothamcityrogues', 'sincere1')
+#        lc.create_games(FileBrowser(), "930248", 1)
+        #lc.reload()
+        #lc.create_league_directory('gothamcityrogues', 'sincere1')
 
 
 
