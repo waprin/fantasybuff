@@ -3,6 +3,7 @@ __author__ = 'bill'
 import re, os
 from bs4 import BeautifulSoup
 import logging
+import re
 logger = logging.getLogger(__name__)
 from teams.management.commands import scrape
 from teams.utils.league_files import choose_league_directory, create_league_directory
@@ -35,13 +36,14 @@ def get_teams_from_scoreboard(html):
 
 def get_players_from_roster(html):
     soup = BeautifulSoup(html)
-    rows = soup.find('table', 'playerTableTable').find_all('tr')[2:]
+    rows = soup.find('table', 'playerTableTable').find_all('tr')[2:-1]
     players = []
     for row in rows:
         playerId = row.contents[0].a['playerid']
         playerName = row.contents[0].a.string
         players.append((playerId, playerName))
     return players
+
 
 class LeagueScraper(object):
 
@@ -149,9 +151,30 @@ class LeagueScraper(object):
             pass
             #self.browser.scrape_translog()
 
-    def create_roster(self, espn_id, team_id):
+    def create_roster(self, file_browser, espn_id, team_id, year):
         self.browser = scrape.EspnScraper()
         self.browser.login(self.username, self.password)
+
+        html = file_browser.scrape_roster_summary()
+        players = get_players_from_roster(html)
+
+        print players
+
+        roster_path = os.path.join(self.d, 'roster_%s' % team_id)
+        if not os.path.exists(roster_path):
+            os.mkdir(os.path.join(self.d, 'roster_%s' % team_id))
+        for player in players:
+            html = self.browser.scrape_player(espn_id, player[0], year)
+            filepath = os.path.join(self.d, 'roster_%s' % team_id, 'player_%s.html' % player[0])
+            logger.debug("writing player html to filepath %s" % filepath)
+            f = open(filepath, 'w')
+            f.write(html)
+            f.close()
+
+
+
+
+
 
 
 

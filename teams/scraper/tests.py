@@ -32,3 +32,5 @@ class ScraperTest(unittest.TestCase):
         self.assertEqual(players[0][0], '2580')
         self.assertEquals(players[0][1], 'Drew Brees')
 
+
+

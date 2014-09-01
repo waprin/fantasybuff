@@ -40,6 +40,7 @@ class Player(models.Model):
     )
     name = models.CharField(max_length=100)
     position = models.CharField(max_length=20, choices=POSITIONS)
+    espn_id = models.CharField(max_length=20)
 
     def __unicode__(self):
         return self.name
@@ -73,6 +74,12 @@ class ScorecardEntry(models.Model):
     player = models.ForeignKey(Player)
     #slot = models.CharField(max_length=20, choices=SLOT_TYPES)
     points = models.DecimalField(decimal_places=4, max_digits=7)
+
+class ScoreEntry(models.Model):
+    week = models.IntegerField()
+    player = models.ForeignKey(Player)
+    points = models.DecimalField(decimal_places=4, max_digits=7)
+
 
 class TransLogEntry(models.Model):
     date = models.DateField()

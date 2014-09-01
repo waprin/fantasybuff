@@ -31,6 +31,18 @@ class FileBrowser(object):
     def scrape_translogs(self, team_id):
         return open('translog.html').read()
 
+    def scrape_roster_summary(self):
+        return open(os.path.join(self.d, 'rostersummary.html')).read()
+
+    def scrape_all_players(self, team_id):
+        path = os.path.join(self.d, "roster_%s" % team_id)
+        player_files = os.listdir(path)
+        htmls = []
+        for player_file in player_files:
+            player_file_path = os.path.join(path, player_file)
+            html = open(player_file_path).read()
+            htmls.append(html)
+        return htmls
 
 
 

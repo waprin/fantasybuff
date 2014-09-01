@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.scraper import LeagueScraper
-from teams.models import User, League, Team, Player, ScorecardEntry, Scorecard, Game
+from teams.models import User, League, Team, Player, ScorecardEntry, Scorecard, Game, ScoreEntry
 from bs4 import BeautifulSoup
 from scrape import EspnScraper
 import re
@@ -30,6 +30,41 @@ def load_teams_from_standings(html, league):
         team = Team(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league, league_espn_id=league.espn_id)
         team.save()
 
+def load_players_from_playerpage(html):
+    pool = BeautifulSoup(html)
+    rows = pool.find_all('table')[2].find_all('tr')[1:]
+    return [row.find_all('td')[-1].string for row in rows]
+
+def get_player_id_from_playerpage(html):
+     return re.findall(r'playerId=(\d+)', html)[0]
+
+def get_player_name_from_playerpage(html):
+    pool = BeautifulSoup(html)
+    return pool.find_all('div','player-name')[0].string
+
+def get_player_position_from_playerpage(html):
+    pool = BeautifulSoup(html)
+    return pool.find('span', {"title" : "Position Eligibility"}).contents[1].strip()
+
+
+def load_scores_from_playersheet(html, league):
+    pool = BeautifulSoup(html)
+
+    name = get_player_name_from_playerpage(html)
+    espn_id = get_player_id_from_playerpage(html)
+    position = get_player_position_from_playerpage(html)
+
+    player = Player.objects.get_or_create(name=name, espn_id=espn_id, position=position)[0]
+
+    rows = pool.find_all('table')[2].find_all('tr')[1:]
+    scores = [row.find_all('td')[-1].string for row in rows]
+    print "scores is " + str(scores)
+    scores = map(lambda x : 0 if x == '-' else float(x), scores)
+
+    for week, score in enumerate(scores):
+        sc = ScoreEntry(week=week+1, player=player, points=float(score))
+        sc.save()
+
 
 def load_league_from_entrance(html, user):
     m = re.search(r'leagueId=(\d*)&teamId=(\d*)&seasonId=(\d*)', html)
@@ -50,8 +85,6 @@ def load_league_from_entrance(html, user):
         league.users.add(user)
         league.save()
     return league
-
-#def scrape_teams_from_scoreboard(html)
 
 @transaction.commit_on_success
 def load_games_from_scoreboard(html, league, week):
@@ -83,6 +116,8 @@ def load_games_from_scoreboard(html, league, week):
         games.append(game)
 
     return games
+
+
 
 def load_scores(html, game):
     logger.debug('load scores(): begin ... ')
@@ -165,18 +200,35 @@ def command_setup_games():
     league = League.objects.get(name='Inglorious Basterds')
     load_games_from_scoreboard(html, league, 1)
 
+def command_setup_players():
+
+    browser = FileBrowser()
+    htmls = browser.scrape_all_players('6')
+    for html in htmls:
+        parse_scores_from_playersheet(html)
+
+
+
+
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        pass
+
+#        lc = LeagueScraper('gothamcityrogues', 'sincere1')
+#        lc.create_roster(FileBrowser(), '930248', '6', '2013')
         #command_setup_league()
         #command_setup_teams()
         #command_setup_games()
+"""
         espn = EspnScraper()
         espn.login('gothamcityrogues', 'sincere1')
         html = espn.scrape_player('930248', '2580', '2013')
         f = open('player_2580.html', 'w')
         f.write(html)
         f.close()
+"""
         #html = espn.scrape_roster_summary('930248', 6)
         #f = open('rostersummary.html', 'w')
         #f.write(html)

@@ -103,11 +103,28 @@ class TeamsTest(unittest.TestCase):
         second_score = sum(entry.points for entry in ScorecardEntry.objects.filter(scorecard=second_scorecard).exclude(slot='Bench'))
         self.assertEqual(second_score, 96)
 
+    @clear_test_database
     def test_parse_translogs(self):
         browser = FileBrowser()
         html = browser.scrape_translogs(self, 6)
-
         pass
+
+    @clear_test_database
+    def test_parse_playersheets(self):
+        browser = FileBrowser()
+        htmls = browser.scrape_all_players('6')
+        league = League.objects.create(name="test league", espn_id='12345', year=2013)
+        for html in htmls:
+            load_scores_from_playersheet(html, league)
+        brees = Player.objects.get(espn_id='2580')
+        self.assertEqual(brees.name, 'Drew Brees')
+        self.assertEquals(brees.position, 'QB')
+
+        entries = ScoreEntry.objects.filter(player=brees)
+        self.assertEqual(len(entries), 17)
+        self.assertEqual(entries.get(week=1).points, 20)
+        self.assertEqual(entries.get(week=17).points, 37)
+
 
 """
     @clear_test_database
