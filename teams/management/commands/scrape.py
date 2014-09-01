@@ -41,7 +41,7 @@ class EspnScraper:
         time.sleep(1)
         logger.debug('scrape game(): begin .. ')
 #        team_id = game.first_scorecard.team.espn_id
-        url = "http://games.espn.go.com/ffl/boxscorefull?leagueId=%s&teamId=%s&scoringPeriodId=%d&seasonId=2012&view=scoringperiod&version=full" % (espn_id, team_id, week)
+        url = "http://games.espn.go.com/ffl/boxscorefull?leagueId=%s&teamId=%s&scoringPeriodId=%d&seasonId=2013&view=scoringperiod&version=full" % (espn_id, team_id, week)
         logger.info("scrape_game(): scraping url %s" % url)
         r = self.br.open(url)
         html = r.read()
@@ -49,7 +49,7 @@ class EspnScraper:
 
     def scrape_standings(self, espn_id):
         time.sleep(1)
-        url = "http://games.espn.go.com/ffl/standings?leagueId=%s&seasonId=2012" % (espn_id)
+        url = "http://games.espn.go.com/ffl/standings?leagueId=%s&seasonId=2013" % (espn_id)
         logger.debug("scrape_standings(): url is %s" % url)
         r = self.br.open(url)
         html = r.read()
@@ -61,9 +61,34 @@ class EspnScraper:
         html = r.read()
         return html
 
+    def scrape_translog(self, espn_id, team_id):
+        time.sleep(1)
+        r = self.br.open("http://games.espn.go.com/ffl/recentactivity?leagueId=%s&seasonId=2013&activityType=2&startDate=20130805&endDate=20140909&teamId=%d&tranType=-1" % (espn_id, team_id))
+        html = r.read()
+        return html
+
+    def scrape_roster_summary(self, espn_id, team_id):
+        time.sleep(1)
+        #930248&teamId=6")
+        request = "http://games.espn.go.com/ffl/activestats?leagueId=%s&teamId=%d" % (espn_id, team_id)
+        print "request is " + request
+        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%d&seasonId=2013" % (espn_id, team_id))
+        r = self.br.open(request)
+        html = r.read()
+        return html
+
+    def scrape_player(self, espn_id, player_id, year):
+        time.sleep(1)
+        request = "http://games.espn.go.com/ffl/format/playerpop/overview?leagueId=%s&playerId=%s&playerIdType=playerId&seasonId=%s" % (espn_id, player_id, year)
+        r = self.br.open(request)
+        html = r.read()
+        return html
+
+
 
 if __name__ == '__main__':
     scraper = EspnScraper()
     scraper.login('gothamcityrogues', 'sincere1')
     scraper.save_scoreboard()
+
 

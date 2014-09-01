@@ -27,7 +27,7 @@ class Team(models.Model):
         unique_together = ('league_espn_id', 'espn_id',)
 
     def __unicode__(self):
-        return self.team_name
+        return "%s (%s, %s)" % (self.team_name, self.league_espn_id, self.espn_id)
 
 class Player(models.Model):
     POSITIONS = (
@@ -71,6 +71,32 @@ class ScorecardEntry(models.Model):
 
     scorecard = models.ForeignKey(Scorecard)
     player = models.ForeignKey(Player)
-    slot = models.CharField(max_length=20, choices=SLOT_TYPES)
+    #slot = models.CharField(max_length=20, choices=SLOT_TYPES)
     points = models.DecimalField(decimal_places=4, max_digits=7)
+
+class TransLogEntry(models.Model):
+    date = models.DateField()
+    player = models.ForeignKey(Team)
+
+    class Meta:
+        abstract = True
+
+class DraftClaim(TransLogEntry):
+    player_added = models.ForeignKey(Player)
+    round = models.IntegerField()
+
+class AddDrop(TransLogEntry):
+    player_added = models.ForeignKey(Player, related_name='adddrop_added')
+    player_dropped = models.ForeignKey(Player, related_name='addrop_dropped')
+    """waiver - true if picked from the waiver, false if picked from FA"""
+    waiver = models.BooleanField()
+
+
+
+
+
+
+
+
+
 

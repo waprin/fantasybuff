@@ -33,6 +33,16 @@ def get_teams_from_scoreboard(html):
         games.append(first_id)
     return games
 
+def get_players_from_roster(html):
+    soup = BeautifulSoup(html)
+    rows = soup.find('table', 'playerTableTable').find_all('tr')[2:]
+    players = []
+    for row in rows:
+        playerId = row.contents[0].a['playerid']
+        playerName = row.contents[0].a.string
+        players.append((playerId, playerName))
+    return players
+
 class LeagueScraper(object):
 
     def __init__(self, username, password):
@@ -61,7 +71,7 @@ class LeagueScraper(object):
         if self.initialized:
             raise Exception("trying load already created directory")
 
-        self.browser = scrape.EspnBrowser()
+        self.browser = scrape.EspnScraper()
         logger.debug("create_league(): created browser")
         self.browser.login(self.username, self.password)
         logger.debug("create_league(): sucessfully logged in")
@@ -103,16 +113,17 @@ class LeagueScraper(object):
             f.write(html)
 
     def create_games(self, file_browser, espn_id, week_num):
-        self.browser =  scrape.EspnBrowser()
-        logger.debug("create_league(): created browser")
+        self.browser =  scrape.EspnScraper()
+        logger.debug("create_games(): created browser")
         self.browser.login(self.username, self.password)
-        logger.debug("create_league(): sucessfully logged in")
+        logger.debug("create_games(): sucessfully logged in")
 
         scoreboard_html = file_browser.scrape_scoreboard(espn_id, week_num)
         team_ids = get_teams_from_scoreboard(scoreboard_html)
 
-        print "team ids: "
-        print team_ids
+#        print "team ids: "
+#        print team_ids
+        os.makedirs(os.path.join(self.d, 'week_%d' % week_num, 'games'))
         for team_id in team_ids:
             html = self.browser.scrape_game(espn_id, team_id, week_num)
             print "team id is %s" % team_id
@@ -120,6 +131,32 @@ class LeagueScraper(object):
             logger.debug("writing game html to filepath %s" % filepath)
             f = open(filepath, 'w')
             f.write(html)
+
+    def create_trans_logs(self, file_browser, espn_id):
+        self.browser =  scrape.EspnScraper()
+        logger.debug("create_trans_logs(): created browser")
+        self.browser.login(self.username, self.password)
+        logger.debug("create_trans_logs(): sucessfully logged in")
+
+        scoreboard_html = file_browser.scrape_scoreboard(espn_id, 1)
+        team_ids = get_teams_from_scoreboard(scoreboard_html)
+
+        print "team ids: "
+        print team_ids
+        os.makedirs(os.path.join(self.d, 'translogs'))
+
+        for team_id in team_ids:
+            pass
+            #self.browser.scrape_translog()
+
+    def create_roster(self, espn_id, team_id):
+        self.browser = scrape.EspnScraper()
+        self.browser.login(self.username, self.password)
+
+
+
+
+
 
 
 

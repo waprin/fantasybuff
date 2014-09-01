@@ -52,7 +52,7 @@ class TeamsTest(unittest.TestCase):
         teams = Team.objects.all()
 
         logger.info(teams)
-        self.assertEqual(len(teams), 10)
+        self.assertEqual(len(teams), 12)
         self.assertTrue(any(team.team_name == 'Gotham City Rogues' and team.espn_id == '6' and team.owner_name == 'bill prin' for team in teams))
 
     @clear_test_database
@@ -67,7 +67,7 @@ class TeamsTest(unittest.TestCase):
 
         load_games_from_scoreboard(html, league, 1)
         games = Game.objects.all()
-        self.assertEqual(len(games), 5)
+        self.assertEqual(len(games), 6)
         self.assertTrue(any(game.first_scorecard.team.espn_id=='6' and game.second_scorecard.team.espn_id=='1' for game in games))
         self.assertFalse(any(game.first_scorecard.team.espn_id=='6' and game.second_scorecard.team.espn_id=='2' for game in games))
 
@@ -75,6 +75,7 @@ class TeamsTest(unittest.TestCase):
     def test_parse_entrance(self):
         browser = FileBrowser()
         html = browser.scrape_entrance()
+
 
         user = init_user()
         load_league_from_entrance(html, user)
@@ -89,17 +90,24 @@ class TeamsTest(unittest.TestCase):
         browser = FileBrowser()
         html = browser.scrape_all_games(1)[2]
         league = League.objects.create(name="test league", espn_id='12345', year=2013)
+        replacements_team = Team.objects.create(league=league, espn_id='1', team_name='My Vick in a Box')
         rogues_team = Team.objects.create(league=league, espn_id='3', team_name='Gotham City Rogues', owner_name='Bill Prin')
-        replacements_team = Team.objects.create(league=league, espn_id='1', team_name='My Vick In A Box')
         first_scorecard = Scorecard.objects.create(team=rogues_team)
         second_scorecard = Scorecard.objects.create(team=replacements_team)
         game = Game.objects.create(league=league, week=1, first_scorecard=first_scorecard, second_scorecard=second_scorecard)
+
         load_scores(html, game)
 
         first_score = sum(entry.points for entry in ScorecardEntry.objects.filter(scorecard=first_scorecard).exclude(slot='Bench'))
         self.assertEqual(first_score, 140)
         second_score = sum(entry.points for entry in ScorecardEntry.objects.filter(scorecard=second_scorecard).exclude(slot='Bench'))
         self.assertEqual(second_score, 96)
+
+    def test_parse_translogs(self):
+        browser = FileBrowser()
+        html = browser.scrape_translogs(self, 6)
+
+        pass
 
 """
     @clear_test_database

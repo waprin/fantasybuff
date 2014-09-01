@@ -28,6 +28,9 @@ class FileBrowser(object):
             htmls.append(html)
         return htmls
 
+    def scrape_translogs(self, team_id):
+        return open('translog.html').read()
+
 
 
 

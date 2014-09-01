@@ -4,7 +4,7 @@ from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.scraper import LeagueScraper
 from teams.models import User, League, Team, Player, ScorecardEntry, Scorecard, Game
 from bs4 import BeautifulSoup
-import scrape
+from scrape import EspnScraper
 import re
 import logging
 
@@ -87,18 +87,18 @@ def load_games_from_scoreboard(html, league, week):
 def load_scores(html, game):
     logger.debug('load scores(): begin ... ')
     pool = BeautifulSoup(html)
-    #team_tables = pool.find_all(text=re.compile(r'(?<!Full)(?<!Quick) Box Score.*'))
-    #team_tables = filter(lambda t : not 'at' in t, team_tables)
+    team_tables = pool.find_all(text=re.compile(r'(?<!Full)(?<!Quick) Box Score.*'))
+    team_tables = filter(lambda t : not 'at' in t, team_tables)
     #
     # logger.debug('found ' + str(len(team_tables)) + ' teams')
-    pool.find(id='teamInfos')
+    #pool.find(id='teamInfos')
     for team_table in team_tables:
         # TODO find by team ID, not team name
+        this_team_name = team_table[:team_table.rfind('Box')]
+        this_team_name = this_team_name.strip()
 
-        team_name = team_table[:team_table.find('Box')]
-        logger.debug('team name is ' + team_name + '.')
-        team_name = team_name.strip()
-        team = Team.objects.get(team_name=team_name)
+        team = Team.objects.get(team_name=this_team_name)
+
 
         if team == game.first_scorecard.team:
             logger.debug('team matched first scorecard')
@@ -110,14 +110,15 @@ def load_scores(html, game):
             logger.error('team matched neither scorecard')
             assert False
 
-        logger.debug("team_name is " + team_name)
         player_table = team_table.findParent('div')
-        #player_rows = player_table.find_all('td', 'playertablePlayerName')
-        player_rows = player_table.find_all('td', 'pncPlayerRow')
+        player_rows = player_table.find_all('td', 'playertablePlayerName')
+        #player_rows = player_table.find_all('td', 'pncPlayerRow')
         logger.debug(player_rows)
         for player_row in player_rows:
             logger.debug("slot is %s" % player_row.previous_sibling)
             slot = player_row.previous_sibling.string
+
+    #        slot = player_row.string.split()[-1]
             logger.debug("slot cell is " + slot)
 
             strings = player_row.strings
@@ -137,6 +138,7 @@ def load_scores(html, game):
             else:
                 points = str(points)
             ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
+
 
 def command_setup_league():
     logger.info("in create_league command")
@@ -166,14 +168,34 @@ def command_setup_games():
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        command_setup_league()
-        command_setup_teams()
-        command_setup_games()
+        #command_setup_league()
+        #command_setup_teams()
+        #command_setup_games()
+        espn = EspnScraper()
+        espn.login('gothamcityrogues', 'sincere1')
+        html = espn.scrape_player('930248', '2580', '2013')
+        f = open('player_2580.html', 'w')
+        f.write(html)
+        f.close()
+        #html = espn.scrape_roster_summary('930248', 6)
+        #f = open('rostersummary.html', 'w')
+        #f.write(html)
+        #f.close()
 
-#        lc = LeagueScraper('gothamcityrogues', 'sincere1')
-#        lc.create_games(FileBrowser(), "930248", 1)
-        #lc.reload()
-        #lc.create_league_directory('gothamcityrogues', 'sincere1')
+"""
+        html = espn.scrape_translog('930248', 6)
+        f = open('translog.html', 'w')
+        f.write(html)
+        f.close()
+"""
+
+
+"""
+        lc = LeagueScraper('gothamcityrogues', 'sincere1')
+        lc.reload()
+        lc.create_league_directory()
+        lc.create_games(FileBrowser(), "930248", 1)
+"""
 
 
 
