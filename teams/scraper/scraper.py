@@ -44,6 +44,10 @@ def get_players_from_roster(html):
         players.append((playerId, playerName))
     return players
 
+def get_defenses_from_roster(html):
+    soup = BeautifulSoup(html)
+    return [re.match(r'playername_(\d*)', defense_element["id"]).group(1) for defense_element in soup.find_all('td', 'playertablePlayerName')]
+
 
 class LeagueScraper(object):
 
@@ -170,6 +174,26 @@ class LeagueScraper(object):
             f = open(filepath, 'w')
             f.write(html)
             f.close()
+
+    def create_defenses(self, file_browser, espn_id, year):
+        self.browser = scrape.EspnScraper()
+        self.browser.login(self.username, self.password)
+
+        html = file_browser.scrape_defense()
+        players = get_defenses_from_roster(html)
+
+        team_id = "defenses"
+        roster_path = os.path.join(self.d, 'roster_%s' % team_id)
+        if not os.path.exists(roster_path):
+            os.mkdir(os.path.join(self.d, 'roster_%s' % team_id))
+        for player in players:
+            html = self.browser.scrape_player(espn_id, player, year)
+            filepath = os.path.join(self.d, 'roster_%s' % team_id, 'player_%s.html' % player)
+            logger.debug("writing player html to filepath %s" % filepath)
+            f = open(filepath, 'w')
+            f.write(html)
+            f.close()
+
 
 
 

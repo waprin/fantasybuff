@@ -84,6 +84,17 @@ class EspnScraper:
         html = r.read()
         return html
 
+    def scrape_defenses(self, espn_id, year):
+        time.sleep(1)
+        request = "http://games.espn.go.com/ffl/freeagency?leagueId=%s&teamId=1&seasonId=%s#&seasonId=%s&slotCategoryId=16" % (espn_id, year, year)
+        logger.debug('making request: ' + request)
+        request = "http://games.espn.go.com/ffl/playertable/prebuilt/freeagency?leagueId=930248&teamId=6&seasonId=2013&=undefined&view=overview&context=freeagency&slotCategoryId=16&r=47510218"
+        #request = "http://games.espn.go.com/ffl/playertable/prebuilt/freeagency?leagueId=%s&teamId=6&seasonId=%s&=undefined&view=overview&context=freeagency&slotCategoryGroup=null&r=49073861" % (espn_id, year)
+        #self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%d&seasonId=2013" % (espn_id, 6))
+        r = self.br.open(request)
+        html = r.read()
+        return html
+
 
 
 if __name__ == '__main__':

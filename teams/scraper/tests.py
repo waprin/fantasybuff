@@ -28,9 +28,15 @@ class ScraperTest(unittest.TestCase):
     def test_get_players_from_roster(self):
         html = open('rostersummary.html').read()
         players = get_players_from_roster(html)
-        print players
         self.assertEqual(players[0][0], '2580')
         self.assertEquals(players[0][1], 'Drew Brees')
+
+    def test_get_defenses_from_roster(self):
+        browser = FileBrowser()
+        html = browser.scrape_defense()
+        defenses = get_defenses_from_roster(html)
+        self.assertEquals(defenses[0], '60026')
+        self.assertEquals(len(defenses), 32)
 
 
 

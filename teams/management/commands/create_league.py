@@ -214,16 +214,24 @@ def command_setup_players():
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        pass
-
 #        lc = LeagueScraper('gothamcityrogues', 'sincere1')
 #        lc.create_roster(FileBrowser(), '930248', '6', '2013')
         #command_setup_league()
         #command_setup_teams()
         #command_setup_games()
+
+        lc = LeagueScraper('gothamcityrogues', 'sincere1')
+        lc.create_defenses(FileBrowser(), '930248', '2013')
+
 """
         espn = EspnScraper()
         espn.login('gothamcityrogues', 'sincere1')
+        html = espn.scrape_defenses('930248', '2013')
+        f = open('defense.html', 'w')
+        f.write(html)
+        f.close()
+"""
+"""
         html = espn.scrape_player('930248', '2580', '2013')
         f = open('player_2580.html', 'w')
         f.write(html)

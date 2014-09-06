@@ -44,5 +44,8 @@ class FileBrowser(object):
             htmls.append(html)
         return htmls
 
+    def scrape_defense(self):
+        return open('defense.html').read()
+
 
 
