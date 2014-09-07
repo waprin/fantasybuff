@@ -313,10 +313,10 @@ class Command(BaseCommand):
 #        command_setup_teams()
         #command_setup_games()
         #command_setup_players()
-        command_setup_lineup()
+        #command_setup_lineup()
 
-#        lc = LeagueScraper('gothamcityrogues', 'sincere1')
-#        lc.create_defenses(FileBrowser(), '930248', '2013')
+        lc = LeagueScraper('gothamcityrogues', 'sincere1')
+        lc.create_weeks_for_team(FileBrowser(), '930248', '6', '2013')
 
 """
         espn = EspnScraper()

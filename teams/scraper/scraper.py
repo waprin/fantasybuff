@@ -203,6 +203,27 @@ class LeagueScraper(object):
             f.write(html)
             f.close()
 
+    def create_weeks_for_team(self, file_browser, league_id, team_id, year):
+        self.browser = scrape.EspnScraper()
+        self.browser.login(self.username, self.password)
+
+
+        scoreboard_html = file_browser.scrape_scoreboard(league_id, 1)
+        num_weeks = get_num_weeks_from_scoreboard(scoreboard_html)
+        print "got num weeks %d" % num_weeks
+
+        team_path = os.path.join(self.d, 'team_%s' % team_id)
+        if not os.path.exists(team_path):
+            os.mkdir(team_path)
+
+        for week in range(1, num_weeks+1):
+            html = self.browser.scrape_lineup(league_id, team_id, week, '2013')
+            filepath = os.path.join(self.d, 'team_%s' % team_id, 'week_%d.html' % week)
+            logger.debug('scrape week %d for team %s writing to %s' % (week, team_id, filepath))
+            f = open(filepath, 'w')
+            f.write(html)
+            f.close()
+
     def get_players_from_lineup(self, file_browser, espn_id, year):
         self.browser = scrape.EspnScraper()
         self.browser.login(self.username, self.password)
