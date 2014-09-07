@@ -1,12 +1,13 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from teams.management.commands.parse_player import parse_scores_from_playersheet
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.scraper import LeagueScraper
-from teams.models import User, League, Team, Player, ScorecardEntry, Scorecard, Game, ScoreEntry
+from teams.models import User, League, Team, Player, ScorecardEntry, Scorecard, Game, ScoreEntry, TransLogEntry, DraftClaim
 from bs4 import BeautifulSoup
-from scrape import EspnScraper
 import re
 import logging
+import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -47,22 +48,21 @@ def get_player_position_from_playerpage(html):
     return pool.find('span', {"title" : "Position Eligibility"}).contents[1].strip()
 
 
-def load_scores_from_playersheet(html, league):
+def load_scores_from_playersheet(html, league, espn_id):
     pool = BeautifulSoup(html)
 
     name = get_player_name_from_playerpage(html)
-    espn_id = get_player_id_from_playerpage(html)
+    #espn_id = get_player_id_from_playerpage(html)
     position = get_player_position_from_playerpage(html)
 
     player = Player.objects.get_or_create(name=name, espn_id=espn_id, position=position)[0]
 
     rows = pool.find_all('table')[2].find_all('tr')[1:]
     scores = [row.find_all('td')[-1].string for row in rows]
-    print "scores is " + str(scores)
     scores = map(lambda x : 0 if x == '-' else float(x), scores)
 
     for week, score in enumerate(scores):
-        sc = ScoreEntry(week=week+1, player=player, points=float(score))
+        sc = ScoreEntry(week=week+1, player=player, points=float(score), league=league)
         sc.save()
 
 
@@ -174,6 +174,41 @@ def load_scores(html, game):
                 points = str(points)
             ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
 
+def load_transactions(html, year):
+    soup = BeautifulSoup(html)
+    rows = soup.find_all('table')[0].find_all('tr')[3:]
+    rows.reverse()
+    draft_round = 1
+    for row in rows:
+        player_name = row.contents[2].b.string
+        transaction_type = rows[0].contents[1].contents[-1]
+
+        date_str = ' '.join(list(rows[0].contents[0].strings))
+        date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
+        date.replace(year=year)
+
+        print "looking for player name " + player_name
+        player = Player.objects.get(name='LeSean McCoy')
+        print player_name == 'LeSean McCoy'
+        player = Player.objects.get(name=str(player_name))
+        print player.position
+
+        print Player.objects.all()
+
+        player = Player.objects.get(name=str(player_name))
+        team = Team.objects.get(espn_id='6')
+
+        if transaction_type == 'Draft':
+            draft_entry = DraftClaim(date=date,round=draft_round, player_added=player, player=team)
+            draft_round = draft_round + 1
+            draft_entry.save()
+
+
+
+def command_setup_user():
+    user = User.objects.create(email='waprin@gmail.com', password='sincere1')
+
+
 
 def command_setup_league():
     logger.info("in create_league command")
@@ -204,8 +239,21 @@ def command_setup_players():
 
     browser = FileBrowser()
     htmls = browser.scrape_all_players('6')
+    defense_htmls = browser.scrape_all_players('defenses')
+    #htmls.append(defense_htmls)
+    league = League.objects.get(name='Inglorious Basterds')
     for html in htmls:
-        parse_scores_from_playersheet(html)
+        load_scores_from_playersheet(html, league)
+
+def command_setup_defenses():
+
+    browser = FileBrowser()
+    defenses = browser.scrape_all_players('defenses')
+    #htmls.append(defense_htmls)
+    league = League.objects.get(name='Inglorious Basterds')
+    for defense in defenses:
+        load_scores_from_playersheet(defense[1], league, defense[0])
+
 
 
 
@@ -216,12 +264,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 #        lc = LeagueScraper('gothamcityrogues', 'sincere1')
 #        lc.create_roster(FileBrowser(), '930248', '6', '2013')
-        #command_setup_league()
-        #command_setup_teams()
-        #command_setup_games()
+        command_setup_defenses()
+"""
+        command_setup_user()
+        command_setup_league()
+        command_setup_teams()
+        command_setup_games()
+        command_setup_players()
+"""
 
-        lc = LeagueScraper('gothamcityrogues', 'sincere1')
-        lc.create_defenses(FileBrowser(), '930248', '2013')
+
+#        lc = LeagueScraper('gothamcityrogues', 'sincere1')
+#        lc.create_defenses(FileBrowser(), '930248', '2013')
 
 """
         espn = EspnScraper()

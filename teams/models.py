@@ -75,10 +75,15 @@ class ScorecardEntry(models.Model):
     #slot = models.CharField(max_length=20, choices=SLOT_TYPES)
     points = models.DecimalField(decimal_places=4, max_digits=7)
 
+
 class ScoreEntry(models.Model):
     week = models.IntegerField()
     player = models.ForeignKey(Player)
     points = models.DecimalField(decimal_places=4, max_digits=7)
+    league = models.ForeignKey(League)
+
+    class Meta:
+        unique_together = ('week', 'player', 'league')
 
 
 class TransLogEntry(models.Model):

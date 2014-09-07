@@ -104,12 +104,6 @@ class TeamsTest(unittest.TestCase):
         self.assertEqual(second_score, 96)
 
     @clear_test_database
-    def test_parse_translogs(self):
-        browser = FileBrowser()
-        html = browser.scrape_translogs(self, 6)
-        pass
-
-    @clear_test_database
     def test_parse_playersheets(self):
         browser = FileBrowser()
         htmls = browser.scrape_all_players('6')
@@ -124,6 +118,43 @@ class TeamsTest(unittest.TestCase):
         self.assertEqual(len(entries), 17)
         self.assertEqual(entries.get(week=1).points, 20)
         self.assertEqual(entries.get(week=17).points, 37)
+
+    @clear_test_database
+    def test_parse_defenses(self):
+        browser = FileBrowser()
+        defenses = browser.scrape_all_players('defenses')
+        league = League.objects.create(name="test league", espn_id='12345', year=2013)
+        for defense in defenses:
+            load_scores_from_playersheet(defense[1], league, defense[0])
+
+        falconsd = Player.objects.get(espn_id='60001')
+        self.assertEqual(falconsd.name, 'Falcons D/ST')
+        self.assertEquals(falconsd.position, 'D/ST')
+
+        entries = ScoreEntry.objects.filter(player=falconsd)
+        self.assertEqual(len(entries), 17)
+        self.assertEqual(entries.get(week=1).points, 1)
+        self.assertEqual(entries.get(week=17).points, 7)
+
+    @clear_test_database
+    def test_parse_translog(self):
+        league = League.objects.create(name="test league", espn_id='12345', year=2013)
+        rogues_team = Team.objects.create(league=league, espn_id='6', team_name='Gotham City Rogues', owner_name='Bill Prin')
+        browser = FileBrowser()
+        players = browser.scrape_all_players('6')
+        players = players + browser.scrape_all_players('defenses')
+        for player in players:
+            load_scores_from_playersheet(player[1], league, player[0])
+        html = browser.scrape_translogs('6')
+
+        load_transactions(html, 2013)
+
+        draft_transactions = DraftClaim.objects.filter(player='6')
+        self.assertEquals(len(draft_transactions), 16)
+
+
+
+
 
 
 """
