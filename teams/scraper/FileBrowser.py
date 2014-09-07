@@ -40,18 +40,25 @@ class FileBrowser(object):
     def scrape_roster_summary(self):
         return open(os.path.join(self.d, 'rostersummary.html')).read()
 
-    def scrape_all_players(self, team_id):
-        path = os.path.join(self.d, "roster_%s" % team_id)
+    def scrape_lineup(self):
+        return open(os.path.join(self.d, 'lineup.html')).read()
+
+    def scrape_all_players(self):
+        path = os.path.join(self.d, "players")
         player_files = listdir_nohidden(path)
         htmls = []
         for player_file in player_files:
-            if player_file[0] == '.':
-                continue
             player_file_path = os.path.join(path, player_file)
             espn_id = re.match(r'player_(\d*).*', player_file).group(1)
             html = open(player_file_path).read()
             htmls.append((espn_id, html))
         return htmls
+
+    def contains_player(self, player_id):
+        players_path = os.path.join(self.d, "players")
+        player_files = listdir_nohidden(players_path)
+        player_str = "player_" + player_id + ".html"
+        return player_str in player_files
 
 
 

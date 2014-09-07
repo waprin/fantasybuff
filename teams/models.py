@@ -47,6 +47,12 @@ class Player(models.Model):
 
 class Scorecard(models.Model):
     team = models.ForeignKey(Team)
+    week = models.IntegerField()
+
+    class Meta:
+        unique_together = ('team', 'week')
+
+
 
 class Game(models.Model):
     league = models.ForeignKey(League)
@@ -72,8 +78,11 @@ class ScorecardEntry(models.Model):
 
     scorecard = models.ForeignKey(Scorecard)
     player = models.ForeignKey(Player)
-    #slot = models.CharField(max_length=20, choices=SLOT_TYPES)
+    slot = models.CharField(max_length=20, choices=SLOT_TYPES)
     points = models.DecimalField(decimal_places=4, max_digits=7)
+
+    def __unicode__(self):
+        return "player %s position %s slot %s points %f" % (self.player.name, self.player.position,  self.slot, self.points)
 
 
 class ScoreEntry(models.Model):

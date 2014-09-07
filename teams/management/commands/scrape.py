@@ -95,6 +95,12 @@ class EspnScraper:
         html = r.read()
         return html
 
+    def scrape_lineup(self, league_id, team_id, week, year):
+        time.sleep(1)
+        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=1&seasonId=%s" % (league_id, year))
+        time.sleep(1)
+        r = self.br.open("http://games.espn.go.com/ffl/playertable/prebuilt/manageroster?leagueId=%s&teamId=%s&scoringPeriodId=%d&view=overview&context=clubhouse&ajaxPath=playertable/prebuilt/manageroster&managingIr=false&droppingPlayers=false&asLM=false&r=28027522" % (league_id, team_id, week))
+        return r.read()
 
 
 if __name__ == '__main__':

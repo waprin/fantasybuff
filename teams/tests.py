@@ -141,8 +141,7 @@ class TeamsTest(unittest.TestCase):
         league = League.objects.create(name="test league", espn_id='12345', year=2013)
         rogues_team = Team.objects.create(league=league, espn_id='6', team_name='Gotham City Rogues', owner_name='Bill Prin')
         browser = FileBrowser()
-        players = browser.scrape_all_players('6')
-        players = players + browser.scrape_all_players('defenses')
+        players = browser.scrape_all_players()
         for player in players:
             load_scores_from_playersheet(player[1], league, player[0])
         html = browser.scrape_translogs('6')
@@ -151,6 +150,26 @@ class TeamsTest(unittest.TestCase):
 
         draft_transactions = DraftClaim.objects.filter(player='6')
         self.assertEquals(len(draft_transactions), 16)
+
+    def test_parse_lineup(self):
+        league = League.objects.create(name="test league", espn_id='12345', year=2013)
+        rogues_team = Team.objects.create(league=league, espn_id='6', team_name='Gotham City Rogues', owner_name='Bill Prin')
+        browser = FileBrowser()
+        players = browser.scrape_all_players()
+        for player in players:
+            load_scores_from_playersheet(player[1], league, player[0])
+
+        html = browser.scrape_lineup()
+        load_week_from_lineup(html, 1, rogues_team)
+
+        brees = Player.objects.get(name='Drew Brees')
+        scorecard = Scorecard.objects.get(team=rogues_team, week=1)
+        scorecard_entry = ScorecardEntry.objects.get(player=brees, scorecard=scorecard)
+        self.assertEquals(scorecard_entry.slot, 'QB')
+        self.assertEquals(scorecard_entry.points, 20)
+
+
+
 
 
 

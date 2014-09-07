@@ -1,0 +1,10 @@
+Actual Roster just in case:
+<table>
+    {% for entry in scorecard_entries %}
+    <tr>
+        <td>{{ entry.slot }}</td>
+        <td>{{ entry.player.name }}</td>
+        <td>{{ entry.points }}</td>
+    </tr>
+    {% endfor %}
+</table>

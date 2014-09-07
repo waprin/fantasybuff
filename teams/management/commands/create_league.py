@@ -3,6 +3,7 @@ from django.db import transaction
 from teams.management.commands.parse_player import parse_scores_from_playersheet
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.scraper import LeagueScraper
+from scrape import EspnScraper
 from teams.models import User, League, Team, Player, ScorecardEntry, Scorecard, Game, ScoreEntry, TransLogEntry, DraftClaim
 from bs4 import BeautifulSoup
 import re
@@ -46,6 +47,19 @@ def get_player_name_from_playerpage(html):
 def get_player_position_from_playerpage(html):
     pool = BeautifulSoup(html)
     return pool.find('span', {"title" : "Position Eligibility"}).contents[1].strip()
+
+def get_players_from_lineup(html):
+    pool = BeautifulSoup(html)
+    rows = pool.find_all('tr', 'pncPlayerRow')
+    players = []
+    for row in rows:
+        slot = row.contents[0].string
+        player_id = None
+        if not row.contents[1].a:
+            continue
+        player_id = row.contents[1].a['playerid']
+        players.append((slot, player_id))
+    return players
 
 
 def load_scores_from_playersheet(html, league, espn_id):
@@ -203,6 +217,14 @@ def load_transactions(html, year):
             draft_round = draft_round + 1
             draft_entry.save()
 
+def load_week_from_lineup(html, week, team):
+    scorecard = Scorecard.objects.create(team=team, week=week)
+    players = get_players_from_lineup(html)
+    print players
+    for player_id in players:
+        player = Player.objects.get(espn_id=player_id[1])
+        points = ScoreEntry.objects.get(player=player, week=week).points
+        ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=player_id[0], points=points)
 
 
 def command_setup_user():
@@ -238,12 +260,10 @@ def command_setup_games():
 def command_setup_players():
 
     browser = FileBrowser()
-    htmls = browser.scrape_all_players('6')
-    defense_htmls = browser.scrape_all_players('defenses')
-    #htmls.append(defense_htmls)
+    htmls = browser.scrape_all_players()
     league = League.objects.get(name='Inglorious Basterds')
     for html in htmls:
-        load_scores_from_playersheet(html, league)
+        load_scores_from_playersheet(html[1], league, html[0])
 
 def command_setup_defenses():
 
@@ -254,25 +274,46 @@ def command_setup_defenses():
     for defense in defenses:
         load_scores_from_playersheet(defense[1], league, defense[0])
 
-
-
-
-
+def command_setup_lineup():
+    browser = FileBrowser()
+    lineup = browser.scrape_lineup()
+    team = Team.objects.get(espn_id='6')
+    load_week_from_lineup(lineup, 1, team)
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+
+        """
+        file_browser = FileBrowser()
+        scraper = EspnScraper()
+        scraper.login('gothamcityrogues', 'sincere1')
+        lc = LeagueScraper('gothamcityrogues', 'sincere1')
+        lc.get_players_from_lineup(file_browser, '930248', '2013')
+#        lc.create_defenses(FileBrowser(), '930248', '2013'
+"""
+        """
+        scraper = EspnScraper()
+        scraper.login('gothamcityrogues', 'sincere1')
+        html = scraper.scrape_lineup('930248', '6', 1, '2013')
+        f = open('lineup.html', 'w')
+        f.write(html)
+        f.close()
+        """
+
 #        lc = LeagueScraper('gothamcityrogues', 'sincere1')
 #        lc.create_roster(FileBrowser(), '930248', '6', '2013')
-        command_setup_defenses()
-"""
-        command_setup_user()
-        command_setup_league()
-        command_setup_teams()
-        command_setup_games()
-        command_setup_players()
-"""
 
+
+        #
+        # command_setup_defenses()
+
+#        command_setup_user()
+#        command_setup_league()
+#        command_setup_teams()
+        #command_setup_games()
+        #command_setup_players()
+        command_setup_lineup()
 
 #        lc = LeagueScraper('gothamcityrogues', 'sincere1')
 #        lc.create_defenses(FileBrowser(), '930248', '2013')

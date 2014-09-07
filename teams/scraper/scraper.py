@@ -44,6 +44,15 @@ def get_players_from_roster(html):
         players.append((playerId, playerName))
     return players
 
+def get_player_ids_from_lineup(html):
+    soup = BeautifulSoup(html)
+    player_rows = soup.find_all('td', 'playertablePlayerName')
+    ids = []
+    for player_row in player_rows:
+        ids.append(re.match(r'playername_(\d*)', player_row['id']).group(1))
+    return ids
+
+
 def get_defenses_from_roster(html):
     soup = BeautifulSoup(html)
     return [re.match(r'playername_(\d*)', defense_element["id"]).group(1) for defense_element in soup.find_all('td', 'playertablePlayerName')]
@@ -193,6 +202,24 @@ class LeagueScraper(object):
             f = open(filepath, 'w')
             f.write(html)
             f.close()
+
+    def get_players_from_lineup(self, file_browser, espn_id, year):
+        self.browser = scrape.EspnScraper()
+        self.browser.login(self.username, self.password)
+
+        html = file_browser.scrape_lineup()
+        player_ids = get_player_ids_from_lineup(html)
+        for player_id in player_ids:
+            if file_browser.contains_player(player_id):
+                logger.info("skipping over existing player %s" % player_id)
+                continue
+            logger.info("will now scrape new player %s" % player_id)
+            html = self.browser.scrape_player(espn_id, player_id, year)
+            filepath = os.path.join(self.d, 'players', 'player_%s.html' % player_id)
+            f = open(filepath, 'w')
+            f.write(html)
+            f.close()
+
 
 
 
