@@ -84,6 +84,10 @@ class ScorecardEntry(models.Model):
     def __unicode__(self):
         return "player %s position %s slot %s points %f" % (self.player.name, self.player.position,  self.slot, self.points)
 
+    def clone(self):
+            new_kwargs = dict([(fld.name, getattr(self, fld.name)) for fld in self._meta.fields if fld.name != 'id']);
+            return self.__class__.objects.create(**new_kwargs)
+
 
 class ScoreEntry(models.Model):
     week = models.IntegerField()

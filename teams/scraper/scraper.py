@@ -224,11 +224,11 @@ class LeagueScraper(object):
             f.write(html)
             f.close()
 
-    def get_players_from_lineup(self, file_browser, espn_id, year):
+    def get_players_from_lineup(self, file_browser, espn_id, team_id, week, year):
         self.browser = scrape.EspnScraper()
         self.browser.login(self.username, self.password)
 
-        html = file_browser.scrape_lineup()
+        html = file_browser.scrape_lineup(team_id, week)
         player_ids = get_player_ids_from_lineup(html)
         for player_id in player_ids:
             if file_browser.contains_player(player_id):

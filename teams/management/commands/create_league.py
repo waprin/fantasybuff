@@ -69,15 +69,16 @@ def load_scores_from_playersheet(html, league, espn_id):
     #espn_id = get_player_id_from_playerpage(html)
     position = get_player_position_from_playerpage(html)
 
-    player = Player.objects.get_or_create(name=name, espn_id=espn_id, position=position)[0]
+    (player, new) = Player.objects.get_or_create(name=name, espn_id=espn_id, position=position)
 
-    rows = pool.find_all('table')[2].find_all('tr')[1:]
-    scores = [row.find_all('td')[-1].string for row in rows]
-    scores = map(lambda x : 0 if x == '-' else float(x), scores)
+    if new:
+        rows = pool.find_all('table')[2].find_all('tr')[1:]
+        scores = [row.find_all('td')[-1].string for row in rows]
+        scores = map(lambda x : 0 if x == '-' else float(x), scores)
 
-    for week, score in enumerate(scores):
-        sc = ScoreEntry(week=week+1, player=player, points=float(score), league=league)
-        sc.save()
+        for week, score in enumerate(scores):
+            sc = ScoreEntry(week=week+1, player=player, points=float(score), league=league)
+            sc.save()
 
 
 def load_league_from_entrance(html, user):
@@ -276,20 +277,24 @@ def command_setup_defenses():
 
 def command_setup_lineup():
     browser = FileBrowser()
-    lineup = browser.scrape_lineup()
+    #lineup = browser.scrape_lineup()
     team = Team.objects.get(espn_id='6')
-    load_week_from_lineup(lineup, 1, team)
+    for week in range(6, 14):
+        html = browser.scrape_lineup('6', week)
+        load_week_from_lineup(html, week, team)
+    #load_week_from_lineup(lineup, 1, team)
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-
-        """
         file_browser = FileBrowser()
-        scraper = EspnScraper()
-        scraper.login('gothamcityrogues', 'sincere1')
+#        command_setup_lineup()
+#        scraper = EspnScraper()
+#        scraper.login('gothamcityrogues', 'sincere1')
+        """
         lc = LeagueScraper('gothamcityrogues', 'sincere1')
-        lc.get_players_from_lineup(file_browser, '930248', '2013')
+        for week in range(2, 14):
+            lc.get_players_from_lineup(file_browser, '930248', '6', week, '2013')
 #        lc.create_defenses(FileBrowser(), '930248', '2013'
 """
         """
@@ -308,15 +313,15 @@ class Command(BaseCommand):
         #
         # command_setup_defenses()
 
-#        command_setup_user()
-#        command_setup_league()
-#        command_setup_teams()
+        command_setup_user()
+        command_setup_league()
+        command_setup_teams()
         #command_setup_games()
-        #command_setup_players()
-        #command_setup_lineup()
+        command_setup_players()
+        command_setup_lineup()
 
-        lc = LeagueScraper('gothamcityrogues', 'sincere1')
-        lc.create_weeks_for_team(FileBrowser(), '930248', '6', '2013')
+        #lc = LeagueScraper('gothamcityrogues', 'sincere1')
+        #lc.create_weeks_for_team(FileBrowser(), '930248', '6', '2013')
 
 """
         espn = EspnScraper()

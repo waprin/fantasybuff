@@ -25,16 +25,15 @@ def calculate_optimal_lineup(entries):
 
     optimal_entries = []
     for slot in slots:
-        available_players = filter(lambda entry: entry not in optimal_entries, entries)
+        available_players = filter(lambda entry: entry.player.espn_id not in [e.player.espn_id for e in optimal_entries], entries)
         available_players = filter(partial(can_fill_slot, slot), available_players)
         print "available players: " + str(available_players) + " slot " + str(slot)
-        best_player = max(available_players, key=lambda entry: entry.points)
-        best_player.pk = None
-        best_player.slot = slot
-        best_player.save()
-        print "best players: " + str(best_player)
 
-        optimal_entries.append(best_player)
+        if available_players:
+            best_player = max(available_players, key=lambda entry: entry.points)
+            best_player = best_player.clone()
+            best_player.slot = slot
+            optimal_entries.append(best_player)
     return optimal_entries
 
 

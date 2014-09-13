@@ -40,8 +40,10 @@ class FileBrowser(object):
     def scrape_roster_summary(self):
         return open(os.path.join(self.d, 'rostersummary.html')).read()
 
-    def scrape_lineup(self):
-        return open(os.path.join(self.d, 'lineup.html')).read()
+    def scrape_lineup(self, team_id, week):
+        path = os.path.join(self.d, 'team_%s' % team_id, 'week_%d.html' % week)
+        return open(path).read()
+
 
     def scrape_all_players(self):
         path = os.path.join(self.d, "players")
