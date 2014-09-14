@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from teams.management.commands.parse_player import parse_scores_from_playersheet
+from teams.metrics.lineup_calculator import calculate_optimal_lineup
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.scraper import LeagueScraper
 from scrape import EspnScraper
@@ -219,7 +220,7 @@ def load_transactions(html, year):
             draft_entry.save()
 
 def load_week_from_lineup(html, week, team):
-    scorecard = Scorecard.objects.create(team=team, week=week)
+    scorecard = Scorecard.objects.create(team=team, week=week, actual=True)
     players = get_players_from_lineup(html)
     print players
     for player_id in players:
@@ -279,10 +280,24 @@ def command_setup_lineup():
     browser = FileBrowser()
     #lineup = browser.scrape_lineup()
     team = Team.objects.get(espn_id='6')
-    for week in range(6, 14):
+    for week in range(1, 12):
         html = browser.scrape_lineup('6', week)
         load_week_from_lineup(html, week, team)
     #load_week_from_lineup(lineup, 1, team)
+
+
+def command_setup_optimal_lineups():
+    rogues = Team.objects.get(espn_id='6')
+    weeks = [entry.week for entry in Scorecard.objects.filter(team=rogues)]
+    for week in weeks:
+        scorecard = Scorecard.objects.get(team=rogues, week=week)
+        scorecard_entries = ScorecardEntry.objects.filter(scorecard=scorecard)
+        optimal_entries = calculate_optimal_lineup(scorecard_entries)
+        optimal_scorecard = Scorecard.objects.create(team=rogues, week=week, actual=False)
+        for entry in optimal_entries:
+            entry.scorecard = optimal_scorecard
+            entry.save()
+
 
 
 class Command(BaseCommand):
@@ -316,9 +331,10 @@ class Command(BaseCommand):
         command_setup_user()
         command_setup_league()
         command_setup_teams()
-        #command_setup_games()
+#        command_setup_games()
         command_setup_players()
         command_setup_lineup()
+        command_setup_optimal_lineups()
 
         #lc = LeagueScraper('gothamcityrogues', 'sincere1')
         #lc.create_weeks_for_team(FileBrowser(), '930248', '6', '2013')

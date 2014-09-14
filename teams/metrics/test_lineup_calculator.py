@@ -15,7 +15,7 @@ class LineupCalculatorTest(unittest.TestCase):
     def test_can_fill_slot(self):
         league = League.objects.create(name="test league", espn_id='12345', year=2013)
         rogues_team = Team.objects.create(league=league, espn_id='3', team_name='Gotham City Rogues', owner_name='Bill Prin')
-        scorecard = Scorecard.objects.create(team=rogues_team, week=1)
+        scorecard = Scorecard.objects.create(team=rogues_team, week=1, actual=True)
 
         qb_player = Player.objects.create(name='a', position='QB', espn_id='1')
         rb_player1 = Player.objects.create(name='b', position='RB', espn_id='2')
@@ -37,7 +37,7 @@ class LineupCalculatorTest(unittest.TestCase):
     def test_calculate_lineup(self):
         league = League.objects.create(name="test league", espn_id='12345', year=2013)
         rogues_team = Team.objects.create(league=league, espn_id='3', team_name='Gotham City Rogues', owner_name='Bill Prin')
-        scorecard = Scorecard.objects.create(team=rogues_team, week=1)
+        scorecard = Scorecard.objects.create(team=rogues_team, week=1, actual=True)
 
         qb_player = Player.objects.create(name='a', position='QB', espn_id='1')
         rb_player1 = Player.objects.create(name='b', position='RB', espn_id='2')
@@ -70,4 +70,6 @@ class LineupCalculatorTest(unittest.TestCase):
         self.assertEquals(int(get_lineup_score(entries)), 5 + 2 + 5 + 2 + 9)
         optimal_lineup=calculate_optimal_lineup(entries)
         print optimal_lineup
+        self.assertEquals(len(optimal_lineup), len(entries))
         self.assertEquals(int(get_lineup_score(optimal_lineup)), 5 + 2 + 5 + 10 + 9 + 7)
+

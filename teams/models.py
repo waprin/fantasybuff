@@ -48,9 +48,10 @@ class Player(models.Model):
 class Scorecard(models.Model):
     team = models.ForeignKey(Team)
     week = models.IntegerField()
+    actual = models.BooleanField()
 
     class Meta:
-        unique_together = ('team', 'week')
+        unique_together = ('team', 'week', 'actual')
 
 
 
