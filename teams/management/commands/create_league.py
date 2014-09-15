@@ -1,7 +1,8 @@
+from decimal import Decimal
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from teams.management.commands.parse_player import parse_scores_from_playersheet
-from teams.metrics.lineup_calculator import calculate_optimal_lineup
+from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.scraper import LeagueScraper
 from scrape import EspnScraper
@@ -223,10 +224,16 @@ def load_week_from_lineup(html, week, team):
     scorecard = Scorecard.objects.create(team=team, week=week, actual=True)
     players = get_players_from_lineup(html)
     print players
+    total_points = Decimal(0)
     for player_id in players:
         player = Player.objects.get(espn_id=player_id[1])
         points = ScoreEntry.objects.get(player=player, week=week).points
-        ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=player_id[0], points=points)
+        slot = player_id[0]
+        if slot != 'Bench':
+            total_points = total_points + points
+        ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
+    scorecard.points = total_points
+    scorecard.save()
 
 
 def command_setup_user():
@@ -285,7 +292,6 @@ def command_setup_lineup():
         load_week_from_lineup(html, week, team)
     #load_week_from_lineup(lineup, 1, team)
 
-
 def command_setup_optimal_lineups():
     rogues = Team.objects.get(espn_id='6')
     weeks = [entry.week for entry in Scorecard.objects.filter(team=rogues)]
@@ -293,10 +299,12 @@ def command_setup_optimal_lineups():
         scorecard = Scorecard.objects.get(team=rogues, week=week)
         scorecard_entries = ScorecardEntry.objects.filter(scorecard=scorecard)
         optimal_entries = calculate_optimal_lineup(scorecard_entries)
-        optimal_scorecard = Scorecard.objects.create(team=rogues, week=week, actual=False)
+        total_points = get_lineup_score(optimal_entries)
+        optimal_scorecard = Scorecard.objects.create(team=rogues, week=week, actual=False, points=total_points)
         for entry in optimal_entries:
             entry.scorecard = optimal_scorecard
             entry.save()
+
 
 
 

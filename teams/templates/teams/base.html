@@ -161,10 +161,7 @@
         </nav>
 
         <div id="page-wrapper">
-
-            <div class="container-fluid">
-
-                <!-- Page Heading -->
+              <!-- Page Heading -->
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
@@ -180,65 +177,12 @@
                         </ol>
                     </div>
                 </div>
-                <!-- /.row -->
-
-                <div class="row">
-                    <div class="col-lg-6">
-                        <h2>Bordered Table</h2>
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Slot</th>
-                                        <th>Position</th>
-                                        <th>Player</th>
-                                        <th>Points</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for entry in scorecard_entries %}
-                                        <tr>
-                                            <td>{{ entry.slot }}</td>
-                                            <td>{{ entry.player.position }}</td>
-                                            <td>{{ entry.player.name }}</td>
-                                            <td>{{ entry.points }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <h2>Bordered with Striped Rows</h2>
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Slot</th>
-                                        <th>Position</th>
-                                        <th>Player</th>
-                                        <th>Points</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {% for entry in optimal_entries %}
-                                    <tr>
-                                        <td>{{ entry.slot }}</td>
-                                        <td>{{ entry.player.name }}</td>
-                                        <td>{{ entry.points }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <!-- /.row -->
+        {% block content %}
 
 
             </div>
             <!-- /.container-fluid -->
-
+            {% endblock %} <!-- endblock content-->
         </div>
         <!-- /#page-wrapper -->
 

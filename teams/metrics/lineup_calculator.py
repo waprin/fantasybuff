@@ -1,6 +1,7 @@
 __author__ = 'bprin'
 
 from functools import partial
+from decimal import Decimal
 
 def can_fill_slot(slot, entry):
     if slot == 'FLEX':
@@ -9,15 +10,15 @@ def can_fill_slot(slot, entry):
 
 def get_lineup_score(entries):
     print "entries is " + str(entries)
-    starters = filter(lambda entry: entry.slot != 'BENCH', entries)
+    starters = filter(lambda entry: entry.slot != 'Bench', entries)
     print "starters is " + str(starters)
-    score = reduce(lambda points, entry: points + entry.points, starters, 0.0)
+    score = reduce(lambda points, entry: points + entry.points, starters, Decimal(0))
     return score
 
 
 def calculate_optimal_lineup(entries):
     slots = [entry.slot for entry in entries]
-    slots = filter(lambda slot: slot != 'BENCH', slots)
+    slots = filter(lambda slot: slot != 'Bench', slots)
     try:
         i = slots.index('FLEX')
         slots.append(slots.pop(i))
@@ -42,7 +43,7 @@ def calculate_optimal_lineup(entries):
     available_players = get_available_player(entries, optimal_entries)
     for player in available_players:
         bench_player = player.clone()
-        bench_player.slot = 'BENCH'
+        bench_player.slot = 'Bench'
         optimal_entries.append(bench_player)
 
     return optimal_entries

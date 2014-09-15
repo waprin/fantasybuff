@@ -49,6 +49,7 @@ class Scorecard(models.Model):
     team = models.ForeignKey(Team)
     week = models.IntegerField()
     actual = models.BooleanField()
+    points = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
 
     class Meta:
         unique_together = ('team', 'week', 'actual')

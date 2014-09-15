@@ -1,7 +1,17 @@
-<table>
-    {% for week in weeks %}
-        <tr>
-            <td><a href="{{ week }}">Week {{ week }}</a></td>
-        </tr>
-    {%  endfor %}
-</table>
+{% extends "teams/base.html" %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <table class="table table-bordered table-hover table-striped">
+                {% for entry in weeks %}
+                    <tr>
+                        <td><a href="{{ entry.week }}">Week {{ entry.week }}</a></td>
+                        <td>{{ entry.points }}</td>
+                        <td>{{ entry.optimal_points }}</td>
+                    </tr>
+                {%  endfor %}
+            </table>
+         </div> <!--row-->
+    </div> <!--container-fluid-->
+{% endblock %}
