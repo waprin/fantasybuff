@@ -1,0 +1,13 @@
+{% extends "teams/base.html" %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <ul>
+                {% for team in teams %}
+                    <li>{{ team.team_name }}</li>
+                {% endfor %}
+            </ul>
+         </div> <!--row-->
+    </div> <!--container-fluid-->
+{% endblock %}

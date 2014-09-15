@@ -1,7 +1,8 @@
+from decimal import Decimal
 from django.http import HttpResponse
 import logging
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
-from teams.models import Scorecard, ScorecardEntry, Team
+from teams.models import Scorecard, ScorecardEntry, Team, League
 
 from django.template import RequestContext, loader
 
@@ -14,14 +15,24 @@ def index(request):
     actual_weeks.sort(key=lambda x: x.week)
     optimal_weeks.sort(key=lambda x: x.week)
 
+    deltas = []
+
     weeks = []
     for i, week in enumerate(actual_weeks):
-        weeks.append({"week": week.week, "points": week.points, "optimal_points": optimal_weeks[i].points})
-
+        optimal_points = optimal_weeks[i].points
+        delta = optimal_points - week.points
+        deltas.append(delta)
+        weeks.append({"week": week.week,
+                      "points": week.points,
+                      "optimal_points": optimal_points,
+                      "delta": delta
+        })
+    average_delta = sum(deltas) / Decimal(len(deltas))
     print weeks
     template = loader.get_template('teams/team.html')
     context = RequestContext(request, {
         'weeks': weeks,
+        'average_delta': average_delta
     })
 
     return HttpResponse(template.render(context))
@@ -52,6 +63,31 @@ def show_week(request, week):
     })
 
     return HttpResponse(template.render(context))
+
+def show_league(request, espn_id, year):
+    league = League.objects.get(espn_id=espn_id, year=year)
+    teams = Team.objects.filter(league=league)
+
+    template = loader.get_template('teams/league.html')
+    context = RequestContext(request, {
+        'teams': teams,
+        'navigation': ['Lineup Home', league.name + ' ' + str(league.year)]
+    })
+
+
+    return HttpResponse(template.render(context))
+
+def show_all_leagues(request):
+    leagues = League.objects.all()
+
+    template = loader.get_template('teams/all_leagues.html')
+    context = RequestContext(request, {
+        'all_leagues': leagues,
+        'navigation': ['Lineup Home']
+    })
+
+    return HttpResponse(template.render(context))
+
 
 def grid(request):
     template = loader.get_template('teams/grid.html')

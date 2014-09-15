@@ -146,18 +146,19 @@
                     </ul>
                 </li>
             </ul>
+            {% block navigation %}
+
             <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
                     <li>
-                        <a href="index.html"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+                        <a href="index.html"><i class="fa fa-fw fa-dashboard"></i> Lineup </a>
                     </li>
-                    <li class="active">
-                        <a href="tables.html"><i class="fa fa-fw fa-table"></i> Lineups</a>
-                    </li>
+
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
+            {% endblock %}
         </nav>
 
         <div id="page-wrapper">
@@ -168,12 +169,11 @@
                             Lineups
                         </h1>
                         <ol class="breadcrumb">
-                            <li>
-                                <i class="fa fa-dashboard"></i>  <a href="index.html">Dashboard</a>
-                            </li>
-                            <li class="active">
-                                <i class="fa fa-table"></i> Tables
-                            </li>
+                            {% for nav in navigation %}
+                                <li>
+                                    <i class="fa fa-dashboard"></i>  <a href="index.html">{{ nav }}</a>
+                                </li>
+                            {% endfor %}
                         </ol>
                     </div>
                 </div>

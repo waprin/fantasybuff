@@ -1,0 +1,13 @@
+{% extends "teams/base.html" %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+        <ul>
+            {% for league in all_leagues  %}
+                <a href="/teams/{{ league.espn_id }}/{{ league.year }}"><li>{{ league.name }}</li></a>
+            {% endfor %}
+        </ul>
+         </div> <!--row-->
+    </div> <!--container-fluid-->
+{% endblock %}

@@ -3,12 +3,14 @@
 {% block content %}
     <div class="container-fluid">
         <div class="row">
+        Average Delta: {{ average_delta }}
             <table class="table table-bordered table-hover table-striped">
                 {% for entry in weeks %}
                     <tr>
                         <td><a href="{{ entry.week }}">Week {{ entry.week }}</a></td>
                         <td>{{ entry.points }}</td>
                         <td>{{ entry.optimal_points }}</td>
+                        <td>{{ entry.delta }}</td>
                     </tr>
                 {%  endfor %}
             </table>
