@@ -312,7 +312,7 @@ class Command(BaseCommand):
         file_browser = FileBrowser()
         scraper = EspnScraper()
         scraper.login('gothamcityrogues', 'sincere1')
-        user = User.objects.get(email='waprin@gmail.com')
+        user = User.objects.get_or_create(email='waprin@gmail.com', password='sincere1')[0]
         league_scraper = LeagueScraper(scraper, file_browser)
         league_scraper.create_league_directory(user)
 

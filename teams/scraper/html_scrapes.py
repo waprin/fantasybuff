@@ -1,6 +1,9 @@
 import re
 from bs4 import BeautifulSoup
 
+import logging
+logger = logging.getLogger(__name__)
+
 __author__ = 'bprin'
 
 def get_leagues_from_entrance(html):
@@ -13,4 +16,46 @@ def get_leagues_from_entrance(html):
         espn_id = m.group(1)
         year = m.group(2)
         leagues.append((name, espn_id, year))
+    logger.debug("get_leagues_from_entrance returning " + str(leagues))
     return leagues
+
+def get_teams_from_standings(html):
+    pool = BeautifulSoup(html)
+    header = pool.find('div', 'games-pageheader')
+    standings = header.findNextSibling('table')
+    bodies = standings.find_all('tr', 'tableBody')
+
+    team_tuples = []
+    for body in bodies:
+        fullname = body.td.a['title']
+        href = body.td.a['href']
+        info = re.search("teamId=(\d+)", href)
+        team_id = info.group(1)
+        matched_name = re.search("(.*)\s*\((.*)\)", fullname)
+        team_name = matched_name.group(1)
+        owner_name = matched_name.group(2)
+        team_tuples.append( (team_id, team_name, owner_name) )
+    return team_tuples
+
+def get_num_weeks_from_matchups(html):
+    pool = BeautifulSoup(html)
+    body_copy = pool.find('div', 'bodyCopy')
+    matchups = body_copy.find_all('a', title=re.compile(r'Week'))
+    for matchup in matchups:
+        m = matchup
+    return int(m.string)
+
+"""
+def get_teams_from_scoreboard(html):
+    soup = BeautifulSoup(html)
+    matchups = soup.find_all('table', 'matchup')
+
+    games = []
+    for matchup in matchups:
+        teams = matchup.find_all(id=re.compile('teamscrg'))
+        logger.debug("teams is " + str(teams))
+        first_id_string = teams[0]['id']
+        first_id = re.search(r'teamscrg_(\d*)_', first_id_string).group(1)
+        games.append(first_id)
+    return games
+"""

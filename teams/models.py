@@ -9,6 +9,7 @@ class League(models.Model):
     name = models.CharField(max_length=200)
     espn_id = models.CharField(max_length=30)
     year = models.CharField(max_length=5)
+    loaded = models.DateField(null=True)
 
     class Meta:
         unique_together = ('espn_id', 'year',)

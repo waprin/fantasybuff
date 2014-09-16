@@ -69,9 +69,10 @@ class EspnScraper:
         return html
 
     def scrape_roster_summary(self, league_id, team_id, year):
-        time.sleep(1)
+        time.sleep(3)
         request = "http://games.espn.go.com/ffl/activestats?leagueId=%s&teamId=%s" % (league_id, team_id)
         self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%s&seasonId=%s" % (league_id, team_id, year))
+        time.sleep(3)
         r = self.br.open(request)
         html = r.read()
         return html
@@ -94,12 +95,12 @@ class EspnScraper:
         html = r.read()
         return html
 
-    def scrape_lineup(self, league_id, team_id, week, year):
-        time.sleep(1)
+    def get_roster(self, league, team_id, week):
+        time.sleep(3)
         logger.debug("requesting page to get to correct year")
-        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=1&seasonId=%s" % (league_id, year))
-        time.sleep(1)
-        request = "http://games.espn.go.com/ffl/playertable/prebuilt/manageroster?leagueId=%s&teamId=%s&scoringPeriodId=%d&view=overview&context=clubhouse&ajaxPath=playertable/prebuilt/manageroster&managingIr=false&droppingPlayers=false&asLM=false&r=28027522" % (league_id, team_id, week)
+        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=1&seasonId=%s" % (league.espn_id, league.year))
+        time.sleep(3)
+        request = "http://games.espn.go.com/ffl/playertable/prebuilt/manageroster?leagueId=%s&teamId=%s&scoringPeriodId=%d&view=overview&context=clubhouse&ajaxPath=playertable/prebuilt/manageroster&managingIr=false&droppingPlayers=false&asLM=false&r=28027522" % (league.espn_id, team_id, week)
         logger.debug('making request: ' + request)
         r = self.br.open(request)
         return r.read()

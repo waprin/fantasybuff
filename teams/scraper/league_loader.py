@@ -7,7 +7,11 @@ def load_leagues_from_entrance(html, user):
     league_tuples = get_leagues_from_entrance(html)
     leagues = []
     for league_tuple in league_tuples:
-        league = League.objects.get_or_create(espn_id=league_tuple[1], year=league_tuple[2], name=league_tuple[0])[0]
+        try:
+            league = League.objects.get(espn_id=league_tuple[1], year=league_tuple[2])
+        except League.DoesNotExist:
+            league = League.objects.create(espn_id=league_tuple[1], year=league_tuple[2], name=league_tuple[0])
+
         league.users.add(user)
         league.save()
         leagues.append(league)

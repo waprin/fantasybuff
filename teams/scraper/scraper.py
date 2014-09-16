@@ -1,3 +1,6 @@
+import datetime
+from teams.models import League
+from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups
 from teams.scraper.league_loader import load_leagues_from_entrance
 
 __author__ = 'bill'
@@ -9,27 +12,9 @@ logger = logging.getLogger(__name__)
 from teams.management.commands import scrape
 from teams.utils.league_files import choose_league_directory, create_league_directory
 
-def get_num_weeks_from_scoreboard(html):
-    pool = BeautifulSoup(html)
-    body_copy = pool.find('div', 'bodyCopy')
-    matchups = body_copy.find_all('a', title=re.compile(r'Week'))
-    for matchup in matchups:
-        m = matchup
-    return int(m.string)
 
 
-def get_teams_from_scoreboard(html):
-    soup = BeautifulSoup(html)
-    matchups = soup.find_all('table', 'matchup')
 
-    games = []
-    for matchup in matchups:
-        teams = matchup.find_all(id=re.compile('teamscrg'))
-        logger.debug("teams is " + str(teams))
-        first_id_string = teams[0]['id']
-        first_id = re.search(r'teamscrg_(\d*)_', first_id_string).group(1)
-        games.append(first_id)
-    return games
 
 def get_players_from_roster(html):
     soup = BeautifulSoup(html)
@@ -83,16 +68,44 @@ class LeagueScraper(object):
         self.store.write_matchups(league, week, matchups_html)
         return True
 
-    def create_league_directory(self, user):
+    def create_team_week_roster(self, league, team_id, week):
+        if not self.overwrite and self.store.has_roster(league, team_id, week):
+            return False
+        roster_html = self.scraper.get_roster(league, team_id, week)
+        self.store.write_roster(league, team_id, week, roster_html)
+        return True
+
+
+    def create_team_rosters(self, league, team_id, num_weeks):
+        for week in range(1, num_weeks + 1):
+            self.create_team_week_roster(league, team_id, week)
+
+    def get_real_num_weeks(self, num_weeks, league):
+        if int(league.year) < 2014:
+            return num_weeks
+        now = datetime.datetime.now()
+
+        start = datetime.datetime(year=2014, month=9, day=9)
+        week = datetime.timedelta(days=7)
+        start_days = [start + (weeknum * week) for weeknum in range(0, 13)]
+        for i in range(0, num_weeks):
+            if now < start_days[i]:
+                return i
+        return num_weeks
+
+    def create_league(self, league):
+        self.create_standings_page(league)
+        self.create_matchups_page(league, 1)
+        teams = get_teams_from_standings(self.store.get_standings(league))
+        num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
+        num_weeks = self.get_real_num_weeks(num_weeks, league)
+        for team in teams:
+            self.create_team_rosters(league, team[0], num_weeks)
+
+
+    def create_leagues(self, user):
         self.create_welcome_page(user)
-        leagues = load_leagues_from_entrance(self.store.get_entrance(user), user)
-
-        for league in leagues:
-            self.create_standings_page(league)
-            self.create_matchups_page(league, 1)
-
-
-
+        load_leagues_from_entrance(self.store.get_entrance(user), user)
 
 
     """

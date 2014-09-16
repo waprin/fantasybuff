@@ -1,7 +1,7 @@
-from teams.models import User
+from teams.models import User, League
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
-from teams.scraper.html_scrapes import get_leagues_from_entrance
+from teams.scraper.html_scrapes import get_leagues_from_entrance, get_teams_from_standings, get_num_weeks_from_matchups
 
 __author__ = 'bill'
 
@@ -22,29 +22,68 @@ class ScraperTest(unittest.TestCase):
         self.league_scraper = LeagueScraper(self.browser, self.sqlstore)
 
     @clear_test_database
-    def test_create_league_directory(self):
-        self.user = User.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
-        self.assertFalse(self.sqlstore.has_entrance(self.user))
-        self.league_scraper.create_league_directory(self.user)
-        self.assertTrue(self.sqlstore.has_entrance(self.user))
+    def test_create_leagues(self):
+        user = User.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
+        self.assertFalse(self.sqlstore.has_entrance(user))
+        self.league_scraper.create_leagues(user)
+        self.assertTrue(self.sqlstore.has_entrance(user))
+
+    @clear_test_database
+    def test_get_real_num_weeks(self):
+        user = User.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
+        self.assertFalse(self.sqlstore.has_entrance(user))
+        self.league_scraper.create_leagues(user)
+        for league in League.objects.all():
+            print "league year is %s" % league.year
+        old_league = League.objects.filter(year='2013')[0]
+
+        old_num_weeks = self.league_scraper.get_real_num_weeks(13, league=old_league)
+        self.assertEquals(old_num_weeks, 13)
+
+        # TODO - better protect this from time changes
+        current_league = League.objects.filter(year=2014)[0]
+        current_num_weeks = self.league_scraper.get_real_num_weeks(13, league=current_league)
+        print current_num_weeks
+        self.assertLess(current_num_weeks, 13)
+
 
     @clear_test_database
     def test_scrape_entrance(self):
-        self.user = User.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
-        self.assertTrue(self.browser.has_entrance(self.user))
-        html = self.browser.get_entrance(self.user)
+        user = User.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
+        self.assertTrue(self.browser.has_entrance(user))
+        html = self.browser.get_entrance(user)
 
         leagues = get_leagues_from_entrance(html)
         self.assertEquals(len(leagues), 3)
         self.assertIn(('Inglorious Basterds', '930248', '2013'), leagues)
         self.assertIn(('Inglorious Basterds', '930248', '2014'), leagues)
         self.assertIn(('Bizarro League III', '1880759', '2014'), leagues)
-    """
-    def test_get_num_weeks(self):
-        html = self.browser.scrape_scoreboard(None, 1)
-        num_weeks = get_num_weeks_from_scoreboard(html)
-        self.assertEqual(num_weeks, 13)
 
+    @clear_test_database
+    def test_scrape_teams_from_standings(self):
+        league = League.objects.create(name='ib', espn_id='930248', year='2013')
+        self.assertTrue(self.browser.has_standings(league))
+
+        teams = get_teams_from_standings(self.browser.get_standings(league))
+        self.assertEquals(len(teams), 12)
+        self.assertIn(('5', 'Not a  Prinhead ', 'Matthew Prin'), teams)
+        self.assertIn(('4', "Geno's Cheesesteaks ", 'Matt Secko'), teams)
+
+    @clear_test_database
+    def test_get_num_weeks_from_matchups(self):
+        league = League.objects.create(name='ib', espn_id='930248', year='2013')
+        self.assertTrue(self.browser.has_matchups(league, 1))
+
+        num_weeks = get_num_weeks_from_matchups(self.browser.get_matchups(league, 1))
+        self.assertEquals(num_weeks, 13)
+
+        league = League.objects.create(name='ib', espn_id='930248', year='2014')
+        self.assertTrue(self.browser.has_matchups(league, 1))
+
+        num_weeks = get_num_weeks_from_matchups(self.browser.get_matchups(league, 1))
+        self.assertEquals(num_weeks, 13)
+
+    """
     def test_get_players_from_roster(self):
         html = open('rostersummary.html').read()
         players = get_players_from_roster(html)

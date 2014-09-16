@@ -78,6 +78,26 @@ class FileBrowser(object):
         f = open(self.matchup_path(league, week), 'w')
         f.write(html)
 
+    def roster_path(self, league, team_id, week):
+        instance_dir = self.create_instance_directory(league.espn_id, league.year)
+        return os.path.join(instance_dir, 'roster_%s_%d.html' % (team_id, week))
+
+    def has_roster(self, league, team_id, week):
+        return os.path.exists(self.roster_path(league, team_id, week))
+
+    def get_roster(self, league, team_id, week):
+        return open(self.roster_path(league, team_id, week)).read()
+
+    def write_roster(self, league, team_id, week, html):
+        f = open(self.roster_path(league, team_id, week), 'w')
+        f.write(html)
+
+
+
+
+
+
+
 
     def scrape_all_games(self, week_num):
         path = os.path.join(self.d, 'week_%d' % week_num, 'games')
