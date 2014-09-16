@@ -18,8 +18,10 @@ urlpatterns = patterns('',
      url(r'^admin/', include(admin.site.urls)),
      url(r'^teams/$', 'teams.views.show_all_leagues'),
      url(r'^teams/(\d*)/(\d\d\d\d)', 'teams.views.show_league'),
+     url(r'^teams/(\d*)/(\d\d\d\d)', 'teams.views.show_scrapes'),
      url(r'^teams/(\d*)/', 'teams.views.show_week'),
      url(r'^teams/grid/', 'teams.views.grid'),
+
 
 
 

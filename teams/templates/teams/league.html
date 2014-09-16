@@ -3,11 +3,13 @@
 {% block content %}
     <div class="container-fluid">
         <div class="row">
-            <ul>
+              <table class="table table-bordered table-hover table-striped">
                 {% for team in teams %}
-                    <li>{{ team.team_name }}</li>
-                {% endfor %}
-            </ul>
-         </div> <!--row-->
+                    <tr>
+                        <td>{{ team.team_name }}</td>
+                        <td>{{ team.average_delta }}</td>
+                    </tr>
+                {%  endfor %}
+         </div> <!--row -->
     </div> <!--container-fluid-->
 {% endblock %}

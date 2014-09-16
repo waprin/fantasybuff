@@ -1,4 +1,7 @@
+from teams.models import User
 from teams.scraper.FileBrowser import FileBrowser
+from teams.scraper.SqlStore import SqlStore
+from teams.scraper.html_scrapes import get_leagues_from_entrance
 
 __author__ = 'bill'
 
@@ -9,19 +12,36 @@ import logging
 logger = logging.getLogger(__name__)
 
 from scraper import *
-
+from teams.utils.db_utils import clear_test_database
 
 class ScraperTest(unittest.TestCase):
 
-    def test_scrape_entrance(self):
-        browser = FileBrowser()
-        html = browser.scrape_entrance()
-        espn_id = get_league_id_from_entrance(html)
-        self.assertEquals(espn_id, "930248")
+    def setUp(self):
+        self.browser = FileBrowser()
+        self.sqlstore = SqlStore()
+        self.league_scraper = LeagueScraper(self.browser, self.sqlstore)
 
+    @clear_test_database
+    def test_create_league_directory(self):
+        self.user = User.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
+        self.assertFalse(self.sqlstore.has_entrance(self.user))
+        self.league_scraper.create_league_directory(self.user)
+        self.assertTrue(self.sqlstore.has_entrance(self.user))
+
+    @clear_test_database
+    def test_scrape_entrance(self):
+        self.user = User.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
+        self.assertTrue(self.browser.has_entrance(self.user))
+        html = self.browser.get_entrance(self.user)
+
+        leagues = get_leagues_from_entrance(html)
+        self.assertEquals(len(leagues), 3)
+        self.assertIn(('Inglorious Basterds', '930248', '2013'), leagues)
+        self.assertIn(('Inglorious Basterds', '930248', '2014'), leagues)
+        self.assertIn(('Bizarro League III', '1880759', '2014'), leagues)
+    """
     def test_get_num_weeks(self):
-        browser = FileBrowser()
-        html = browser.scrape_scoreboard(None, 1)
+        html = self.browser.scrape_scoreboard(None, 1)
         num_weeks = get_num_weeks_from_scoreboard(html)
         self.assertEqual(num_weeks, 13)
 
@@ -50,7 +70,7 @@ class ScraperTest(unittest.TestCase):
         browser = FileBrowser()
         self.assertTrue(browser.contains_player('2580'))
         self.assertFalse(browser.contains_player('2581'))
-
+    """
 
 
 

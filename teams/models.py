@@ -8,10 +8,7 @@ class League(models.Model):
     users = models.ManyToManyField(User)
     name = models.CharField(max_length=200)
     espn_id = models.CharField(max_length=30)
-    year = models.IntegerField()
-    entry_page_html = models.TextField(null=True, default=None)
-    standings_page_html = models.TextField(null=True, default=None)
-    loaded = models.BooleanField(default=False)
+    year = models.CharField(max_length=5)
 
     class Meta:
         unique_together = ('espn_id', 'year',)
@@ -119,10 +116,25 @@ class AddDrop(TransLogEntry):
     waiver = models.BooleanField()
 
 
+# scraper models
+
+class HtmlScrape(models.Model):
+    html = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    type = models.CharField(max_length=250)
+
+    class Meta:
+        ordering = ['-created_at']
 
 
+class UserHtmlScrape(HtmlScrape):
+    user = models.ForeignKey(User)
 
+class LeagueHtmlScrape(HtmlScrape):
+    league = models.ForeignKey(League)
 
+class LeagueWeekHtmlScrape(LeagueHtmlScrape):
+    week = models.IntegerField()
 
 
 

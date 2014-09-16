@@ -83,26 +83,6 @@ def load_scores_from_playersheet(html, league, espn_id):
             sc.save()
 
 
-def load_league_from_entrance(html, user):
-    m = re.search(r'leagueId=(\d*)&teamId=(\d*)&seasonId=(\d*)', html)
-    league_id= m.group(1)
-    team_id = m.group(2)
-    season_id = m.group(3)
-
-    pool = BeautifulSoup(html)
-    logger.debug('pool successfully initialized')
-    league_name = pool.find('a', 'leagueoffice-link').string
-    logger.debug('league name found is ' + league_name)
-
-    try:
-        league = League.objects.get(espn_id=league_id)
-    except League.DoesNotExist:
-        league = League(espn_id=league_id, year=2012, name=league_name)
-        league.save()
-        league.users.add(user)
-        league.save()
-    return league
-
 @transaction.commit_on_success
 def load_games_from_scoreboard(html, league, week):
     logger.debug('load_games_from_scoreboard')
@@ -246,7 +226,7 @@ def command_setup_league():
     browser = FileBrowser()
     html = browser.scrape_entrance()
     user = User.objects.get(email='waprin@gmail.com')
-    load_league_from_entrance(html, user)
+    load_leagues_from_entrance(html, user)
     logger.info("finishing create_league command")
 
 def command_setup_teams():
@@ -310,6 +290,8 @@ def command_find_average_deltas():
     teams = Team.objects.filter(league=league)
     for team in teams:
         actual_weeks = list(Scorecard.objects.filter(team=team, actual=True))
+        if not actual_weeks:
+            continue
         optimal_weeks = list(Scorecard.objects.filter(team=team, actual=False))
         actual_weeks.sort(key=lambda x: x.week)
         optimal_weeks.sort(key=lambda x: x.week)
@@ -328,23 +310,17 @@ def command_find_average_deltas():
 class Command(BaseCommand):
     def handle(self, *args, **options):
         file_browser = FileBrowser()
-#        command_setup_lineup()
-#        scraper = EspnScraper()
-#        scraper.login('gothamcityrogues', 'sincere1')
-        """
-        lc = LeagueScraper('gothamcityrogues', 'sincere1')
-        for week in range(2, 14):
-            lc.get_players_from_lineup(file_browser, '930248', '6', week, '2013')
-#        lc.create_defenses(FileBrowser(), '930248', '2013'
-"""
-        """
         scraper = EspnScraper()
         scraper.login('gothamcityrogues', 'sincere1')
-        html = scraper.scrape_lineup('930248', '6', 1, '2013')
-        f = open('lineup.html', 'w')
-        f.write(html)
-        f.close()
-        """
+        user = User.objects.get(email='waprin@gmail.com')
+        league_scraper = LeagueScraper(scraper, file_browser)
+        league_scraper.create_league_directory(user)
+
+
+
+
+
+
 
 #        lc = LeagueScraper('gothamcityrogues', 'sincere1')
 #        lc.create_roster(FileBrowser(), '930248', '6', '2013')
@@ -353,53 +329,17 @@ class Command(BaseCommand):
         #
         # command_setup_defenses()
 
-        command_setup_user()
-        command_setup_league()
-        command_setup_teams()
+        #command_setup_user()
+        #command_setup_league()
+        #command_setup_teams()
 #        command_setup_games()
-        command_setup_players()
-        command_setup_lineup()
-        command_setup_optimal_lineups()
-        command_find_average_deltas()
+        #command_setup_players()
+        #command_setup_lineup()
+        #command_setup_optimal_lineups()
+        #command_find_average_deltas()
 
         #lc = LeagueScraper('gothamcityrogues', 'sincere1')
         #lc.create_weeks_for_team(FileBrowser(), '930248', '6', '2013')
-
-"""
-        espn = EspnScraper()
-        espn.login('gothamcityrogues', 'sincere1')
-        html = espn.scrape_defenses('930248', '2013')
-        f = open('defense.html', 'w')
-        f.write(html)
-        f.close()
-"""
-"""
-        html = espn.scrape_player('930248', '2580', '2013')
-        f = open('player_2580.html', 'w')
-        f.write(html)
-        f.close()
-"""
-        #html = espn.scrape_roster_summary('930248', 6)
-        #f = open('rostersummary.html', 'w')
-        #f.write(html)
-        #f.close()
-
-"""
-        html = espn.scrape_translog('930248', 6)
-        f = open('translog.html', 'w')
-        f.write(html)
-        f.close()
-"""
-
-
-"""
-        lc = LeagueScraper('gothamcityrogues', 'sincere1')
-        lc.reload()
-        lc.create_league_directory()
-        lc.create_games(FileBrowser(), "930248", 1)
-"""
-
-
 
 
 

@@ -77,6 +77,9 @@ def show_league(request, espn_id, year):
 
     return HttpResponse(template.render(context))
 
+def show_scrape(request, espn_id, year):
+    pass
+
 def show_all_leagues(request):
     leagues = League.objects.all()
 

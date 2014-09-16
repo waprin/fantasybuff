@@ -10,19 +10,7 @@ from django.conf import settings
 import logging
 logger = logging.getLogger(__name__)
 
-
-def clear_test_database(fn):
-    def wrapper(self):
-        logger.info("clearing: conncetion queries is %s" % str(connection.queries))
-        for user in User.objects.all():
-            logger.info("user is %s" % user.email)
-            user.delete()
-        for league in League.objects.all():
-            league.delete()
-        for game in Game.objects.all():
-            game.delete()
-        fn(self)
-    return wrapper
+from teams.utils.db_utils import clear_test_database
 
 def hits_live_site(fn):
     def wrapper(self):
@@ -32,6 +20,7 @@ def hits_live_site(fn):
             logger.info("skipping live scrape " + fn.__name__)
     return wrapper
 
+@unittest.skip
 class TeamsTest(unittest.TestCase):
 
     def test_init_user(self):

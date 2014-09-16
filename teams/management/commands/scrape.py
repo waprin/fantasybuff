@@ -32,7 +32,7 @@ class EspnScraper:
         self.br.submit()
 
 
-    def scrape_entrance(self):
+    def get_entrance(self):
         r = self.br.open("http://games.espn.go.com/frontpage/football")
         html = r.read()
         return html
@@ -47,17 +47,18 @@ class EspnScraper:
         html = r.read()
         return html
 
-    def scrape_standings(self, espn_id):
+    def get_standings(self, espn_id, year):
         time.sleep(1)
-        url = "http://games.espn.go.com/ffl/standings?leagueId=%s&seasonId=2013" % (espn_id)
+        url = "http://games.espn.go.com/ffl/standings?leagueId=%s&seasonId=%s" % (espn_id, year)
         logger.debug("scrape_standings(): url is %s" % url)
         r = self.br.open(url)
         html = r.read()
         return html
 
-    def scrape_scoreboard(self, espn_id, week):
+    def scrape_matchups(self, league_id, year, week):
         time.sleep(1)
-        r = self.br.open("http://games.espn.go.com/ffl/scoreboard?leagueId=%s&matchupPeriodId=%d" % (espn_id, week))
+        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%s&seasonId=%s" % (league_id, 1, year))
+        r = self.br.open("http://games.espn.go.com/ffl/scoreboard?leagueId=%s&matchupPeriodId=%d" % (league_id, week))
         html = r.read()
         return html
 
@@ -67,12 +68,10 @@ class EspnScraper:
         html = r.read()
         return html
 
-    def scrape_roster_summary(self, espn_id, team_id):
+    def scrape_roster_summary(self, league_id, team_id, year):
         time.sleep(1)
-        #930248&teamId=6")
-        request = "http://games.espn.go.com/ffl/activestats?leagueId=%s&teamId=%d" % (espn_id, team_id)
-        print "request is " + request
-        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%d&seasonId=2013" % (espn_id, team_id))
+        request = "http://games.espn.go.com/ffl/activestats?leagueId=%s&teamId=%s" % (league_id, team_id)
+        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%s&seasonId=%s" % (league_id, team_id, year))
         r = self.br.open(request)
         html = r.read()
         return html
