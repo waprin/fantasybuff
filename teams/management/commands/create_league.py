@@ -314,12 +314,9 @@ class Command(BaseCommand):
         scraper.login('gothamcityrogues', 'sincere1')
         user = User.objects.get_or_create(email='waprin@gmail.com', password='sincere1')[0]
         league_scraper = LeagueScraper(scraper, file_browser)
-        league_scraper.create_league_directory(user)
-
-
-
-
-
+        league_scraper.create_leagues(user)
+        league = League.objects.get(espn_id='930248', year='2014')
+        league_scraper.create_league(league)
 
 
 #        lc = LeagueScraper('gothamcityrogues', 'sincere1')

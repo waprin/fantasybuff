@@ -29,12 +29,18 @@ class ScraperTest(unittest.TestCase):
         self.assertTrue(self.sqlstore.has_entrance(user))
 
     @clear_test_database
+    def test_create_league(self):
+        league = League.objects.create(espn_id='930248',year='2014')
+        self.league_scraper.create_league(league)
+
+        self.assertTrue(self.sqlstore.has_roster(league, '1', 1))
+        self.assertTrue(self.sqlstore.has_roster(league, '12', 2))
+
+    @clear_test_database
     def test_get_real_num_weeks(self):
         user = User.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
         self.assertFalse(self.sqlstore.has_entrance(user))
         self.league_scraper.create_leagues(user)
-        for league in League.objects.all():
-            print "league year is %s" % league.year
         old_league = League.objects.filter(year='2013')[0]
 
         old_num_weeks = self.league_scraper.get_real_num_weeks(13, league=old_league)

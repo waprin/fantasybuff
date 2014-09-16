@@ -1,6 +1,5 @@
 from teams.utils.league_files import choose_league_directory, create_league_directory
-import os
-import re
+import os, errno, re
 
 import logging
 logger = logging.getLogger(__name__)
@@ -11,6 +10,14 @@ def listdir_nohidden(path):
     for f in os.listdir(path):
         if not f.startswith('.'):
             yield f
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else: raise
 
 class FileBrowser(object):
 
@@ -61,8 +68,8 @@ class FileBrowser(object):
         return open(self.standings_path(league)).read()
 
     def write_standings(self, league, html):
-        f = open(self.matchup_path(league), 'w')
-        f.write(html)
+        with open(self.matchup_path(league), 'w') as f:
+            f.write(html)
 
     def matchup_path(self, league, week):
         instance_dir = self.create_instance_directory(league.espn_id, league.year)
@@ -75,12 +82,14 @@ class FileBrowser(object):
         return open(self.matchup_path(league, week)).read()
 
     def write_matchups(self, league, week, html):
-        f = open(self.matchup_path(league, week), 'w')
-        f.write(html)
+        with open(self.matchup_path(league, week), 'w') as f:
+            f.write(html)
 
     def roster_path(self, league, team_id, week):
         instance_dir = self.create_instance_directory(league.espn_id, league.year)
-        return os.path.join(instance_dir, 'roster_%s_%d.html' % (team_id, week))
+        dirpath = os.path.join(instance_dir, "team_%s" % team_id)
+        mkdir_p(dirpath)
+        return os.path.join(dirpath, "roster_%d.html" % week)
 
     def has_roster(self, league, team_id, week):
         return os.path.exists(self.roster_path(league, team_id, week))
@@ -89,8 +98,8 @@ class FileBrowser(object):
         return open(self.roster_path(league, team_id, week)).read()
 
     def write_roster(self, league, team_id, week, html):
-        f = open(self.roster_path(league, team_id, week), 'w')
-        f.write(html)
+        with open(self.roster_path(league, team_id, week), 'w') as f:
+            f.write(html)
 
 
 

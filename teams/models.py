@@ -122,21 +122,25 @@ class AddDrop(TransLogEntry):
 class HtmlScrape(models.Model):
     html = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    type = models.CharField(max_length=250)
 
     class Meta:
         ordering = ['-created_at']
 
 
-class UserHtmlScrape(HtmlScrape):
+class EntranceHtmlScrape(HtmlScrape):
     user = models.ForeignKey(User)
 
-class LeagueHtmlScrape(HtmlScrape):
+class MatchupsWeekHtmlScrape(HtmlScrape):
     league = models.ForeignKey(League)
-
-class LeagueWeekHtmlScrape(LeagueHtmlScrape):
     week = models.IntegerField()
 
+class StandingsHtmlScrape(HtmlScrape):
+    league = models.ForeignKey(League)
+
+class RosterHtmlScrape(HtmlScrape):
+    week = models.IntegerField()
+    team_id = models.CharField(max_length=10)
+    league = models.ForeignKey(League)
 
 
 
