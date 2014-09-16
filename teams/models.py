@@ -22,6 +22,7 @@ class Team(models.Model):
     espn_id = models.CharField(max_length=5)
     team_name = models.CharField(max_length=100, null=True)
     owner_name = models.CharField(max_length=100, null=True)
+    average_delta = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
 
     class Meta:
         unique_together = ('league_espn_id', 'espn_id',)
@@ -53,7 +54,6 @@ class Scorecard(models.Model):
 
     class Meta:
         unique_together = ('team', 'week', 'actual')
-
 
 
 class Game(models.Model):

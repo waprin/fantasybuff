@@ -305,6 +305,23 @@ def command_setup_optimal_lineups():
             entry.scorecard = optimal_scorecard
             entry.save()
 
+def command_find_average_deltas():
+    league = League.objects.get(espn_id='930248')
+    teams = Team.objects.filter(league=league)
+    for team in teams:
+        actual_weeks = list(Scorecard.objects.filter(team=team, actual=True))
+        optimal_weeks = list(Scorecard.objects.filter(team=team, actual=False))
+        actual_weeks.sort(key=lambda x: x.week)
+        optimal_weeks.sort(key=lambda x: x.week)
+
+        deltas = []
+        for i, week in enumerate(actual_weeks):
+            optimal_points = optimal_weeks[i].points
+            delta = optimal_points - week.points
+            deltas.append(delta)
+        average_delta = sum(deltas) / Decimal(len(deltas))
+        team.average_delta = average_delta
+        team.save()
 
 
 
@@ -343,6 +360,7 @@ class Command(BaseCommand):
         command_setup_players()
         command_setup_lineup()
         command_setup_optimal_lineups()
+        command_find_average_deltas()
 
         #lc = LeagueScraper('gothamcityrogues', 'sincere1')
         #lc.create_weeks_for_team(FileBrowser(), '930248', '6', '2013')
