@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 
 from django.template import RequestContext, loader
 from teams.scraper.SqlStore import SqlStore
-from teams.scraper.scraper import is_scraped, is_loaded, is_league_teams_scraped_, is_league_loaded, \
+from teams.scraper.scraper import is_scraped, is_loaded, is_league_teams_scraped, is_league_loaded, \
     is_league_players_scraped
 
 logger = logging.getLogger(__name__)
@@ -127,7 +127,7 @@ def show_league(request, espn_id, year):
     template = loader.get_template('teams/league.html')
 
     store = SqlStore()
-    teams_scraped = is_league_teams_scraped_(league, store)
+    teams_scraped = is_league_teams_scraped(league, store)
     players_scraped = is_league_players_scraped(league, store)
     loaded = False
     if teams_scraped and players_scraped:

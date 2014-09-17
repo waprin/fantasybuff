@@ -34,7 +34,7 @@ def is_loaded(espn_user, store):
     leagues = get_leagues_from_entrance(store.get_entrance(espn_user))
     return len(leagues) == len(League.objects.filter(users=espn_user))
 
-def is_league_teams_scraped_(league, store):
+def is_league_teams_scraped(league, store):
     teams = get_teams_from_standings(store.get_standings(league))
     num_weeks = get_num_weeks_from_matchups(store.get_matchups(league, 1))
     num_weeks = get_real_num_weeks(num_weeks, league)
