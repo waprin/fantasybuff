@@ -1,8 +1,11 @@
 from decimal import Decimal
 from django.contrib.auth.decorators import login_required
+from django.contrib.sites import requests
 from django.http import HttpResponse
 import logging
 from django.shortcuts import redirect
+from teams import jobs
+from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
 from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser
 
@@ -12,6 +15,7 @@ from django.template import RequestContext, loader
 from teams.scraper.SqlStore import SqlStore
 from teams.scraper.scraper import is_scraped, is_loaded, is_league_teams_scraped, is_league_loaded, \
     is_league_players_scraped
+import django_rq
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +180,9 @@ def espn_create(request):
     except KeyError:
         return redirect(show_all_leagues)
 
-    EspnUser.objects.create(user=request.user, username=username, password=password)
+    espn_user = EspnUser.objects.create(user=request.user, username=username, password=password)
+
+    django_rq.enqueue(defer_espn_user_scrape, espn_user)
     return redirect(show_all_leagues)
 
 

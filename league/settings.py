@@ -122,6 +122,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'teams', # Uncomment the next line to enable the admin:
      'django.contrib.admin',
+    'django_rq'
     # Uncomment the next line to enable admin documentation:
      #'django.contrib.admindocs',
 )
@@ -172,6 +173,16 @@ LOGGING = {
             'level' : 'DEBUG',
          }
     }
+}
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        #'PASSWORD': 'some-password',
+        'DEFAULT_TIMEOUT': 360,
+    },
 }
 
 LOCAL=True

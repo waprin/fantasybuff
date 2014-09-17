@@ -16,6 +16,8 @@ class League(models.Model):
     class Meta:
         unique_together = ('espn_id', 'year',)
 
+
+
 class Team(models.Model):
     league = models.ForeignKey(League)
     league_espn_id = models.CharField(max_length=30)

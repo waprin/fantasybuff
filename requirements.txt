@@ -1,10 +1,12 @@
-Django>=1.7
+## The following requirements were added by pip --freeze:
+Django==1.7
 beautifulsoup4==4.3.2
+gnureadline==6.3.3
+ipython==2.2.0
 lxml==3.3.5
 mechanize==0.2.5
 psycopg2==2.5.3
-wsgiref==0.1.2
-## The following requirements were added by pip --freeze:
-gnureadline==6.3.3
-ipython==2.2.0
 readline==6.2.4.1
+redis==2.10.3
+rq==0.4.6
+wsgiref==0.1.2

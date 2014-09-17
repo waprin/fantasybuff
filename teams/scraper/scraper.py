@@ -141,11 +141,11 @@ class LeagueScraper(object):
         for player_id in all_player_ids:
             self.create_player(league, player_id)
 
-    def scrape_leagues(self, user):
-        self.create_welcome_page(user)
+    def scrape_espn_user_leagues(self, espn_user):
+        self.create_welcome_page(espn_user)
 
-    def load_leagues(self, user):
-        load_leagues_from_entrance(self.store.get_entrance(user), user)
+    def load_espn_user_leagues(self, espn_user):
+        load_leagues_from_entrance(self.store.get_entrance(espn_user), espn_user)
 
 
     def create_games(self, file_browser, espn_id, week_num):

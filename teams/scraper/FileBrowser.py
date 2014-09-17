@@ -38,14 +38,14 @@ class FileBrowser(object):
         self.d = create_league_directory(n+1)
         self.initialized = False
 
-    def has_entrance(self, user):
-        return os.path.exists(os.path.join(self.d, 'entrance_%d.html' % user.id))
+    def has_entrance(self, espn_user):
+        return os.path.exists(os.path.join(self.d, 'entrance_%d.html' % espn_user.id))
 
-    def get_entrance(self, user):
-        return open(os.path.join(self.d, 'entrance_%d.html' % user.id)).read()
+    def get_entrance(self, espn_user):
+        return open(os.path.join(self.d, 'entrance_%d.html' % espn_user.id)).read()
 
-    def write_entrance(self, user, html):
-        filepath = os.path.join(self.d, 'entrance_%d.html' % user.id)
+    def write_entrance(self, espn_user, html):
+        filepath = os.path.join(self.d, 'entrance_%d.html' % espn_user.id)
         logger.debug("create_league(): entrance filepath is " + filepath)
         f = open(filepath, 'w')
         logger.debug("create_league(): writing entrance")
