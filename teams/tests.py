@@ -1,6 +1,6 @@
 from django.utils import unittest
 from teams.management.commands.create_league import *
-from teams.models import User, League, Team
+from teams.models import EspnUser, League, Team
 
 import os
 from django.db import connection
@@ -26,7 +26,7 @@ class TeamsTest(unittest.TestCase):
     def test_init_user(self):
         logger.info('test_init_users')
         init_user()
-        u = User.objects.get(email='waprin@gmail.com')
+        u = EspnUser.objects.get(email='waprin@gmail.com')
         self.assertEqual(u.password, 'terrible')
 
     @clear_test_database

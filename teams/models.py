@@ -1,11 +1,11 @@
 from django.db import models
 
-class User(models.Model):
+class EspnUser(models.Model):
     email = models.CharField(max_length=200, unique=True)
     password = models.CharField(max_length=200)
 
 class League(models.Model):
-    users = models.ManyToManyField(User)
+    users = models.ManyToManyField(EspnUser)
     name = models.CharField(max_length=200)
     espn_id = models.CharField(max_length=30)
     year = models.CharField(max_length=5)
@@ -128,7 +128,7 @@ class HtmlScrape(models.Model):
 
 
 class EntranceHtmlScrape(HtmlScrape):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(EspnUser)
 
 class MatchupsWeekHtmlScrape(HtmlScrape):
     league = models.ForeignKey(League)

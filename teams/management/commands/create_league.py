@@ -6,7 +6,7 @@ from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.scraper import LeagueScraper
 from scrape import EspnScraper
-from teams.models import User, League, Team, Player, ScorecardEntry, Scorecard, Game, ScoreEntry, TransLogEntry, DraftClaim
+from teams.models import EspnUser, League, Team, Player, ScorecardEntry, Scorecard, Game, ScoreEntry, TransLogEntry, DraftClaim
 from bs4 import BeautifulSoup
 import re
 import logging
@@ -216,61 +216,6 @@ def load_week_from_lineup(html, week, team):
     scorecard.save()
 
 
-def command_setup_user():
-    user = User.objects.create(email='waprin@gmail.com', password='sincere1')
-
-
-
-def command_setup_league():
-    logger.info("in create_league command")
-    browser = FileBrowser()
-    html = browser.scrape_entrance()
-    user = User.objects.get(email='waprin@gmail.com')
-    load_leagues_from_entrance(html, user)
-    logger.info("finishing create_league command")
-
-def command_setup_teams():
-    logger.info("in command_setup_teams")
-    browser = FileBrowser()
-    html = browser.scrape_standings()
-    league = League.objects.get(name='Inglorious Basterds')
-    load_teams_from_standings(html, league)
-    logger.info("finishing command_setup_teams")
-
-def command_setup_games():
-    logger.info("in command_setup_games")
-
-    browser = FileBrowser()
-    html = browser.scrape_scoreboard(None, 1)
-
-    league = League.objects.get(name='Inglorious Basterds')
-    load_games_from_scoreboard(html, league, 1)
-
-def command_setup_players():
-
-    browser = FileBrowser()
-    htmls = browser.scrape_all_players()
-    league = League.objects.get(name='Inglorious Basterds')
-    for html in htmls:
-        load_scores_from_playersheet(html[1], league, html[0])
-
-def command_setup_defenses():
-
-    browser = FileBrowser()
-    defenses = browser.scrape_all_players('defenses')
-    #htmls.append(defense_htmls)
-    league = League.objects.get(name='Inglorious Basterds')
-    for defense in defenses:
-        load_scores_from_playersheet(defense[1], league, defense[0])
-
-def command_setup_lineup():
-    browser = FileBrowser()
-    #lineup = browser.scrape_lineup()
-    team = Team.objects.get(espn_id='6')
-    for week in range(1, 12):
-        html = browser.scrape_lineup('6', week)
-        load_week_from_lineup(html, week, team)
-    #load_week_from_lineup(lineup, 1, team)
 
 def command_setup_optimal_lineups():
     rogues = Team.objects.get(espn_id='6')
@@ -312,7 +257,7 @@ class Command(BaseCommand):
         file_browser = FileBrowser()
         scraper = EspnScraper()
         scraper.login('gothamcityrogues', 'sincere1')
-        user = User.objects.get_or_create(email='waprin@gmail.com', password='sincere1')[0]
+        user = EspnUser.objects.get_or_create(email='waprin@gmail.com', password='sincere1')[0]
         league_scraper = LeagueScraper(scraper, file_browser)
         league_scraper.create_leagues(user)
         league = League.objects.get(espn_id='930248', year='2014')

@@ -1,4 +1,4 @@
-from teams.models import User
+from teams.models import EspnUser
 from django.contrib import admin
 
-admin.site.register(User)
+admin.site.register(EspnUser)

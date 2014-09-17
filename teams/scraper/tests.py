@@ -1,4 +1,4 @@
-from teams.models import User, League
+from teams.models import League, EspnUser
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from teams.scraper.html_scrapes import get_leagues_from_entrance, get_teams_from_standings, get_num_weeks_from_matchups, \
@@ -24,7 +24,7 @@ class ScraperTest(unittest.TestCase):
 
     @clear_test_database
     def test_create_leagues(self):
-        user = User.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
+        user = EspnUser.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
         self.assertFalse(self.sqlstore.has_entrance(user))
         self.league_scraper.create_leagues(user)
         self.assertTrue(self.sqlstore.has_entrance(user))
@@ -37,9 +37,13 @@ class ScraperTest(unittest.TestCase):
         self.assertTrue(self.sqlstore.has_roster(league, '1', 1))
         self.assertTrue(self.sqlstore.has_roster(league, '12', 2))
 
+        self.assertTrue(self.sqlstore.has_player(league, '1428'))
+        self.assertTrue(self.sqlstore.has_player(league, '5362'))
+
+
     @clear_test_database
     def test_get_real_num_weeks(self):
-        user = User.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
+        user = EspnUser.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
         self.assertFalse(self.sqlstore.has_entrance(user))
         self.league_scraper.create_leagues(user)
         old_league = League.objects.filter(year='2013')[0]
@@ -56,7 +60,7 @@ class ScraperTest(unittest.TestCase):
 
     @clear_test_database
     def test_scrape_entrance(self):
-        user = User.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
+        user = EspnUser.objects.create(id=1,email='waprin@gmail.com', password='sincere1')
         self.assertTrue(self.browser.has_entrance(user))
         html = self.browser.get_entrance(user)
 
