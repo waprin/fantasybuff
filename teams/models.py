@@ -142,5 +142,9 @@ class RosterHtmlScrape(HtmlScrape):
     team_id = models.CharField(max_length=10)
     league = models.ForeignKey(League)
 
+class PlayerHtmlScrape(HtmlScrape):
+    player_id = models.CharField(max_length=20)
+    league = models.ForeignKey(League)
+
 
 

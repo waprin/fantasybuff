@@ -45,6 +45,24 @@ def get_num_weeks_from_matchups(html):
         m = matchup
     return int(m.string)
 
+def get_player_ids_from_lineup(html):
+    soup = BeautifulSoup(html)
+    player_rows = soup.find_all('td', 'playertablePlayerName')
+    ids = []
+    for player_row in player_rows:
+        ids.append(re.match(r'playername_(\d*)', player_row['id']).group(1))
+    return ids
+
+"""
+    rows = soup.find('table', 'playerTableTable').find_all('tr')[2:-1]
+    players = []
+    for row in rows:
+        playerId = row.contents[0].a['playerid']
+        playerName = row.contents[0].a.string
+        players.append((playerId, playerName))
+
+"""
+
 """
 def get_teams_from_scoreboard(html):
     soup = BeautifulSoup(html)

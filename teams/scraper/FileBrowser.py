@@ -101,6 +101,22 @@ class FileBrowser(object):
         with open(self.roster_path(league, team_id, week), 'w') as f:
             f.write(html)
 
+    def player_path(self, league, player_id):
+        instance_dir = self.create_instance_directory(league.espn_id, league.year)
+        dirpath = os.path.join(instance_dir, "players")
+        mkdir_p(dirpath)
+        return os.path.join(dirpath, "player_%s.html" % player_id)
+
+    def has_player(self, league, player_id):
+        return os.path.exists(self.player_path(league, player_id))
+
+    def get_player(self, league, player_id):
+        return open(self.player_path(league, player_id)).read()
+
+    def write_player(self, league, player_id, html):
+        with open(self.player_path(league, player_id), 'w') as f:
+            f.write(html)
+
 
 
 
@@ -122,8 +138,6 @@ class FileBrowser(object):
     def scrape_translogs(self, team_id):
         return open('translog.html').read()
 
-    def scrape_roster_summary(self):
-        return open(os.path.join(self.d, 'rostersummary.html')).read()
 
     def scrape_lineup(self, team_id, week):
         path = os.path.join(self.d, 'team_%s' % team_id, 'week_%d.html' % week)

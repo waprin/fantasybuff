@@ -1,7 +1,8 @@
 from teams.models import User, League
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
-from teams.scraper.html_scrapes import get_leagues_from_entrance, get_teams_from_standings, get_num_weeks_from_matchups
+from teams.scraper.html_scrapes import get_leagues_from_entrance, get_teams_from_standings, get_num_weeks_from_matchups, \
+    get_player_ids_from_lineup
 
 __author__ = 'bill'
 
@@ -66,6 +67,14 @@ class ScraperTest(unittest.TestCase):
         self.assertIn(('Bizarro League III', '1880759', '2014'), leagues)
 
     @clear_test_database
+    def test_scrape_players_from_lineup(self):
+        league = League.objects.create(name='ib', espn_id='930248', year='2014')
+        html = self.browser.get_roster(league, '1', 1)
+        players = get_player_ids_from_lineup(html)
+        self.assertIn('14874', players)
+        self.assertEquals(len(players), 16)
+
+    @clear_test_database
     def test_scrape_teams_from_standings(self):
         league = League.objects.create(name='ib', espn_id='930248', year='2013')
         self.assertTrue(self.browser.has_standings(league))
@@ -96,12 +105,6 @@ class ScraperTest(unittest.TestCase):
         self.assertEqual(players[0][0], '2580')
         self.assertEquals(players[0][1], 'Drew Brees')
 
-    def test_get_players_from_lineup(self):
-        html = open('lineup.html').read()
-        players = get_player_ids_from_lineup(html)
-        print players
-        self.assertEquals(players[0], '2580')
-        self.assertEquals(len(players), 16)
 
 
     def test_get_defenses_from_roster(self):

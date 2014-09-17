@@ -3,7 +3,8 @@ __author__ = 'bprin'
 import logging
 logger = logging.getLogger(__name__)
 
-from teams.models import EntranceHtmlScrape, MatchupsWeekHtmlScrape, RosterHtmlScrape, StandingsHtmlScrape
+from teams.models import EntranceHtmlScrape, MatchupsWeekHtmlScrape, RosterHtmlScrape, StandingsHtmlScrape, \
+    PlayerHtmlScrape
 
 
 class SqlStore:
@@ -52,3 +53,13 @@ class SqlStore:
     def get_roster(self, league, team_id, week):
         return RosterHtmlScrape.objects.filter(league=league, team_id=team_id, week=week)[0].html
 
+## players
+
+    def has_player(self, league, player_id):
+        return len(PlayerHtmlScrape.objects.filter(player_id=player_id, league=league)) > 0
+
+    def get_player(self, league, player_id):
+        return PlayerHtmlScrape.objects.filter(league=league, player_id=player_id)[0].html
+
+    def write_player(self, league, player_id, html):
+        PlayerHtmlScrape.objects.create(html=html, league=league, player_id=player_id)
