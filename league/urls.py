@@ -6,6 +6,8 @@ import settings
 from django.contrib import admin
 admin.autodiscover()
 
+from django.shortcuts import redirect
+
 urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'league.views.home', name='home'),
@@ -16,13 +18,12 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
      url(r'^admin/', include(admin.site.urls)),
+     url(r'^signin/$', 'teams.views.signin'),
+     url(r'^signin/signup/$', 'teams.views.signup'),
+     url(r'^logout/$', 'teams.views.logout_user'),
      url(r'^teams/$', 'teams.views.show_all_leagues'),
      url(r'^teams/(\d*)/(\d\d\d\d)', 'teams.views.show_league'),
-     url(r'^teams/(\d*)/(\d\d\d\d)', 'teams.views.show_scrapes'),
      url(r'^teams/(\d*)/', 'teams.views.show_week'),
-     url(r'^teams/grid/', 'teams.views.grid'),
-
-
 
 
 

@@ -53,6 +53,12 @@ def get_player_ids_from_lineup(html):
         ids.append(re.match(r'playername_(\d*)', player_row['id']).group(1))
     return ids
 
+def parse_scores_from_playersheet(html):
+    pool = BeautifulSoup(html)
+    rows = pool.find_all('table')[2].find_all('tr')[1:]
+    return [row.find_all('td')[-1].string for row in rows]
+
+
 """
     rows = soup.find('table', 'playerTableTable').find_all('tr')[2:-1]
     players = []

@@ -1,13 +1,65 @@
 from decimal import Decimal
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 import logging
+from django.shortcuts import redirect
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
 from teams.models import Scorecard, ScorecardEntry, Team, League
+
+from django.contrib.auth.models import User
 
 from django.template import RequestContext, loader
 
 logger = logging.getLogger(__name__)
 
+from django.contrib.auth import authenticate, login, logout
+
+
+def signin(request):
+    try:
+        email = request.POST['email']
+        password = request.POST['password']
+    except KeyError:
+        template = loader.get_template('teams/login.html')
+        context = RequestContext(request)
+        return HttpResponse(template.render(context))
+
+    user = authenticate(username=email, password=password)
+    if user is not None:
+        if user.is_active:
+            login(request, user)
+            return redirect(show_all_leagues)
+            # Redirect to a success page.
+        else:
+            logger.error("disabled account")
+            # Return a 'disabled account' error message
+    else:
+        logger.error("invalid login")
+        # Return an 'invalid login' error message.
+
+def signup(request):
+    password = request.POST['password']
+    email = request.POST['email']
+
+    User.objects.create_user(email, email, password)
+    user = authenticate(username=email, password=password)
+    if user is not None:
+        if user.is_active:
+            login(request, user)
+            return redirect(show_all_leagues)
+            # Redirect to a success page.
+        else:
+            logger.error("disabled account")
+            # Return a 'disabled account' error message
+    else:
+        logger.error("invalid login")
+        # Return an 'invalid login' error message.
+
+def logout_user(request):
+    logout(request)
+    return redirect(signin)
+
+@login_required
 def index(request):
     rogues = Team.objects.get(espn_id='6')
     actual_weeks = list(Scorecard.objects.filter(team=rogues, actual=True))
@@ -77,9 +129,8 @@ def show_league(request, espn_id, year):
 
     return HttpResponse(template.render(context))
 
-def show_scrape(request, espn_id, year):
-    pass
 
+@login_required
 def show_all_leagues(request):
     leagues = League.objects.all()
 
@@ -92,7 +143,3 @@ def show_all_leagues(request):
     return HttpResponse(template.render(context))
 
 
-def grid(request):
-    template = loader.get_template('teams/grid.html')
-    context = RequestContext(request)
-    return HttpResponse(template.render(context))

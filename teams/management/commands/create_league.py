@@ -1,7 +1,6 @@
 from decimal import Decimal
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from teams.management.commands.parse_player import parse_scores_from_playersheet
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.scraper import LeagueScraper
@@ -13,10 +12,6 @@ import logging
 import datetime
 
 logger = logging.getLogger(__name__)
-
-def init_user():
-    user, created = User.objects.get_or_create(email='waprin@gmail.com', defaults={'password': 'terrible'})
-    return user
 
 def load_teams_from_standings(html, league):
     pool = BeautifulSoup(html)
