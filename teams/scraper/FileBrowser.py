@@ -1,3 +1,4 @@
+import time
 from teams.utils.league_files import choose_league_directory, create_league_directory
 import os, errno, re
 
@@ -42,6 +43,7 @@ class FileBrowser(object):
         return os.path.exists(os.path.join(self.d, 'entrance_%d.html' % espn_user.id))
 
     def get_entrance(self, espn_user):
+        time.sleep(10)
         return open(os.path.join(self.d, 'entrance_%d.html' % espn_user.id)).read()
 
     def write_entrance(self, espn_user, html):

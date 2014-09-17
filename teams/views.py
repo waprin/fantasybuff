@@ -4,10 +4,11 @@ from django.contrib.sites import requests
 from django.http import HttpResponse
 import logging
 from django.shortcuts import redirect
-from teams import jobs
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
 from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser
+import json
+
 
 from django.contrib.auth.models import User
 
@@ -20,6 +21,9 @@ import django_rq
 logger = logging.getLogger(__name__)
 
 from django.contrib.auth import authenticate, login, logout
+
+def ajax_endpoint(request):
+    return HttpResponse("Hello World!")
 
 
 def signin(request):
@@ -149,27 +153,41 @@ def show_league(request, espn_id, year):
     return HttpResponse(template.render(context))
 
 
-@login_required
-def show_all_leagues(request):
-    espn_users = EspnUser.objects.filter(user=request.user)
-    accounts= []
+from django.core import serializers
 
+@login_required()
+def get_all_leagues_json(request):
     store = SqlStore()
-
+    espn_users = EspnUser.objects.filter(user=request.user)
+    scraped = False
+    loaded = False
+    all_accounts = []
     for espn_user in espn_users:
-        loaded = False
         scraped = is_scraped(espn_user, store)
         if scraped:
             loaded = is_loaded(espn_user, store)
         leagues = League.objects.filter(users=espn_user)
-        accounts.append({'is_scraped': scraped, 'is_loaded': loaded, 'leagues': leagues, 'espn_user': espn_user})
+        data = serializers.serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded'))
+        data = json.loads(data)
+        all_accounts.append(data)
 
+
+
+    response_data = {}
+    response_data['accounts'] = all_accounts
+    response_data['scraped'] = scraped
+    response_data['loaded'] = loaded
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
+@login_required
+def show_all_leagues(request):
+
+    accounts= []
     template = loader.get_template('teams/all_leagues.html')
     context = RequestContext(request, {
-        'accounts': accounts,
         'navigation': ['Leagues']
     })
-
     return HttpResponse(template.render(context))
 
 @login_required
