@@ -32,7 +32,7 @@ class EspnScraper:
         self.br.submit()
 
 
-    def get_entrance(self):
+    def get_entrance(self, user):
         r = self.br.open("http://games.espn.go.com/frontpage/football")
         html = r.read()
         return html

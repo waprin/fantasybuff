@@ -1,6 +1,7 @@
 import datetime
 from teams.models import League
-from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup
+from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
+    get_leagues_from_entrance
 from teams.scraper.league_loader import load_leagues_from_entrance
 
 __author__ = 'bill'
@@ -11,6 +12,13 @@ import logging
 logger = logging.getLogger(__name__)
 from teams.management.commands import scrape
 from teams.utils.league_files import choose_league_directory, create_league_directory
+
+def is_scraped(espn_user, store):
+    return store.has_entrance(espn_user)
+
+def is_loaded(espn_user, store):
+    leagues = get_leagues_from_entrance(store.get_entrance(espn_user))
+    return len(leagues) == len(League.objects.filter(users=espn_user))
 
 class LeagueScraper(object):
 
@@ -90,8 +98,10 @@ class LeagueScraper(object):
                 self.create_players_from_roster(league, team[0], week)
 
 
-    def create_leagues(self, user):
+    def scrape_leagues(self, user):
         self.create_welcome_page(user)
+
+    def load_leagues(self, user):
         load_leagues_from_entrance(self.store.get_entrance(user), user)
 
 

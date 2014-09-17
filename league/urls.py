@@ -24,6 +24,7 @@ urlpatterns = patterns('',
      url(r'^teams/$', 'teams.views.show_all_leagues'),
      url(r'^teams/(\d*)/(\d\d\d\d)', 'teams.views.show_league'),
      url(r'^teams/(\d*)/', 'teams.views.show_week'),
+     url(r'^teams/espn/', 'teams.views.espn_create'),
 
 
 

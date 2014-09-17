@@ -174,4 +174,5 @@ LOGGING = {
     }
 }
 
-LIVE_SCRAPE=False
+LOCAL=True
+DB_SCRAPE=True

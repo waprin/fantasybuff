@@ -1,8 +1,11 @@
 from decimal import Decimal
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from league import settings
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
 from teams.scraper.FileBrowser import FileBrowser
+from teams.scraper.SqlStore import SqlStore
 from teams.scraper.scraper import LeagueScraper
 from scrape import EspnScraper
 from teams.models import EspnUser, League, Team, Player, ScorecardEntry, Scorecard, Game, ScoreEntry, TransLogEntry, DraftClaim
@@ -210,8 +213,6 @@ def load_week_from_lineup(html, week, team):
     scorecard.points = total_points
     scorecard.save()
 
-
-
 def command_setup_optimal_lineups():
     rogues = Team.objects.get(espn_id='6')
     weeks = [entry.week for entry in Scorecard.objects.filter(team=rogues)]
@@ -245,38 +246,32 @@ def command_find_average_deltas():
         team.average_delta = average_delta
         team.save()
 
+def get_scraper(espn_user):
+    if not settings.LOCAL:
+        scraper = EspnScraper()
+        scraper.login(espn_user.username, espn_user.password)
+        logger.debug("returning espn scraper")
+        return scraper
+    else:
+        if settings.DB_SCRAPE:
+            logger.debug("returning file scraper")
+            return FileBrowser()
+        else:
+            scraper = EspnScraper()
+            scraper.login(espn_user.username, espn_user.password)
+            logger.debug("returning espn scraper")
+            return scraper
+
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        file_browser = FileBrowser()
-        scraper = EspnScraper()
-        scraper.login('gothamcityrogues', 'sincere1')
-        user = EspnUser.objects.get_or_create(email='waprin@gmail.com', password='sincere1')[0]
-        league_scraper = LeagueScraper(scraper, file_browser)
-        league_scraper.create_leagues(user)
-        league = League.objects.get(espn_id='930248', year='2014')
-        league_scraper.create_league(league)
-
-
-#        lc = LeagueScraper('gothamcityrogues', 'sincere1')
-#        lc.create_roster(FileBrowser(), '930248', '6', '2013')
-
-
-        #
-        # command_setup_defenses()
-
-        #command_setup_user()
-        #command_setup_league()
-        #command_setup_teams()
-#        command_setup_games()
-        #command_setup_players()
-        #command_setup_lineup()
-        #command_setup_optimal_lineups()
-        #command_find_average_deltas()
-
-        #lc = LeagueScraper('gothamcityrogues', 'sincere1')
-        #lc.create_weeks_for_team(FileBrowser(), '930248', '6', '2013')
-
-
+        email = args[0]
+        store = SqlStore()
+        user = User.objects.get(username=email)
+        espn_users = EspnUser.objects.filter(user=user)
+        for espn_user in espn_users:
+            scraper = get_scraper(espn_user)
+            league_scraper = LeagueScraper(scraper, store)
+            league_scraper.scrape_leagues(espn_user)
 

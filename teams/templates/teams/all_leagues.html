@@ -3,12 +3,34 @@
 {% block content %}
     <div class="container-fluid">
         <div class="row">
-        <ul>
-            {% for league in all_leagues  %}
-                <a href="/teams/{{ league.espn_id }}/{{ league.year }}"><li>{{ league.name }}</li></a>
-                <a href="/teams/scrapes/{{ league.espn_id }}/{{ league.year }}"><li>{{ league.name }}</li></a>
-            {% endfor %}
-        </ul>
-         </div> <!--row-->
+        {% for account in accounts %}
+            <h4>{{ account.espn_user.username }}</h4>
+            <h4>Scraped: {{ account.is_scraped }}</h4>
+            <h4>Loaded: {{ account.is_loaded }}</h4>
+            <ul>
+                {% for league in account.leagues  %}
+                    <a href="/teams/{{ league.espn_id }}/{{ league.year }}"><li>{{ league.name }}</li></a>
+                    <a href="/teams/scrapes/{{ league.espn_id }}/{{ league.year }}"><li>{{ league.name }}</li></a>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+        </div>
+
+        <div clas="row">
+            <h2>Load A New Espn League</h2>
+            <div class="col-lg-6">
+                <form method="POST" action="espn/" role="form">
+                    <div class="form-group">
+                        {% csrf_token %}
+                        <label>ESPN Username</label>
+                        <input name="username" class="form-control">
+                        <label>Password</label>
+                        <input name="password" type="password" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-default">Login</button>
+                </form>
+            </div>
+        </div> <!--row-->
     </div> <!--container-fluid-->
+
 {% endblock %}

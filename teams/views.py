@@ -9,6 +9,8 @@ from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser
 from django.contrib.auth.models import User
 
 from django.template import RequestContext, loader
+from teams.scraper.SqlStore import SqlStore
+from teams.scraper.scraper import is_scraped, is_loaded
 
 logger = logging.getLogger(__name__)
 
@@ -133,17 +135,35 @@ def show_league(request, espn_id, year):
 @login_required
 def show_all_leagues(request):
     espn_users = EspnUser.objects.filter(user=request.user)
-    leagues = []
+    accounts= []
+
+    store = SqlStore()
+
     for espn_user in espn_users:
-        add_leagues = League.objects.filter(user=espn_user)
-        leagues = leagues + list(add_leagues)
+        loaded = False
+        scraped = is_scraped(espn_user, store)
+        if scraped:
+            loaded = is_loaded(espn_user, store)
+        leagues = League.objects.filter(users=espn_user)
+        accounts.append({'is_scraped': scraped, 'is_loaded': loaded, 'leagues': leagues, 'espn_user': espn_user})
 
     template = loader.get_template('teams/all_leagues.html')
     context = RequestContext(request, {
-        'all_leagues': leagues,
+        'accounts': accounts,
         'navigation': ['Leagues']
     })
 
     return HttpResponse(template.render(context))
+
+@login_required
+def espn_create(request):
+    try:
+        username = request.POST['username']
+        password = request.POST['password']
+    except KeyError:
+        return redirect(show_all_leagues)
+
+    EspnUser.objects.create(user=request.user, username=username, password=password)
+    return redirect(show_all_leagues)
 
 
