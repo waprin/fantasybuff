@@ -9,8 +9,7 @@
             <h4>Loaded: {{ account.is_loaded }}</h4>
             <ul>
                 {% for league in account.leagues  %}
-                    <a href="/teams/{{ league.espn_id }}/{{ league.year }}"><li>{{ league.name }}</li></a>
-                    <a href="/teams/scrapes/{{ league.espn_id }}/{{ league.year }}"><li>{{ league.name }}</li></a>
+                    <a href="/teams/{{ league.espn_id }}/{{ league.year }}"><li>{{ league.name }} {{ league.year }}</li></a>
                 {% endfor %}
             </ul>
         {% endfor %}

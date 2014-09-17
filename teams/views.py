@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 
 from django.template import RequestContext, loader
 from teams.scraper.SqlStore import SqlStore
-from teams.scraper.scraper import is_scraped, is_loaded
+from teams.scraper.scraper import is_scraped, is_loaded, is_league_scraped, is_league_loaded
 
 logger = logging.getLogger(__name__)
 
@@ -118,14 +118,24 @@ def show_week(request, week):
 
     return HttpResponse(template.render(context))
 
+@login_required()
 def show_league(request, espn_id, year):
     league = League.objects.get(espn_id=espn_id, year=year)
     teams = Team.objects.filter(league=league)
 
     template = loader.get_template('teams/league.html')
+
+    store = SqlStore()
+    scraped = is_league_scraped(league, store)
+    loaded = False
+    if scraped:
+        loaded = is_league_loaded(league, store)
+
     context = RequestContext(request, {
         'teams': teams,
-        'navigation': ['Lineup Home', league.name + ' ' + str(league.year)]
+        'navigation': ['Lineup Home', league.name + ' ' + str(league.year)],
+        'scraped': scraped,
+        'loaded': loaded,
     })
 
 

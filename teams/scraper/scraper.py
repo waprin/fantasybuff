@@ -13,12 +13,52 @@ logger = logging.getLogger(__name__)
 from teams.management.commands import scrape
 from teams.utils.league_files import choose_league_directory, create_league_directory
 
+
+def get_real_num_weeks(num_weeks, league):
+    if int(league.year) < 2014:
+        return num_weeks
+    now = datetime.datetime.now()
+
+    start = datetime.datetime(year=2014, month=9, day=9)
+    week = datetime.timedelta(days=7)
+    start_days = [start + (weeknum * week) for weeknum in range(0, 13)]
+    for i in range(0, num_weeks):
+        if now < start_days[i]:
+            return i
+    return num_weeks
+
 def is_scraped(espn_user, store):
     return store.has_entrance(espn_user)
 
 def is_loaded(espn_user, store):
     leagues = get_leagues_from_entrance(store.get_entrance(espn_user))
     return len(leagues) == len(League.objects.filter(users=espn_user))
+
+def is_league_scraped(league, store):
+    if not store.has_standings(league):
+        logger.info("missing standings")
+        return False
+    if not store.has_matchups(league, 1):
+        logger.info("missing first matchup")
+        return False
+    teams = get_teams_from_standings(store.get_standings(league))
+    num_weeks = get_num_weeks_from_matchups(store.get_matchups(league, 1))
+    num_weeks = get_real_num_weeks(num_weeks, league)
+    for team in teams:
+        for week in range(1, num_weeks + 1):
+            if not store.has_roster(league, team[0], week):
+                logger.info("missing team %s week %d" % (team[0], week))
+                return False
+            roster_html = store.get_roster(league, team[0], week)
+            player_ids = get_player_ids_from_lineup(roster_html)
+            for player_id in player_ids:
+                if not store.has_player(league, player_id):
+                    logger.info("missing player %s" % player_id)
+                    return False
+    return True
+
+def is_league_loaded(league, store):
+    return False
 
 class LeagueScraper(object):
 
@@ -59,18 +99,6 @@ class LeagueScraper(object):
         for week in range(1, num_weeks + 1):
             self.create_team_week_roster(league, team_id, week)
 
-    def get_real_num_weeks(self, num_weeks, league):
-        if int(league.year) < 2014:
-            return num_weeks
-        now = datetime.datetime.now()
-
-        start = datetime.datetime(year=2014, month=9, day=9)
-        week = datetime.timedelta(days=7)
-        start_days = [start + (weeknum * week) for weeknum in range(0, 13)]
-        for i in range(0, num_weeks):
-            if now < start_days[i]:
-                return i
-        return num_weeks
 
     def create_player(self, league, player_id):
         if not self.overwrite and self.store.has_player(league, player_id):
