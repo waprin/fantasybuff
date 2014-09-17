@@ -1,7 +1,9 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 class EspnUser(models.Model):
-    email = models.CharField(max_length=200, unique=True)
+    user = models.ForeignKey(User)
+    username = models.CharField(max_length=200, unique=True)
     password = models.CharField(max_length=200)
 
 class League(models.Model):

@@ -4,7 +4,7 @@ from django.http import HttpResponse
 import logging
 from django.shortcuts import redirect
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
-from teams.models import Scorecard, ScorecardEntry, Team, League
+from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser
 
 from django.contrib.auth.models import User
 
@@ -132,12 +132,16 @@ def show_league(request, espn_id, year):
 
 @login_required
 def show_all_leagues(request):
-    leagues = League.objects.all()
+    espn_users = EspnUser.objects.filter(user=request.user)
+    leagues = []
+    for espn_user in espn_users:
+        add_leagues = League.objects.filter(user=espn_user)
+        leagues = leagues + list(add_leagues)
 
     template = loader.get_template('teams/all_leagues.html')
     context = RequestContext(request, {
         'all_leagues': leagues,
-        'navigation': ['Lineup Home']
+        'navigation': ['Leagues']
     })
 
     return HttpResponse(template.render(context))
