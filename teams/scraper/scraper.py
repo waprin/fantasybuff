@@ -34,7 +34,7 @@ def is_loaded(espn_user, store):
     leagues = get_leagues_from_entrance(store.get_entrance(espn_user))
     return len(leagues) == len(League.objects.filter(users=espn_user))
 
-def is_league_scraped(league, store):
+def is_league_teams_scraped_(league, store):
     if not store.has_standings(league):
         logger.info("missing standings")
         return False
@@ -49,12 +49,15 @@ def is_league_scraped(league, store):
             if not store.has_roster(league, team[0], week):
                 logger.info("missing team %s week %d" % (team[0], week))
                 return False
+    """
             roster_html = store.get_roster(league, team[0], week)
             player_ids = get_player_ids_from_lineup(roster_html)
+
             for player_id in player_ids:
                 if not store.has_player(league, player_id):
                     logger.info("missing player %s" % player_id)
                     return False
+    """
     return True
 
 def is_league_loaded(league, store):
@@ -95,11 +98,6 @@ class LeagueScraper(object):
         self.store.write_roster(league, team_id, week, roster_html)
         return True
 
-    def create_team_rosters(self, league, team_id, num_weeks):
-        for week in range(1, num_weeks + 1):
-            self.create_team_week_roster(league, team_id, week)
-
-
     def create_player(self, league, player_id):
         if not self.overwrite and self.store.has_player(league, player_id):
             return False
@@ -113,18 +111,16 @@ class LeagueScraper(object):
         for player_id in player_ids:
             self.create_player(league, player_id)
 
-    def create_league(self, league):
+
+    def scrape_league(self, league):
         self.create_standings_page(league)
         self.create_matchups_page(league, 1)
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
-        num_weeks = self.get_real_num_weeks(num_weeks, league)
+        num_weeks = get_real_num_weeks(num_weeks, league)
         for team in teams:
-            self.create_team_rosters(league, team[0], num_weeks)
-        for team in teams:
-            for week  in range(1 , num_weeks + 1):
-                self.create_players_from_roster(league, team[0], week)
-
+            for week in range(1, num_weeks + 1):
+                self.create_team_week_roster(league, team[0], week)
 
     def scrape_leagues(self, user):
         self.create_welcome_page(user)
