@@ -21,7 +21,7 @@ def defer_espn_user_scrape(espn_user):
     league_scraper = LeagueScraper(scraper, store)
     league_scraper.create_leagues(espn_user)
 
-    leagues = League.objects.filter(espn_user=espn_user)
+    leagues = League.objects.filter(users=espn_user)
     for league in leagues:
         django_rq.enqueue(defer_league_scrape, espn_user, league)
 
