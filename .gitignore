@@ -1,0 +1,7 @@
+*.pyc
+staticfiles
+.env
+*.DS_Store*
+leagues/
+.idea
+leagues.log
