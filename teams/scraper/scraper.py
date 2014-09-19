@@ -2,7 +2,8 @@ import datetime
 from teams.models import League
 from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
     get_leagues_from_entrance
-from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet
+from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet, \
+    load_teams_from_standings
 
 __author__ = 'bill'
 
@@ -153,10 +154,19 @@ class LeagueScraper(object):
         self.scrape_espn_user_leagues(espn_user)
         self.load_espn_user_leagues(espn_user)
 
+    def load_league(self, league):
+        self.load_players(league)
+        self.load_teams(league)
+
     def load_players(self, league):
         player_htmls = self.store.get_all_player_htmls(league)
         for player_html in player_htmls:
             load_scores_from_playersheet(player_html, league)
+
+    def load_teams(self, league):
+        standings_html = self.store.get_standings(league)
+        load_teams_from_standings(standings_html, league)
+
 
     def create_games(self, file_browser, espn_id, week_num):
         self.browser =  scrape.EspnScraper()

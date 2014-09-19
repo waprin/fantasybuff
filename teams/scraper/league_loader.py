@@ -1,4 +1,4 @@
-from teams.models import League, Player, ScoreEntry
+from teams.models import League, Player, ScoreEntry, Team
 from teams.scraper.html_scrapes import get_leagues_from_entrance
 
 import re
@@ -53,3 +53,19 @@ def load_scores_from_playersheet(html, league):
         for week, score in enumerate(scores):
             sc = ScoreEntry(week=week+1, player=player, points=float(score), league=league)
             sc.save()
+
+def load_teams_from_standings(html, league):
+    pool = BeautifulSoup(html)
+    header = pool.find('div', 'games-pageheader')
+    standings = header.findNextSibling('table')
+    bodies = standings.find_all('tr', 'tableBody')
+
+    for body in bodies:
+        fullname = body.td.a['title']
+        href = body.td.a['href']
+        info = re.search("teamId=(\d+)", href)
+        matched_name = re.search("(.*)\s*\((.*)\)", fullname)
+        team_name = matched_name.group(1)
+        owner_name = matched_name.group(2)
+        team = Team(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league, league_espn_id=league.espn_id)
+        team.save()

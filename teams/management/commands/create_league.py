@@ -16,21 +16,7 @@ import datetime
 
 logger = logging.getLogger(__name__)
 
-def load_teams_from_standings(html, league):
-    pool = BeautifulSoup(html)
-    header = pool.find('div', 'games-pageheader')
-    standings = header.findNextSibling('table')
-    bodies = standings.find_all('tr', 'tableBody')
 
-    for body in bodies:
-        fullname = body.td.a['title']
-        href = body.td.a['href']
-        info = re.search("teamId=(\d+)", href)
-        matched_name = re.search("(.*)\s*\((.*)\)", fullname)
-        team_name = matched_name.group(1)
-        owner_name = matched_name.group(2)
-        team = Team(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league, league_espn_id=league.espn_id)
-        team.save()
 
 def load_players_from_playerpage(html):
     pool = BeautifulSoup(html)

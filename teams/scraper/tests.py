@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import connection
-from teams.models import League, EspnUser, Player, ScoreEntry
+from teams.models import League, EspnUser, Player, ScoreEntry, Team
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from teams.scraper.html_scrapes import get_leagues_from_entrance, get_teams_from_standings, get_num_weeks_from_matchups, \
@@ -17,17 +17,20 @@ logger = logging.getLogger(__name__)
 from scraper import *
 from teams.utils.db_utils import clear_test_database
 
-class ScraperTest(unittest.TestCase):
+def clearDb():
+    logger.info("clearing: conncetion queries is %s" % str(connection.queries))
+    for user in User.objects.all():
+        user.delete()
+    for user in EspnUser.objects.all():
+        user.delete()
+    for league in League.objects.all():
+        league.delete()
+
+
+class LeagueCreatorTest(unittest.TestCase):
 
     def setUp(self):
-        logger.info("clearing: conncetion queries is %s" % str(connection.queries))
-        for user in User.objects.all():
-            user.delete()
-        for user in EspnUser.objects.all():
-            user.delete()
-        for league in League.objects.all():
-            league.delete()
-
+        clearDb()
         self.browser = FileBrowser()
         self.sqlstore = SqlStore()
         self.league_scraper = LeagueScraper(self.browser, self.sqlstore)
@@ -66,6 +69,17 @@ class ScraperTest(unittest.TestCase):
         self.assertEqual(entries.get(week=1).points, 15)
         self.assertEqual(entries.get(week=17).points, 0)
 
+    def test_load_teams(self):
+        league = League.objects.create(espn_id='930248',year='2014')
+
+        self.league_scraper.scrape_league(league)
+        self.league_scraper.scrape_players(league)
+        self.league_scraper.load_teams(league)
+
+        teams = Team.objects.filter(league=league)
+        self.assertEqual(len(teams), 12)
+
+
 
     def test_get_real_num_weeks(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
@@ -82,6 +96,15 @@ class ScraperTest(unittest.TestCase):
         current_num_weeks = get_real_num_weeks(13, league=current_league)
         print current_num_weeks
         self.assertLess(current_num_weeks, 13)
+
+
+
+class ScraperTest(unittest.TestCase):
+
+    def setUp(self):
+        clearDb()
+        self.browser = FileBrowser()
+        self.sqlstore = SqlStore()
 
 
     def test_scrape_entrance(self):
@@ -103,7 +126,6 @@ class ScraperTest(unittest.TestCase):
         players = get_player_ids_from_lineup(html)
         self.assertIn('14874', players)
         self.assertEquals(len(players), 16)
-
 
     def test_scrape_teams_from_standings(self):
         league = League.objects.create(name='ib', espn_id='930248', year='2013')
@@ -127,29 +149,6 @@ class ScraperTest(unittest.TestCase):
 
         num_weeks = get_num_weeks_from_matchups(self.browser.get_matchups(league, 1))
         self.assertEquals(num_weeks, 13)
-
-
-    """
-    def test_get_players_from_roster(self):
-        html = open('rostersummary.html').read()
-        players = get_players_from_roster(html)
-        self.assertEqual(players[0][0], '2580')
-        self.assertEquals(players[0][1], 'Drew Brees')
-
-
-
-    def test_get_defenses_from_roster(self):
-        browser = FileBrowser()
-        html = browser.scrape_defense()
-        defenses = get_defenses_from_roster(html)
-        self.assertEquals(defenses[0], '60026')
-        self.assertEquals(len(defenses), 32)
-
-    def test_file_cache(self):
-        browser = FileBrowser()
-        self.assertTrue(browser.contains_player('2580'))
-        self.assertFalse(browser.contains_player('2581'))
-    """
 
 
 
