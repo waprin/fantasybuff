@@ -36,7 +36,7 @@ def load_leagues_from_entrance(html, espn_user):
         leagues.append(league)
     return leagues
 
-def load_scores_from_playersheet(html, league):
+def load_scores_from_playersheet(html, league, overwrite=False):
     pool = BeautifulSoup(html)
 
     name = __get_player_name_from_playerpage(html)
@@ -45,15 +45,23 @@ def load_scores_from_playersheet(html, league):
 
     (player, new) = Player.objects.get_or_create(name=name, espn_id=player_id, position=position)
 
-    if new:
-        logger.debug("added new player %s: %s" % (player.name, player.espn_id))
-        rows = pool.find_all('table')[2].find_all('tr')[1:]
-        scores = [row.find_all('td')[-1].string for row in rows]
-        scores = map(lambda x : 0 if x == '-' else float(x), scores)
+    if not new:
+        entries = ScoreEntry.objects.filter(player=player, league=league)
+        if len(entries) > 0:
+            if not overwrite:
+                return
+            else:
+                for entry in entries:
+                    entry.delete()
 
-        for week, score in enumerate(scores):
-            sc = ScoreEntry(week=week+1, player=player, points=float(score), league=league)
-            sc.save()
+    logger.debug("updating scores for player %s: %s" % (player.name, player.espn_id))
+    rows = pool.find_all('table')[2].find_all('tr')[1:]
+    scores = [row.find_all('td')[-1].string for row in rows]
+    scores = map(lambda x : 0 if x == '-' else float(x), scores)
+
+    for week, score in enumerate(scores):
+        sc = ScoreEntry(week=week+1, player=player, points=float(score), league=league)
+        sc.save()
 
 def load_teams_from_standings(html, league):
     pool = BeautifulSoup(html)
@@ -92,7 +100,6 @@ def load_week_from_lineup(html, week, team):
     if not created:
             logger.warn("created lineup %s %s %s %d" % (team.league.espn_id, team.league.year, team.espn_id, week))
     players = __get_players_from_lineup(html)
-    print players
     total_points = Decimal(0)
     for player_id in players:
         try:
@@ -103,7 +110,7 @@ def load_week_from_lineup(html, week, team):
         try:
             points = ScoreEntry.objects.get(player=player, week=week).points
         except ScoreEntry.DoesNotExist:
-            logger.error("could not find scoreentry for player id %s" % player_id)
+            logger.error("could not find scoreentry for player id %s" % str(player_id))
             raise
 
         slot = player_id[0]

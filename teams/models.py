@@ -91,6 +91,7 @@ class ScorecardEntry(models.Model):
     player = models.ForeignKey(Player)
     slot = models.CharField(max_length=20, choices=SLOT_TYPES)
     points = models.DecimalField(decimal_places=4, max_digits=7)
+    added = models.NullBooleanField()
 
     def __unicode__(self):
         return "player %s position %s slot %s points %f" % (self.player.name, self.player.position,  self.slot, self.points)

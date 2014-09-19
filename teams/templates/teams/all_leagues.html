@@ -3,21 +3,13 @@
 {% block content %}
     <div class="container-fluid">
     <img  src="/static/ajax-loader.gif" id="league_loading_gif" />
-        <div id="accounts_list" class="row">
-        <!--{% for account in accounts %}
-            <h4>{{ account.espn_user.username }}</h4>
-            <h4>Scraped: {{ account.is_scraped }}</h4>
-            <h4>Loaded: {{ account.is_loaded }}</h4>
-            <ul id="leagues_list">
-                {% for league in account.leagues  %}
-                    <a href="/teams/{{ league.espn_id }}/{{ league.year }}"><li>{{ league.name }} {{ league.year }}</li></a>
-                {% endfor %}
-            </ul>
-        {% endfor %}-->
+        <div class="row">
+            <h3>Your Leagues</h3>
+            <div id="accounts_list"></div>
         </div>
 
         <div clas="row">
-            <h2>Load A New Espn League</h2>
+            <h3>Import A New Espn League</h3>
             <div class="col-lg-6">
                 <form method="POST" action="espn/" role="form">
                     <div class="form-group">
@@ -40,7 +32,7 @@
 
     <script type="text/template" id="league_template" >
         <% if (loaded) { %>
-           <a href="/teams/<%=espn_id %>/<%=year %>"><li><%=name %> <%=year %></li></a>
+           <a href="league/<%=espn_id %>/<%=year %>/"><li><%=name %> <%=year %></li></a>
         <% } else { %>
                 <li>Loading: <%=name %> <%=year %></li>
         <% } %>
@@ -66,6 +58,9 @@
                             setTimeout(getLeagues, 5000);
                         } else {
                             $("#league_loading_gif").hide();
+                        }
+                        if (leagues.length.length == 0) {
+                            $("#accounts_list").append($("<p>You have not imported any leagues.</p>"));
                         }
                         for (var j = 0; j < leagues.length; j++) {
                             league_html = league_template(leagues[j].fields);

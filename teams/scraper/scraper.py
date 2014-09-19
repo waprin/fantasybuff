@@ -121,7 +121,7 @@ class LeagueScraper(object):
             self.create_player(league, player_id)
 
 
-    def scrape_league(self, league):
+    def scrape_core_and_matchups(self, league):
         league.league_scrape_start_time = datetime.datetime.now()
         league.save()
         self.create_standings_page(league)
@@ -149,6 +149,10 @@ class LeagueScraper(object):
             self.create_player(league, player_id)
         league.players_scrape_finish_time = datetime.datetime.now()
         league.save()
+
+    def scrape_league(self, league):
+        self.scrape_core_and_matchups(league)
+        self.scrape_players(league)
 
     def scrape_espn_user_leagues(self, espn_user):
         logger.debug("scraping welcome page for espn user %s" % (espn_user.id))
@@ -239,12 +243,10 @@ class LeagueScraper(object):
         scoreboard_html = file_browser.scrape_scoreboard(espn_id, week_num)
         team_ids = get_teams_from_scoreboard(scoreboard_html)
 
-#        print "team ids: "
-#        print team_ids
         os.makedirs(os.path.join(self.d, 'week_%d' % week_num, 'games'))
         for team_id in team_ids:
             html = self.browser.scrape_game(espn_id, team_id, week_num)
-            print "team id is %s" % team_id
+#            print "team id is %s" % team_id
             filepath = os.path.join(self.d, 'week_%d' % week_num, 'games', 'game_%s.html' % team_id)
             logger.debug("writing game html to filepath %s" % filepath)
             f = open(filepath, 'w')
@@ -259,8 +261,8 @@ class LeagueScraper(object):
         scoreboard_html = file_browser.scrape_scoreboard(espn_id, 1)
         team_ids = get_teams_from_scoreboard(scoreboard_html)
 
-        print "team ids: "
-        print team_ids
+#        print "team ids: "
+#        print team_ids
         os.makedirs(os.path.join(self.d, 'translogs'))
 
         for team_id in team_ids:

@@ -1,26 +1,21 @@
 from decimal import Decimal
 from django.contrib.auth.decorators import login_required
-from django.contrib.sites import requests
 from django.http import HttpResponse
 import logging
 from django.shortcuts import redirect
 from teams.management.commands.scrape_user import defer_espn_user_scrape
-from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
+from teams.metrics.lineup_calculator import get_lineup_score
 from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser
 import json
-
-
 from django.contrib.auth.models import User
-
 from django.template import RequestContext, loader
 from teams.scraper.SqlStore import SqlStore
-from teams.scraper.scraper import is_scraped, is_loaded, is_league_teams_scraped, is_league_loaded, \
-    is_league_players_scraped
+from teams.scraper.scraper import is_scraped, is_loaded
 import django_rq
+from django.contrib.auth import authenticate, login, logout
+from django.core import serializers
 
 logger = logging.getLogger(__name__)
-
-from django.contrib.auth import authenticate, login, logout
 
 def signin(request):
     try:
@@ -68,12 +63,14 @@ def logout_user(request):
 
 @login_required
 def show_team(request, espn_league_id, year, espn_team_id):
-    league = League.objects.get(espn_id=espn_team_id, year=year)
-    team = Team.objects.get(team=espn_team_id, league=league)
+    logger.debug("entering show_team")
+    league = League.objects.get(espn_id=espn_league_id, year=year)
+    team = Team.objects.get(espn_id=espn_team_id, league=league)
     actual_weeks = list(Scorecard.objects.filter(team=team, actual=True))
     optimal_weeks = list(Scorecard.objects.filter(team=team, actual=False))
     actual_weeks.sort(key=lambda x: x.week)
     optimal_weeks.sort(key=lambda x: x.week)
+    logger.debug("got all deltas")
 
     deltas = []
 
@@ -88,6 +85,8 @@ def show_team(request, espn_league_id, year, espn_team_id):
                       "delta": delta
         })
     average_delta = sum(deltas) / Decimal(len(deltas))
+    logger.debug("got average delta %f" % average_delta)
+
     template = loader.get_template('teams/team.html')
     context = RequestContext(request, {
         'weeks': weeks,
@@ -96,21 +95,43 @@ def show_team(request, espn_league_id, year, espn_team_id):
 
     return HttpResponse(template.render(context))
 
-def show_week(request, week):
-    rogues = Team.objects.get(espn_id='6')
-    scorecard = Scorecard.objects.get(team=rogues, week=int(week), actual=True)
-    scorecard_entries = ScorecardEntry.objects.filter(scorecard=scorecard)
-    print [entry.slot for entry in scorecard_entries]
+d = { 'QB': 1,
+      'RB': 2,
+       'WR': 3,
+       'TE': 4,
+       'FLEX': 5,
+       'D/ST': 6,
+       'K': 8,
+       'Bench': 1000,
+}
 
-    optimal_scorecard = Scorecard.objects.get(team=rogues, week=int(week), actual=False)
-    optimal_entries = ScorecardEntry.objects.filter(scorecard=optimal_scorecard)
+def order_entries(entries):
+    def slot_key(entry):
+        try:
+            return d[entry.slot]
+        except KeyError:
+            return 500
+    return sorted(entries, key=slot_key)
 
-    #optimal_entries = calculate_optimal_lineup(scorecard_entries)
+@login_required
+def show_week(request, espn_league_id, year, espn_team_id, week):
+    logger.debug("entering show_week")
+    league = League.objects.get(espn_id=espn_league_id, year=year)
+    team = Team.objects.get(espn_id=espn_team_id, league=league)
+
+    scorecard = Scorecard.objects.get(team=team, week=int(week), actual=True)
+    scorecard_entries = list(ScorecardEntry.objects.filter(scorecard=scorecard))
+
+    optimal_scorecard = Scorecard.objects.get(team=team, week=int(week), actual=False)
+    optimal_entries = list(ScorecardEntry.objects.filter(scorecard=optimal_scorecard))
 
     actual_score = get_lineup_score(scorecard_entries)
     optimal_score = get_lineup_score(optimal_entries)
 
-    print "actual score is " + str(actual_score)
+    logger.debug( "scorecard_entries " + str(scorecard_entries))
+    scorecard_entries = order_entries(scorecard_entries)
+    logger.debug("scorecard_entries sorted" + str(scorecard_entries))
+    optimal_entries = order_entries(optimal_entries)
 
     template = loader.get_template('teams/week.html')
     context = RequestContext(request, {
@@ -126,30 +147,17 @@ def show_week(request, week):
 @login_required()
 def show_league(request, espn_id, year):
     league = League.objects.get(espn_id=espn_id, year=year)
+    if not league.loaded:
+        return HttpResponse("Sorry, league isn't loaded yet!")
     teams = Team.objects.filter(league=league)
-
     template = loader.get_template('teams/league.html')
-
-    store = SqlStore()
-    teams_scraped = is_league_teams_scraped(league, store)
-    players_scraped = is_league_players_scraped(league, store)
-    loaded = False
-    if teams_scraped and players_scraped:
-        loaded = is_league_loaded(league, store)
 
     context = RequestContext(request, {
         'teams': teams,
+        'league': league,
         'navigation': ['Lineup Home', league.name + ' ' + str(league.year)],
-        'teams_scraped': teams_scraped,
-        'players_scraped': players_scraped,
-        'loaded': loaded,
     })
-
-
     return HttpResponse(template.render(context))
-
-
-from django.core import serializers
 
 @login_required()
 def get_all_leagues_json(request):
@@ -167,8 +175,6 @@ def get_all_leagues_json(request):
         data = json.loads(data)
         all_accounts.append(data)
 
-
-
     response_data = {}
     response_data['accounts'] = all_accounts
     response_data['scraped'] = scraped
@@ -178,8 +184,6 @@ def get_all_leagues_json(request):
 
 @login_required
 def show_all_leagues(request):
-
-    accounts= []
     template = loader.get_template('teams/all_leagues.html')
     context = RequestContext(request, {
         'navigation': ['Leagues']

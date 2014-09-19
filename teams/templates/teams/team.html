@@ -3,8 +3,14 @@
 {% block content %}
     <div class="container-fluid">
         <div class="row">
-        Average Delta: {{ average_delta }}
+        Your Average Points Missed: {{ average_delta }}
             <table class="table table-bordered table-hover table-striped">
+                <tr>
+                    <td>Week</td>
+                    <td>Actual Score</td>
+                    <td>Optimal Score</td>
+                    <td>Missed Points</td>
+                </tr>
                 {% for entry in weeks %}
                     <tr>
                         <td><a href="{{ entry.week }}">Week {{ entry.week }}</a></td>

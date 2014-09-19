@@ -127,13 +127,8 @@ def load_transactions(html, year):
         date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
         date.replace(year=year)
 
-        print "looking for player name " + player_name
         player = Player.objects.get(name='LeSean McCoy')
-        print player_name == 'LeSean McCoy'
         player = Player.objects.get(name=str(player_name))
-        print player.position
-
-        print Player.objects.all()
 
         player = Player.objects.get(name=str(player_name))
         team = Team.objects.get(espn_id='6')

@@ -18,16 +18,18 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
      url(r'^admin/', include(admin.site.urls)),
+
      url(r'^signin/$', 'teams.views.signin'),
      url(r'^signin/signup/$', 'teams.views.signup'),
      url(r'^logout/$', 'teams.views.logout_user'),
-     url(r'^/$', 'teams.views.show_all_leagues'),
-     url(r'^/(\d*)/(\d\d\d\d)', 'teams.views.show_league'),
-     url(r'^/week/(\d*)/', 'teams.views.show_week'),
-     url(r'^espn/', 'teams.views.espn_create'),
-     url(r'^json/', 'teams.views.get_all_leagues_json')
 
+     url(r'^$', 'teams.views.show_all_leagues'),
+     url(r'^json/$', 'teams.views.get_all_leagues_json'),
+     url(r'^espn/$', 'teams.views.espn_create'),
 
+     url(r'^league/(\d*)/(\d\d\d\d)/$', 'teams.views.show_league'),
+     url(r'^league/(\d*)/(\d\d\d\d)/(\d*)/$', 'teams.views.show_team'),
+     url(r'^league/(\d*)/(\d\d\d\d)/(\d*)/(\d*)', 'teams.views.show_week'),
 
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

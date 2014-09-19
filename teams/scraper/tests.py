@@ -34,6 +34,7 @@ class LeagueCreatorTest(unittest.TestCase):
         self.browser = FileBrowser()
         self.sqlstore = SqlStore()
         self.league_scraper = LeagueScraper(self.browser, self.sqlstore)
+        #logging.disable(logging.CRITICAL)
 
     def test_create_espn_user_leagues(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
@@ -119,7 +120,6 @@ class LeagueCreatorTest(unittest.TestCase):
         # TODO - better protect this from time changes
         current_league = League.objects.filter(year=2014)[0]
         current_num_weeks = get_real_num_weeks(13, league=current_league)
-        print current_num_weeks
         self.assertLess(current_num_weeks, 13)
 
 
