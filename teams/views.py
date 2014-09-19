@@ -61,6 +61,17 @@ def logout_user(request):
     logout(request)
     return redirect(signin)
 
+
+def make_nav_bar(league, team=None, week=None):
+    bar = [{'value': 'Leagues Home', 'href': '/'}]
+    bar.append({'value': league.name + ' ' + str(league.year), 'href': '/league/%s/%s/' % (league.espn_id, league.year)})
+    if team:
+        bar.append({'value': team.team_name + ' ' + str(league.year), 'href': '/league/%s/%s/%s/' % (league.espn_id, league.year, team.espn_id)})
+    if week:
+        bar.append({'value': str(week), 'href': '/league/%s/%s/%s/%d/' % (league.espn_id, league.year, team.espn_id, week)})
+
+    return bar
+
 @login_required
 def show_team(request, espn_league_id, year, espn_team_id):
     logger.debug("entering show_team")
@@ -82,7 +93,7 @@ def show_team(request, espn_league_id, year, espn_team_id):
         weeks.append({"week": week.week,
                       "points": week.points,
                       "optimal_points": optimal_points,
-                      "delta": delta
+                      "delta": delta,
         })
     average_delta = sum(deltas) / Decimal(len(deltas))
     logger.debug("got average delta %f" % average_delta)
@@ -90,7 +101,8 @@ def show_team(request, espn_league_id, year, espn_team_id):
     template = loader.get_template('teams/team.html')
     context = RequestContext(request, {
         'weeks': weeks,
-        'average_delta': average_delta
+        'average_delta': average_delta,
+        'navigation': make_nav_bar(league, team)
     })
 
     return HttpResponse(template.render(context))
@@ -139,10 +151,12 @@ def show_week(request, espn_league_id, year, espn_team_id, week):
         'optimal_entries' : optimal_entries,
         'actual_score': actual_score,
         'optimal_score': optimal_score,
-        'delta': optimal_score - actual_score
+        'delta': optimal_score - actual_score,
+        'navigation': make_nav_bar(league, team, int(week))
     })
 
     return HttpResponse(template.render(context))
+
 
 @login_required()
 def show_league(request, espn_id, year):
@@ -155,7 +169,7 @@ def show_league(request, espn_id, year):
     context = RequestContext(request, {
         'teams': teams,
         'league': league,
-        'navigation': ['Lineup Home', league.name + ' ' + str(league.year)],
+        'navigation': make_nav_bar(league),
     })
     return HttpResponse(template.render(context))
 

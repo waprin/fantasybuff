@@ -176,7 +176,7 @@
                         <ol class="breadcrumb">
                             {% for nav in navigation %}
                                 <li>
-                                    <i class="fa fa-dashboard"></i>  <a href="index.html">{{ nav }}</a>
+                                    <i class="fa fa-dashboard"></i>  <a href="{{ nav.href }}">{{ nav.value }}</a>
                                 </li>
                             {% endfor %}
                         </ol>
