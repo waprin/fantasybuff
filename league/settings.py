@@ -198,4 +198,5 @@ RQ_QUEUES = {
 }
 
 LOCAL=os.environ['FF_LOCAL']
+ALLOW_SIGNUPS = os.environ['FF_ALLOW_SIGNUPS']
 DB_SCRAPE=True

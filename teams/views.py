@@ -41,7 +41,7 @@ def signin(request):
         # Return an 'invalid login' error message.
 
 def signup(request):
-    if not settings.FF_LOCAL:
+    if not settings.ALLOW_SIGNUPS:
         logger.warn("Sigunp requested but rejected.");
         return HttpResponse("Sorry! Currently not accepting new signups.")
     password = request.POST['password']
