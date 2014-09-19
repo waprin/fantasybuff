@@ -8,8 +8,11 @@ import django_rq
 
 __author__ = 'bprin'
 
-def defer_league_scrape(league):
-    pass
+def defer_league_scrape(espn_user, league):
+    store = SqlStore()
+    scraper = get_scraper(espn_user)
+    league_scraper = LeagueScraper(scraper, store)
+    league_scraper.load_league(league)
 
 def defer_espn_user_scrape(espn_user):
     store = SqlStore()
@@ -20,7 +23,8 @@ def defer_espn_user_scrape(espn_user):
 
     leagues = League.objects.filter(espn_user=espn_user)
     for league in leagues:
-        league_scraper.load_league(league)
+        django_rq.enqueue(defer_league_scrape, espn_user, league)
+
 
 
 class Command(BaseCommand):
