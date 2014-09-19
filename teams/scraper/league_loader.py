@@ -51,8 +51,7 @@ def load_scores_from_playersheet(html, league, overwrite=False):
             if not overwrite:
                 return
             else:
-                for entry in entries:
-                    entry.delete()
+                entries.delete()
 
     logger.debug("updating scores for player %s: %s" % (player.name, player.espn_id))
     rows = pool.find_all('table')[2].find_all('tr')[1:]

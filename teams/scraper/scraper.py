@@ -178,6 +178,10 @@ class LeagueScraper(object):
         league.loaded = True
         league.save()
 
+    def reload_lineups(self, league):
+        ScorecardEntry.objects.filter(scorecard__team__league=league).delete()
+        self.load_lineups(league)
+        self.load_optimal_lineups(league)
 
 
     def load_players(self, league):
