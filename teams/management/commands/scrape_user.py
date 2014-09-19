@@ -18,18 +18,10 @@ def defer_espn_user_scrape(espn_user):
     league_scraper = LeagueScraper(scraper, store)
     league_scraper.create_leagues(espn_user)
 
-    league = League.objects.get(espn_id='930248', year='2014')
-    league_scraper.load_league(league)
+    leagues = League.objects.filter(espn_user=espn_user)
+    for league in leagues:
+        league_scraper.load_league(league)
 
-"""
-import django_rq
-
-def test(request):
-
-    django_rq.enqueue(jobs.count_words_at_url, 'http://nvie.com')
-    return HttpResponse("GOOD TO GO : ")
-
-"""
 
 class Command(BaseCommand):
     def handle(self, *args, **options):

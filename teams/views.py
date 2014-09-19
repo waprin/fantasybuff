@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 import logging
 from django.shortcuts import redirect
+from league import settings
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
 from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser
@@ -40,6 +41,9 @@ def signin(request):
         # Return an 'invalid login' error message.
 
 def signup(request):
+    if not settings.FF_LOCAL:
+        logger.warn("Sigunp requested but rejected.");
+        return HttpResponse("Sorry! Currently not accepting new signups.")
     password = request.POST['password']
     email = request.POST['email']
 
