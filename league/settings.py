@@ -1,5 +1,6 @@
 # Django settings for league project.
 import os
+import dj_redis_url
 import django
 
 PROJECT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
@@ -11,8 +12,9 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
-MANAGERS = ADMINS
+LOCAL=os.environ['FF_LOCAL']
 
+MANAGERS = ADMINS
 
 
 DATABASES = {
@@ -187,16 +189,15 @@ LOGGING = {
     }
 }
 
-RQ_QUEUES = {
-    'default': {
-        'HOST': 'localhost',
-        'PORT': 6379,
-        'DB': 0,
-        #'PASSWORD': 'some-password',
-        'DEFAULT_TIMEOUT': 1800,
-    },
-}
+LOCAL_REDIS='redis://localhost:6379'
+REDIS = {"default": dj_redis_url.config(env='REDISTOGO_URL', default=LOCAL_REDIS)}
+RQ_QUEUES = REDIS
+REDIS['default']['DEFAULT_TIMEOUT'] = 1800
 
-LOCAL=os.environ['FF_LOCAL']
-ALLOW_SIGNUPS = os.environ['FF_ALLOW_SIGNUPS']
+
+try:
+    ALLOW_SIGNUPS = os.environ['FF_ALLOW_SIGNUPS']
+except KeyError:
+    ALLOW_SIGNUPS = True
+
 DB_SCRAPE=True
