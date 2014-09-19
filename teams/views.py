@@ -216,7 +216,14 @@ def espn_create(request):
     except KeyError:
         return redirect(show_all_leagues)
 
-    espn_user, created = EspnUser.objects.get_or_create(user=request.user, username=username, password=password)
+    logger.debug("creating espn user %s %s %s" % (request.user.username, username, password))
+    try:
+        espn_user = EspnUser.objects.filter(user=request.user, username=username, password=password)[0]
+    except IndexError:
+        espn_user = EspnUser.objects.create(user=request.user, username=username, password=password)
+
+
+
 
     django_rq.enqueue(defer_espn_user_scrape, espn_user)
     return redirect(show_all_leagues)
