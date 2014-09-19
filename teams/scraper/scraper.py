@@ -1,5 +1,7 @@
 import datetime
-from teams.models import League, Team
+from decimal import Decimal
+from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
+from teams.models import League, Team, Scorecard, ScorecardEntry, Player
 from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
     get_leagues_from_entrance
 from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet, \
@@ -120,6 +122,8 @@ class LeagueScraper(object):
 
 
     def scrape_league(self, league):
+        league.league_scrape_start_time = datetime.datetime.now()
+        league.save()
         self.create_standings_page(league)
         self.create_matchups_page(league, 1)
         teams = get_teams_from_standings(self.store.get_standings(league))
@@ -128,10 +132,10 @@ class LeagueScraper(object):
         for team in teams:
             for week in range(1, num_weeks + 1):
                 self.create_team_week_roster(league, team[0], week)
-        league.scrape_league_ended_time = datetime.datetime.now()
+        league.lineups_scrape_finish_time = datetime.datetime.now()
+        league.save()
 
     def scrape_players(self, league):
-
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
@@ -143,6 +147,8 @@ class LeagueScraper(object):
         all_player_ids = list(set(all_player_ids))
         for player_id in all_player_ids:
             self.create_player(league, player_id)
+        league.players_scrape_finish_time = datetime.datetime.now()
+        league.save()
 
     def scrape_espn_user_leagues(self, espn_user):
         self.create_welcome_page(espn_user)
@@ -157,17 +163,28 @@ class LeagueScraper(object):
     def load_league(self, league):
         self.load_players(league)
         self.load_teams(league)
+        self.load_lineups(league)
+        self.load_optimal_lineups(league)
+        league.league_loaded_finish_time = datetime.datetime.now()
+        league.loaded = True
+        league.save()
+
+
 
     def load_players(self, league):
+        logger.debug("loading players for league %s" % league)
         player_htmls = self.store.get_all_player_htmls(league)
         for player_html in player_htmls:
             load_scores_from_playersheet(player_html, league)
+        logger.debug("%d players loaded" % (len(Player.objects.all())))
 
     def load_teams(self, league):
+        logger.debug("loading teams for league %s" % league)
         standings_html = self.store.get_standings(league)
         load_teams_from_standings(standings_html, league)
 
     def load_lineups(self, league):
+        logger.debug("loading linups for league %s" % league)
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
         teams = Team.objects.filter(league=league)
@@ -176,6 +193,37 @@ class LeagueScraper(object):
                 lineup_html = self.store.get_roster(league, team.espn_id, week)
                 load_week_from_lineup(lineup_html, week, team)
 
+    def load_optimal_lineups(self, league):
+        logger.debug("loading optimal lineups for league %s" % league)
+        teams = Team.objects.filter(league=league)
+        for team in teams:
+            weeks = [entry.week for entry in Scorecard.objects.filter(team=team)]
+            for week in weeks:
+                scorecard = Scorecard.objects.get(team=team, week=week)
+                scorecard_entries = ScorecardEntry.objects.filter(scorecard=scorecard)
+                optimal_entries = calculate_optimal_lineup(scorecard_entries)
+                total_points = get_lineup_score(optimal_entries)
+                optimal_scorecard = Scorecard.objects.create(team=team, week=week, actual=False, points=total_points)
+                for entry in optimal_entries:
+                    entry.scorecard = optimal_scorecard
+                    entry.save()
+
+        for team in teams:
+            actual_weeks = list(Scorecard.objects.filter(team=team, actual=True))
+            if not actual_weeks:
+                continue
+            optimal_weeks = list(Scorecard.objects.filter(team=team, actual=False))
+            actual_weeks.sort(key=lambda x: x.week)
+            optimal_weeks.sort(key=lambda x: x.week)
+
+            deltas = []
+            for i, week in enumerate(actual_weeks):
+                optimal_points = optimal_weeks[i].points
+                delta = optimal_points - week.points
+                deltas.append(delta)
+            average_delta = sum(deltas) / Decimal(len(deltas))
+            team.average_delta = average_delta
+            team.save()
 
     def create_games(self, file_browser, espn_id, week_num):
         self.browser =  scrape.EspnScraper()

@@ -92,8 +92,17 @@ def load_week_from_lineup(html, week, team):
     print players
     total_points = Decimal(0)
     for player_id in players:
-        player = Player.objects.get(espn_id=player_id[1])
-        points = ScoreEntry.objects.get(player=player, week=week).points
+        try:
+            player = Player.objects.get(espn_id=player_id[1])
+        except Player.DoesNotExist:
+            logger.error("could not find player id %s" % str(player_id))
+            raise
+        try:
+            points = ScoreEntry.objects.get(player=player, week=week).points
+        except ScoreEntry.DoesNotExist:
+            logger.error("could not find scoreentry for player id %s" % player_id)
+            raise
+
         slot = player_id[0]
         if slot != 'Bench':
             total_points = total_points + points

@@ -19,10 +19,11 @@ class League(models.Model):
     players_scrape_finish_time = models.DateTimeField(null=True)
     league_loaded_finish_time = models.DateTimeField(null=True)
 
-
-
     class Meta:
         unique_together = ('espn_id', 'year',)
+
+    def __unicode__(self):
+        return "ESPN %s %s" % (self.espn_id, self.year)
 
 class Team(models.Model):
     league = models.ForeignKey(League)

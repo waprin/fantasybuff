@@ -146,36 +146,12 @@ def load_transactions(html, year):
 
 def command_setup_optimal_lineups():
     rogues = Team.objects.get(espn_id='6')
-    weeks = [entry.week for entry in Scorecard.objects.filter(team=rogues)]
-    for week in weeks:
-        scorecard = Scorecard.objects.get(team=rogues, week=week)
-        scorecard_entries = ScorecardEntry.objects.filter(scorecard=scorecard)
-        optimal_entries = calculate_optimal_lineup(scorecard_entries)
-        total_points = get_lineup_score(optimal_entries)
-        optimal_scorecard = Scorecard.objects.create(team=rogues, week=week, actual=False, points=total_points)
-        for entry in optimal_entries:
-            entry.scorecard = optimal_scorecard
-            entry.save()
+
 
 def command_find_average_deltas():
     league = League.objects.get(espn_id='930248')
     teams = Team.objects.filter(league=league)
-    for team in teams:
-        actual_weeks = list(Scorecard.objects.filter(team=team, actual=True))
-        if not actual_weeks:
-            continue
-        optimal_weeks = list(Scorecard.objects.filter(team=team, actual=False))
-        actual_weeks.sort(key=lambda x: x.week)
-        optimal_weeks.sort(key=lambda x: x.week)
 
-        deltas = []
-        for i, week in enumerate(actual_weeks):
-            optimal_points = optimal_weeks[i].points
-            delta = optimal_points - week.points
-            deltas.append(delta)
-        average_delta = sum(deltas) / Decimal(len(deltas))
-        team.average_delta = average_delta
-        team.save()
 
 def get_scraper(espn_user):
     if not settings.LOCAL:

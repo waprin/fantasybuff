@@ -71,10 +71,11 @@ def logout_user(request):
     return redirect(signin)
 
 @login_required
-def index(request):
-    rogues = Team.objects.get(espn_id='6')
-    actual_weeks = list(Scorecard.objects.filter(team=rogues, actual=True))
-    optimal_weeks = list(Scorecard.objects.filter(team=rogues, actual=False))
+def show_team(request, espn_league_id, year, espn_team_id):
+    league = League.objects.get(espn_id=espn_team_id, year=year)
+    team = Team.objects.get(team=espn_team_id, league=league)
+    actual_weeks = list(Scorecard.objects.filter(team=team, actual=True))
+    optimal_weeks = list(Scorecard.objects.filter(team=team, actual=False))
     actual_weeks.sort(key=lambda x: x.week)
     optimal_weeks.sort(key=lambda x: x.week)
 

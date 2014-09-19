@@ -97,6 +97,13 @@ class LeagueCreatorTest(unittest.TestCase):
         self.assertEquals(scorecard_entry.slot, 'Bench')
         self.assertEquals(scorecard_entry.points, 11)
 
+    def test_entire_load_league(self):
+        league = League.objects.create(espn_id='930248',year='2014')
+
+        self.league_scraper.scrape_league(league)
+        self.league_scraper.scrape_players(league)
+
+        self.league_scraper.load_league(league)
 
 
     def test_get_real_num_weeks(self):
