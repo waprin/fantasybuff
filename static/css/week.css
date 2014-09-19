@@ -1,0 +1,8 @@
+
+.lineup_added_True .entry_slot {
+    background-color: #9F9;
+}
+
+.lineup_added_False .entry_slot {
+    background-color: #F66
+}

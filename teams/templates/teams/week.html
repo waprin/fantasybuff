@@ -1,5 +1,13 @@
 {% extends "teams/base.html" %}
 
+{% block pagescripts %}
+
+    <!-- Custom CSS -->
+    <link href="/static/css/week.css" rel="stylesheet">
+
+
+{% endblock %}
+
 {% block content %}
             <div class="container-fluid">
 
@@ -27,10 +35,10 @@
                                 <tbody>
                                     {% for entry in scorecard_entries %}
                                         <tr>
-                                            <td>{{ entry.slot }}</td>
-                                            <td>{{ entry.player.position }}</td>
-                                            <td>{{ entry.player.name }}</td>
-                                            <td>{{ entry.points }}</td>
+                                            <td class="entry_slot">{{ entry.slot }}</td>
+                                            <td class="entry_slot">{{ entry.player.position }}</td>
+                                            <td class="entry_slot">{{ entry.player.name }}</td>
+                                            <td class="entry_slot">{{ entry.points }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -51,11 +59,11 @@
                                 </thead>
                                 <tbody>
                                 {% for entry in optimal_entries %}
-                                    <tr>
-                                        <td>{{ entry.slot }}</td>
-                                        <td>{{ entry.player.position }}</td>
-                                        <td>{{ entry.player.name }}</td>
-                                        <td>{{ entry.points }}</td>
+                                    <tr class="lineup_added_{{ entry.added }}">
+                                        <td><div class="entry_slot">{{ entry.slot }}</div></td>
+                                        <td><div class="entry_slot">{{ entry.player.position }}</div></td>
+                                        <td><div class="entry_slot">{{ entry.player.name }}</div></td>
+                                        <td><div class="entry_slot">{{ entry.points }}</div></td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>
