@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import connection
-from teams.models import League, EspnUser, Player, ScoreEntry, Team
+from teams.models import League, EspnUser, Player, ScoreEntry, Team, ScorecardEntry, Scorecard
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from teams.scraper.html_scrapes import get_leagues_from_entrance, get_teams_from_standings, get_num_weeks_from_matchups, \
@@ -78,6 +78,24 @@ class LeagueCreatorTest(unittest.TestCase):
 
         teams = Team.objects.filter(league=league)
         self.assertEqual(len(teams), 12)
+
+    def test_load_lineups(self):
+        league = League.objects.create(espn_id='930248',year='2014')
+
+        self.league_scraper.scrape_league(league)
+        self.league_scraper.scrape_players(league)
+        self.league_scraper.load_teams(league)
+        self.league_scraper.load_players(league)
+        self.league_scraper.load_lineups(league)
+
+
+        edelman = Player.objects.get(name='Julian Edelman')
+        team_1 = Team.objects.get(espn_id='1')
+
+        scorecard = Scorecard.objects.get(team=team_1, week=1)
+        scorecard_entry = ScorecardEntry.objects.get(player=edelman, scorecard=scorecard)
+        self.assertEquals(scorecard_entry.slot, 'Bench')
+        self.assertEquals(scorecard_entry.points, 11)
 
 
 

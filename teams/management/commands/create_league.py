@@ -24,20 +24,6 @@ def load_players_from_playerpage(html):
     return [row.find_all('td')[-1].string for row in rows]
 
 
-def get_players_from_lineup(html):
-    pool = BeautifulSoup(html)
-    rows = pool.find_all('tr', 'pncPlayerRow')
-    players = []
-    for row in rows:
-        slot = row.contents[0].string
-        player_id = None
-        if not row.contents[1].a:
-            continue
-        player_id = row.contents[1].a['playerid']
-        players.append((slot, player_id))
-    return players
-
-
 
 
 @transaction.commit_on_success
@@ -157,20 +143,6 @@ def load_transactions(html, year):
             draft_round = draft_round + 1
             draft_entry.save()
 
-def load_week_from_lineup(html, week, team):
-    scorecard = Scorecard.objects.create(team=team, week=week, actual=True)
-    players = get_players_from_lineup(html)
-    print players
-    total_points = Decimal(0)
-    for player_id in players:
-        player = Player.objects.get(espn_id=player_id[1])
-        points = ScoreEntry.objects.get(player=player, week=week).points
-        slot = player_id[0]
-        if slot != 'Bench':
-            total_points = total_points + points
-        ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
-    scorecard.points = total_points
-    scorecard.save()
 
 def command_setup_optimal_lineups():
     rogues = Team.objects.get(espn_id='6')

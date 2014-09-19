@@ -1,4 +1,5 @@
-from teams.models import League, Player, ScoreEntry, Team
+from decimal import Decimal
+from teams.models import League, Player, ScoreEntry, Team, Scorecard, ScorecardEntry
 from teams.scraper.html_scrapes import get_leagues_from_entrance
 
 import re
@@ -9,14 +10,14 @@ __author__ = 'bprin'
 import logging
 logger = logging.getLogger(__name__)
 
-def get_player_id_from_playerpage(html):
+def __get_player_id_from_playerpage(html):
      return re.findall(r'playerId=(\d+)', html)[0]
 
-def get_player_name_from_playerpage(html):
+def __get_player_name_from_playerpage(html):
     pool = BeautifulSoup(html)
     return pool.find_all('div','player-name')[0].string
 
-def get_player_position_from_playerpage(html):
+def __get_player_position_from_playerpage(html):
     pool = BeautifulSoup(html)
     return pool.find('span', {"title" : "Position Eligibility"}).contents[1].strip()
 
@@ -38,9 +39,9 @@ def load_leagues_from_entrance(html, espn_user):
 def load_scores_from_playersheet(html, league):
     pool = BeautifulSoup(html)
 
-    name = get_player_name_from_playerpage(html)
-    player_id = get_player_id_from_playerpage(html)
-    position = get_player_position_from_playerpage(html)
+    name = __get_player_name_from_playerpage(html)
+    player_id = __get_player_id_from_playerpage(html)
+    position = __get_player_position_from_playerpage(html)
 
     (player, new) = Player.objects.get_or_create(name=name, espn_id=player_id, position=position)
 
@@ -69,3 +70,33 @@ def load_teams_from_standings(html, league):
         owner_name = matched_name.group(2)
         team = Team(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league, league_espn_id=league.espn_id)
         team.save()
+
+
+
+def __get_players_from_lineup(html):
+    pool = BeautifulSoup(html)
+    rows = pool.find_all('tr', 'pncPlayerRow')
+    players = []
+    for row in rows:
+        slot = row.contents[0].string
+        player_id = None
+        if not row.contents[1].a:
+            continue
+        player_id = row.contents[1].a['playerid']
+        players.append((slot, player_id))
+    return players
+
+def load_week_from_lineup(html, week, team):
+    scorecard = Scorecard.objects.create(team=team, week=week, actual=True)
+    players = __get_players_from_lineup(html)
+    print players
+    total_points = Decimal(0)
+    for player_id in players:
+        player = Player.objects.get(espn_id=player_id[1])
+        points = ScoreEntry.objects.get(player=player, week=week).points
+        slot = player_id[0]
+        if slot != 'Bench':
+            total_points = total_points + points
+        ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
+    scorecard.points = total_points
+    scorecard.save()
