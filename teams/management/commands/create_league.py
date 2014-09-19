@@ -149,7 +149,7 @@ def command_find_average_deltas():
 
 
 def get_scraper(espn_user):
-    if not settings.LOCAL:
+    if settings.LOCAL != True:
         scraper = EspnScraper()
         scraper.login(espn_user.username, espn_user.password)
         logger.debug("returning espn scraper")
