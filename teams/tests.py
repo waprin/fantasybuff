@@ -60,19 +60,6 @@ class TeamsTest(unittest.TestCase):
         self.assertTrue(any(game.first_scorecard.team.espn_id=='6' and game.second_scorecard.team.espn_id=='1' for game in games))
         self.assertFalse(any(game.first_scorecard.team.espn_id=='6' and game.second_scorecard.team.espn_id=='2' for game in games))
 
-    @clear_test_database
-    def test_parse_entrance(self):
-        browser = FileBrowser()
-        html = browser.scrape_entrance()
-
-
-        user = init_user()
-        load_league_from_entrance(html, user)
-        league = League.objects.get(name='Inglorious Basterds')
-        self.assertEqual(league.name, 'Inglorious Basterds')
-        self.assertEqual(league.year, 2012)
-        self.assertEqual(league.espn_id, '930248')
-
 
     @clear_test_database
     def test_parse_scores(self):
@@ -91,22 +78,6 @@ class TeamsTest(unittest.TestCase):
         self.assertEqual(first_score, 140)
         second_score = sum(entry.points for entry in ScorecardEntry.objects.filter(scorecard=second_scorecard).exclude(slot='Bench'))
         self.assertEqual(second_score, 96)
-
-    @clear_test_database
-    def test_parse_playersheets(self):
-        browser = FileBrowser()
-        htmls = browser.scrape_all_players('6')
-        league = League.objects.create(name="test league", espn_id='12345', year=2013)
-        for html in htmls:
-            load_scores_from_playersheet(html, league)
-        brees = Player.objects.get(espn_id='2580')
-        self.assertEqual(brees.name, 'Drew Brees')
-        self.assertEquals(brees.position, 'QB')
-
-        entries = ScoreEntry.objects.filter(player=brees)
-        self.assertEqual(len(entries), 17)
-        self.assertEqual(entries.get(week=1).points, 20)
-        self.assertEqual(entries.get(week=17).points, 37)
 
     @clear_test_database
     def test_parse_defenses(self):

@@ -119,12 +119,15 @@ class FileBrowser(object):
         with open(self.player_path(league, player_id), 'w') as f:
             f.write(html)
 
-
-
-
-
-
-
+    def get_all_player_htmls(self, league):
+        instance_dir = self.create_instance_directory(league.espn_id, league.year)
+        htmls = []
+        dirpath = os.path.join(instance_dir, "players")
+        mkdir_p(dirpath)
+        player_files = os.listdir(dirpath)
+        for player_html in player_files:
+            htmls.append(open(player_html).read())
+        return htmls
 
     def scrape_all_games(self, week_num):
         path = os.path.join(self.d, 'week_%d' % week_num, 'games')

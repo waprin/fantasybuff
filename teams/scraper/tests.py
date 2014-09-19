@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
-from teams.models import League, EspnUser
+from django.db import connection
+from teams.models import League, EspnUser, Player, ScoreEntry
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from teams.scraper.html_scrapes import get_leagues_from_entrance, get_teams_from_standings, get_num_weeks_from_matchups, \
@@ -19,21 +20,26 @@ from teams.utils.db_utils import clear_test_database
 class ScraperTest(unittest.TestCase):
 
     def setUp(self):
+        logger.info("clearing: conncetion queries is %s" % str(connection.queries))
+        for user in User.objects.all():
+            user.delete()
+        for user in EspnUser.objects.all():
+            user.delete()
+        for league in League.objects.all():
+            league.delete()
+
         self.browser = FileBrowser()
         self.sqlstore = SqlStore()
         self.league_scraper = LeagueScraper(self.browser, self.sqlstore)
 
-    @clear_test_database
     def test_create_espn_user_leagues(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
         espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
         self.assertFalse(self.sqlstore.has_entrance(espn_user))
         self.league_scraper.scrape_espn_user_leagues(espn_user)
         self.assertTrue(self.sqlstore.has_entrance(espn_user))
-        user.delete()
 
-    @clear_test_database
-    def test_create_league(self):
+    def test_scrape_league(self):
         league = League.objects.create(espn_id='930248',year='2014')
         self.league_scraper.scrape_league(league)
         self.league_scraper.scrape_players(league)
@@ -44,8 +50,23 @@ class ScraperTest(unittest.TestCase):
         self.assertTrue(self.sqlstore.has_player(league, '1428'))
         self.assertTrue(self.sqlstore.has_player(league, '5362'))
 
+    def test_load_players(self):
+        league = League.objects.create(espn_id='930248',year='2014')
 
-    @clear_test_database
+        self.league_scraper.scrape_league(league)
+        self.league_scraper.scrape_players(league)
+        self.league_scraper.load_players(league)
+
+        brees = Player.objects.get(espn_id='2580')
+        self.assertEqual(brees.name, 'Drew Brees')
+        self.assertEquals(brees.position, 'QB')
+
+        entries = ScoreEntry.objects.filter(player=brees)
+        self.assertEqual(len(entries), 17)
+        self.assertEqual(entries.get(week=1).points, 15)
+        self.assertEqual(entries.get(week=17).points, 0)
+
+
     def test_get_real_num_weeks(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
         espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
@@ -63,7 +84,6 @@ class ScraperTest(unittest.TestCase):
         self.assertLess(current_num_weeks, 13)
 
 
-    @clear_test_database
     def test_scrape_entrance(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
         espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
@@ -77,7 +97,6 @@ class ScraperTest(unittest.TestCase):
         self.assertIn(('Bizarro League III', '1880759', '2014'), leagues)
 
 
-    @clear_test_database
     def test_scrape_players_from_lineup(self):
         league = League.objects.create(name='ib', espn_id='930248', year='2014')
         html = self.browser.get_roster(league, '1', 1)
@@ -85,7 +104,7 @@ class ScraperTest(unittest.TestCase):
         self.assertIn('14874', players)
         self.assertEquals(len(players), 16)
 
-    @clear_test_database
+
     def test_scrape_teams_from_standings(self):
         league = League.objects.create(name='ib', espn_id='930248', year='2013')
         self.assertTrue(self.browser.has_standings(league))
@@ -95,7 +114,7 @@ class ScraperTest(unittest.TestCase):
         self.assertIn(('5', 'Not a  Prinhead ', 'Matthew Prin'), teams)
         self.assertIn(('4', "Geno's Cheesesteaks ", 'Matt Secko'), teams)
 
-    @clear_test_database
+
     def test_get_num_weeks_from_matchups(self):
         league = League.objects.create(name='ib', espn_id='930248', year='2013')
         self.assertTrue(self.browser.has_matchups(league, 1))
@@ -108,6 +127,7 @@ class ScraperTest(unittest.TestCase):
 
         num_weeks = get_num_weeks_from_matchups(self.browser.get_matchups(league, 1))
         self.assertEquals(num_weeks, 13)
+
 
     """
     def test_get_players_from_roster(self):

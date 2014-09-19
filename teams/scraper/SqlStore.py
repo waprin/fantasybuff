@@ -63,3 +63,9 @@ class SqlStore:
 
     def write_player(self, league, player_id, html):
         PlayerHtmlScrape.objects.create(html=html, league=league, player_id=player_id)
+
+    def get_all_player_htmls(self, league):
+        htmls = []
+        for player_html in PlayerHtmlScrape.objects.filter(league=league):
+            htmls.append(player_html.html)
+        return htmls
