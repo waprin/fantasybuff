@@ -48,9 +48,9 @@ class EspnScraper:
         r = self.br.open(request)
         return r.read()
 
-    def get_standings(self, espn_id, year):
+    def get_standings(self, league):
         time.sleep(1)
-        url = "http://games.espn.go.com/ffl/standings?leagueId=%s&seasonId=%s" % (espn_id, year)
+        url = "http://games.espn.go.com/ffl/standings?leagueId=%s&seasonId=%s" % (league.espn_id, league.year)
         logger.debug("get_standings(): url is %s" % url)
         r = self.br.open(url)
         html = r.read()
@@ -63,52 +63,32 @@ class EspnScraper:
         r = self.br.open(request)
         html = r.read()
         return html
-
+"""
     def scrape_game(self, espn_id, team_id, week):
         time.sleep(1)
         logger.debug('scrape game(): begin .. ')
 #        team_id = game.first_scorecard.team.espn_id
-        url = "http://games.espn.go.com/ffl/boxscorefull?leagueId=%s&teamId=%s&scoringPeriodId=%d&seasonId=2013&view=scoringperiod&version=full" % (espn_id, team_id, week)
+        url = "http://games.espn.go.com/ffl/boxscorefull?leagueId=%s&teamId=%s&scoringPeriodId=%d&seasonId=%s&view=scoringperiod&version=full" % (espn_id)
         logger.info("scrape_game(): scraping url %s" % url)
         r = self.br.open(url)
         html = r.read()
         return html
+"""
 
-
-    def scrape_matchups(self, league_id, year, week):
+    def get_matchups(self, league, week):
         time.sleep(1)
-        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%s&seasonId=%s" % (league_id, 1, year))
-        r = self.br.open("http://games.espn.go.com/ffl/scoreboard?leagueId=%s&matchupPeriodId=%d" % (league_id, week))
+        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%s&seasonId=%s" % (league.espn_id, 1, league.year))
+        r = self.br.open("http://games.espn.go.com/ffl/scoreboard?leagueId=%s&matchupPeriodId=%d" % (league.espn_id, week))
         html = r.read()
         return html
 
+"""
     def scrape_translog(self, espn_id, team_id):
         time.sleep(1)
         r = self.br.open("http://games.espn.go.com/ffl/recentactivity?leagueId=%s&seasonId=2013&activityType=2&startDate=20130805&endDate=20140909&teamId=%d&tranType=-1" % (espn_id, team_id))
         html = r.read()
         return html
-
-    def scrape_roster_summary(self, league_id, team_id, year):
-        time.sleep(3)
-        request = "http://games.espn.go.com/ffl/activestats?leagueId=%s&teamId=%s" % (league_id, team_id)
-        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%s&seasonId=%s" % (league_id, team_id, year))
-        time.sleep(3)
-        r = self.br.open(request)
-        html = r.read()
-        return html
-
-
-
-    def scrape_defenses(self, espn_id, year):
-        time.sleep(1)
-        request = "http://games.espn.go.com/ffl/freeagency?leagueId=%s&teamId=1&seasonId=%s#&seasonId=%s&slotCategoryId=16" % (espn_id, year, year)
-        logger.debug('making request: ' + request)
-        request = "http://games.espn.go.com/ffl/playertable/prebuilt/freeagency?leagueId=930248&teamId=6&seasonId=2013&=undefined&view=overview&context=freeagency&slotCategoryId=16&r=47510218"
-        #request = "http://games.espn.go.com/ffl/playertable/prebuilt/freeagency?leagueId=%s&teamId=6&seasonId=%s&=undefined&view=overview&context=freeagency&slotCategoryGroup=null&r=49073861" % (espn_id, year)
-        #self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%d&seasonId=2013" % (espn_id, 6))
-        r = self.br.open(request)
-        html = r.read()
-        return html
+"""
 
 
 if __name__ == '__main__':
