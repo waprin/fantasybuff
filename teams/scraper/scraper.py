@@ -151,9 +151,11 @@ class LeagueScraper(object):
         league.save()
 
     def scrape_espn_user_leagues(self, espn_user):
+        logger.debug("scraping welcome page for espn user %s" % (espn_user.id))
         self.create_welcome_page(espn_user)
 
     def load_espn_user_leagues(self, espn_user):
+        logger.debug("loading welcome page for espn user %s" % (espn_user.id))
         load_leagues_from_entrance(self.store.get_entrance(espn_user), espn_user)
 
     def create_leagues(self, espn_user):

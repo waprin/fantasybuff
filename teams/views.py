@@ -88,7 +88,6 @@ def show_team(request, espn_league_id, year, espn_team_id):
                       "delta": delta
         })
     average_delta = sum(deltas) / Decimal(len(deltas))
-    print weeks
     template = loader.get_template('teams/team.html')
     context = RequestContext(request, {
         'weeks': weeks,
