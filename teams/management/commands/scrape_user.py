@@ -1,12 +1,15 @@
 from django.contrib.auth.models import User
 from django.core.management import BaseCommand
 from teams.management.commands.create_league import get_scraper
-from teams.models import EspnUser
+from teams.models import EspnUser, League
 from teams.scraper.SqlStore import SqlStore
 from teams.scraper.scraper import LeagueScraper
 import django_rq
 
 __author__ = 'bprin'
+
+def defer_league_scrape(league):
+    pass
 
 def defer_espn_user_scrape(espn_user):
     store = SqlStore()
@@ -14,6 +17,8 @@ def defer_espn_user_scrape(espn_user):
     league_scraper = LeagueScraper(scraper, store)
     league_scraper.scrape_espn_user_leagues(espn_user)
     league_scraper.load_espn_user_leagues(espn_user)
+    league = League.objecs.get(espn_id='930248', year='2014')
+    django_rq.enqueue(defer_league_scrape, league)
 
 """
 import django_rq

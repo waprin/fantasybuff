@@ -127,8 +127,10 @@ class LeagueScraper(object):
         for team in teams:
             for week in range(1, num_weeks + 1):
                 self.create_team_week_roster(league, team[0], week)
+        league.scrape_league_ended_time = datetime.datetime.now()
 
     def scrape_players(self, league):
+
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
@@ -146,6 +148,10 @@ class LeagueScraper(object):
 
     def load_espn_user_leagues(self, espn_user):
         load_leagues_from_entrance(self.store.get_entrance(espn_user), espn_user)
+
+    def create_leagues(self, espn_user):
+        self.scrape_espn_user_leagues(espn_user)
+        self.load_espn_user_leagues(espn_user)
 
 
     def create_games(self, file_browser, espn_id, week_num):

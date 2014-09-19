@@ -10,8 +10,9 @@ from teams.models import *
 def clear_test_database(fn):
     def wrapper(self):
         logger.info("clearing: conncetion queries is %s" % str(connection.queries))
+        for user in User.objects.all():
+            user.delete()
         for user in EspnUser.objects.all():
-            logger.info("user is %s" % user.email)
             user.delete()
         for league in League.objects.all():
             league.delete()

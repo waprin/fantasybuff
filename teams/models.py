@@ -11,12 +11,18 @@ class League(models.Model):
     name = models.CharField(max_length=200)
     espn_id = models.CharField(max_length=30)
     year = models.CharField(max_length=5)
-    loaded = models.DateField(null=True)
+
+    loaded = models.BooleanField(default=False)
+
+    league_scrape_start_time = models.DateTimeField(null=True)
+    lineups_scrape_finish_time = models.DateTimeField(null=True)
+    players_scrape_finish_time = models.DateTimeField(null=True)
+    league_loaded_finish_time = models.DateTimeField(null=True)
+
+
 
     class Meta:
         unique_together = ('espn_id', 'year',)
-
-
 
 class Team(models.Model):
     league = models.ForeignKey(League)
