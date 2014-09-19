@@ -198,5 +198,5 @@ RQ_QUEUES = {
     },
 }
 
-LOCAL=True
+LOCAL=os.environ['FF_LOCAL']
 DB_SCRAPE=True
