@@ -1,5 +1,8 @@
 __author__ = 'bprin'
 
+import logging
+logger = logging.getLogger(__name__)
+
 from functools import partial
 from decimal import Decimal
 
@@ -35,7 +38,6 @@ def calculate_optimal_lineup(entries):
             best_player = max(available_players, key=lambda entry: entry.points)
             if best_player.slot == 'Bench':
                 best_player.added = True
-                best_player.save()
             best_player = best_player.clone()
             best_player.slot = slot
             optimal_entries.append(best_player)
@@ -44,8 +46,8 @@ def calculate_optimal_lineup(entries):
     for player in available_players:
         bench_player = player.clone()
         if player.slot != 'Bench':
-            player.added = False
-            player.save()
+            logger.debug("setting %s as moved to bench" % player.player.name)
+            bench_player.added = False
 
         bench_player.slot = 'Bench'
         optimal_entries.append(bench_player)

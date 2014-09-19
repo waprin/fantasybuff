@@ -69,8 +69,19 @@ class LineupCalculatorTest(unittest.TestCase):
 
         self.assertEquals(int(get_lineup_score(entries)), 5 + 2 + 5 + 2 + 9)
         optimal_lineup=calculate_optimal_lineup(entries)
-        print optimal_lineup
         self.assertEquals(len(optimal_lineup), len(entries))
-        print optimal_lineup
+        found1 = False
+        found2 = False
+        for entry in optimal_lineup:
+            if entry.player == rb_player1:
+                self.assertIsNotNone(entry.added)
+                self.assertFalse(entry.added)
+                found1 = True
+            if entry.player == rb_player4:
+                self.assertIsNotNone(entry.added)
+                self.assertTrue(entry.added)
+                found2 = True
+        self.assertTrue(found1 and found2)
+
         self.assertEquals(int(get_lineup_score(optimal_lineup)), 5 + 2 + 5 + 10 + 9 + 7)
 

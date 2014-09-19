@@ -179,7 +179,8 @@ class LeagueScraper(object):
         league.save()
 
     def reload_lineups(self, league):
-        ScorecardEntry.objects.filter(scorecard__team__league=league).delete()
+#        ScorecardEntry.objects.filter(scorecard__team__league=league).delete()
+        Scorecard.objects.filter(team__league=league).delete()
         self.load_lineups(league)
         self.load_optimal_lineups(league)
 
@@ -212,12 +213,14 @@ class LeagueScraper(object):
         for team in teams:
             weeks = [entry.week for entry in Scorecard.objects.filter(team=team)]
             for week in weeks:
-                scorecard = Scorecard.objects.get(team=team, week=week)
+                scorecard = Scorecard.objects.get(team=team, week=week, actual=True)
                 scorecard_entries = ScorecardEntry.objects.filter(scorecard=scorecard)
+                logger.debug("calculating optimal lineup for team %s week %d" % (team.espn_id, week))
                 optimal_entries = calculate_optimal_lineup(scorecard_entries)
                 total_points = get_lineup_score(optimal_entries)
                 optimal_scorecard = Scorecard.objects.create(team=team, week=week, actual=False, points=total_points)
                 for entry in optimal_entries:
+                    logger.debug("adding optimal scorecard entry")
                     entry.scorecard = optimal_scorecard
                     entry.save()
 
