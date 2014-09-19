@@ -161,6 +161,9 @@ class LeagueScraper(object):
         self.load_espn_user_leagues(espn_user)
 
     def load_league(self, league):
+        self.scrape_league(league)
+        self.scrape_players(league)
+
         self.load_players(league)
         self.load_teams(league)
         self.load_lineups(league)

@@ -43,8 +43,9 @@ class FileBrowser(object):
         return os.path.exists(os.path.join(self.d, 'entrance_%d.html' % espn_user.id))
 
     def get_entrance(self, espn_user):
-        time.sleep(10)
-        return open(os.path.join(self.d, 'entrance_%d.html' % espn_user.id)).read()
+        time.sleep(1)
+        #return open(os.path.join(self.d, 'entrance_%d.html' % espn_user.id)).read()
+        return open(os.path.join(self.d, 'entrance_1.html')).read()
 
     def write_entrance(self, espn_user, html):
         filepath = os.path.join(self.d, 'entrance_%d.html' % espn_user.id)

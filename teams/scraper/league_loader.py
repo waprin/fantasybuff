@@ -29,7 +29,7 @@ def load_leagues_from_entrance(html, espn_user):
         try:
             league = League.objects.get(espn_id=league_tuple[1], year=league_tuple[2])
         except League.DoesNotExist:
-            league = League.objects.create(espn_id=league_tuple[1], year=league_tuple[2], name=league_tuple[0])
+            league = League.objects.create(espn_id=league_tuple[1], year=league_tuple[2], name=league_tuple[0], loaded=False)
 
         league.users.add(espn_user)
         league.save()
@@ -68,8 +68,9 @@ def load_teams_from_standings(html, league):
         matched_name = re.search("(.*)\s*\((.*)\)", fullname)
         team_name = matched_name.group(1)
         owner_name = matched_name.group(2)
-        team = Team(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league, league_espn_id=league.espn_id)
-        team.save()
+        team, created = Team.objects.get_or_create(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league, league_espn_id=league.espn_id)
+        if not created:
+            logger.warn("created duplicate team %s %s" % (league.espn_id, team.espn_id))
 
 
 
@@ -87,7 +88,9 @@ def __get_players_from_lineup(html):
     return players
 
 def load_week_from_lineup(html, week, team):
-    scorecard = Scorecard.objects.create(team=team, week=week, actual=True)
+    scorecard, created = Scorecard.objects.get_or_create(team=team, week=week, actual=True)
+    if not created:
+            logger.warn("created lineup %s %s %s %d" % (team.league.espn_id, team.league.year, team.espn_id, week))
     players = __get_players_from_lineup(html)
     print players
     total_points = Decimal(0)

@@ -22,10 +22,6 @@ logger = logging.getLogger(__name__)
 
 from django.contrib.auth import authenticate, login, logout
 
-def ajax_endpoint(request):
-    return HttpResponse("Hello World!")
-
-
 def signin(request):
     try:
         email = request.POST['email']

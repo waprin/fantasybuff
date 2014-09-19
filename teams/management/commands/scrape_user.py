@@ -18,8 +18,8 @@ def defer_espn_user_scrape(espn_user):
     league_scraper = LeagueScraper(scraper, store)
     league_scraper.create_leagues(espn_user)
 
-    league = League.objecs.get(espn_id='930248', year='2014')
-    django_rq.enqueue(defer_league_scrape, league)
+    league = League.objects.get(espn_id='930248', year='2014')
+    league_scraper.load_league(league)
 
 """
 import django_rq

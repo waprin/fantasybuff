@@ -63,7 +63,7 @@
                         var leagues = data.accounts[i]
                         if (!data.loaded) {
                             $("#accounts_list").append("Loading User...");
-                            setTimeout(getLeagues, 500);
+                            setTimeout(getLeagues, 5000);
                         } else {
                             $("#league_loading_gif").hide();
                         }
