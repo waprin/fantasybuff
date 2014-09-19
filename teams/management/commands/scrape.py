@@ -63,7 +63,7 @@ class EspnScraper:
         r = self.br.open(request)
         html = r.read()
         return html
-"""
+    """
     def scrape_game(self, espn_id, team_id, week):
         time.sleep(1)
         logger.debug('scrape game(): begin .. ')
@@ -73,7 +73,7 @@ class EspnScraper:
         r = self.br.open(url)
         html = r.read()
         return html
-"""
+        """
 
     def get_matchups(self, league, week):
         time.sleep(1)
@@ -82,13 +82,13 @@ class EspnScraper:
         html = r.read()
         return html
 
-"""
+    """
     def scrape_translog(self, espn_id, team_id):
         time.sleep(1)
         r = self.br.open("http://games.espn.go.com/ffl/recentactivity?leagueId=%s&seasonId=2013&activityType=2&startDate=20130805&endDate=20140909&teamId=%d&tranType=-1" % (espn_id, team_id))
         html = r.read()
         return html
-"""
+    """
 
 
 if __name__ == '__main__':
