@@ -12,10 +12,13 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
-if os.environ['FF_LOCAL'] == 'True':
-    LOCAL=True
-else:
-    LOCAL=False
+try:
+    if os.environ['FF_LOCAL'] == 'True':
+        LOCAL=True
+    else:
+        LOCAL=False
+except KeyError:
+    LOCAL = True
 
 MANAGERS = ADMINS
 
