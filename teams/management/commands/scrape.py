@@ -82,6 +82,12 @@ class EspnScraper:
         html = r.read()
         return html
 
+    def get_season_totals(self, index):
+        time.sleep(1)
+        r = self.br.open("http://games.espn.go.com/ffl/leaders?&seasonTotals=true&seasonId=2013&startIndex=%d" % index)
+        return r.read()
+
+
     """
     def scrape_translog(self, espn_id, team_id):
         time.sleep(1)

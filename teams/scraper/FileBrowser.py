@@ -1,6 +1,7 @@
 import time
 from teams.utils.league_files import choose_league_directory, create_league_directory
 import os, errno, re
+from teams.models import League
 
 import logging
 logger = logging.getLogger(__name__)
@@ -113,7 +114,9 @@ class FileBrowser(object):
     def has_player(self, league, player_id):
         return os.path.exists(self.player_path(league, player_id))
 
-    def get_player(self, league, player_id):
+    def get_player(self, player_id, league):
+        if league is None:
+            league = League(espn_id='930248', year='2014')
         return open(self.player_path(league, player_id)).read()
 
     def write_player(self, league, player_id, html):
@@ -129,6 +132,12 @@ class FileBrowser(object):
         for player_html in player_files:
             htmls.append(open(player_html).read())
         return htmls
+
+    def put_season_totals(self, index, html):
+        with open(os.path.join(self.d, 'season_totals_%d.html' % index), 'w') as f:
+            f.write(html)
+
+
 
     def scrape_all_games(self, week_num):
         path = os.path.join(self.d, 'week_%d' % week_num, 'games')

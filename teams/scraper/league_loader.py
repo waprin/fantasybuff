@@ -1,5 +1,6 @@
 from decimal import Decimal
-from teams.models import League, Player, ScoreEntry, Team, Scorecard, ScorecardEntry
+from django.core.exceptions import ObjectDoesNotExist
+from teams.models import League, Player, ScoreEntry, Team, Scorecard, ScorecardEntry, PlayerScoreStats
 from teams.scraper.html_scrapes import get_leagues_from_entrance
 
 import re
@@ -36,7 +37,49 @@ def load_leagues_from_entrance(html, espn_user):
         leagues.append(league)
     return leagues
 
-def load_scores_from_playersheet(html, league, overwrite=False):
+def get_passing_stats(player_score_stats, stats):
+    logger.debug("get_passing_stats %s : %s" % (str(player_score_stats), str(stats)))
+    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
+    player_score_stats.pass_yards = int(stats[2])
+    player_score_stats.pass_td = int(stats[3])
+    (interceptions, fumbles) = stats[4].split('/') if stats[4] != 0 else ('0', '0')
+    player_score_stats.interceptions = int(interceptions.strip())
+    player_score_stats.fumbles = int(fumbles.strip())
+    player_score_stats.default_points = Decimal(stats[5])
+    return player_score_stats
+
+def get_running_stats(player_score_stats, stats):
+    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
+    player_score_stats.run_yards = int(stats[3])
+    player_score_stats.run_td = int(stats[3])
+    return player_score_stats
+
+def get_receiving_stats(player_score_stats, stats):
+    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
+    player_score_stats.receptions = int(stats[2])
+    player_score_stats.receiving_yards = int(stats[3])
+    player_score_stats.receving_td = int(stats[4])
+    return player_score_stats
+
+def get_special_stats(player_score_stats, stats):
+    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
+    player_score_stats.blocked_kr = int(stats[2])
+    player_score_stats.int_td = int(stats[3])
+    player_score_stats.fr_td = int(stats[4])
+
+
+def get_stats_function(headers):
+    if headers == ['WK', 'OPP', 'YDS', 'TD', 'I/F', 'PTS']:
+        return get_passing_stats
+    elif headers == [u'WK', u'OPP', u'ATT', u'YDS', u'TD', u'PTS']:
+        return get_running_stats
+    elif headers == [u'WK', u'OPP', u'REC', u'YDS', u'TD', u'PTS']:
+        return get_receiving_stats
+    elif headers == [u'WK', u'OPP', u'BLKKRTD', u'INTTD', u'FRTD', u'PTS']:
+        return get_special_stats
+
+
+def load_scores_from_playersheet(html, year, overwrite=False):
     pool = BeautifulSoup(html)
 
     name = __get_player_name_from_playerpage(html)
@@ -46,21 +89,40 @@ def load_scores_from_playersheet(html, league, overwrite=False):
     (player, new) = Player.objects.get_or_create(name=name, espn_id=player_id, position=position)
 
     if not new:
-        entries = ScoreEntry.objects.filter(player=player, league=league)
+        entries = ScoreEntry.objects.filter(player=player, year=year)
         if len(entries) > 0:
             if not overwrite:
                 return
             else:
                 entries.delete()
 
+    stats_tables = pool.find_all(id=re.compile('moreStatsView.*'))
+    for stats_table in stats_tables:
+        headers = [tr.string.strip()  for tr in stats_table.find_all('tr')[0].find_all('td')]
+        stats_function = get_stats_function(headers)
+        for i, row in enumerate(stats_table.find_all('tr')[1:]):
+            week = i + 1
+            sc = ScoreEntry.objects.get_or_create(week=week, year=year, player=player)[0]
+            stats = [td.string for td in row]
+            try:
+                stats_function(sc.player_score_stats, stats)
+            except ObjectDoesNotExist:
+                pss = PlayerScoreStats(score_entry=sc)
+                pss.save()
+                sc = ScoreEntry.objects.get_or_create(week=week, year=year, player=player)[0]
+                pss = stats_function(pss, stats)
+                pss.save()
+
+"""
     logger.debug("updating scores for player %s: %s" % (player.name, player.espn_id))
     rows = pool.find_all('table')[2].find_all('tr')[1:]
     scores = [row.find_all('td')[-1].string for row in rows]
     scores = map(lambda x : 0 if x == '-' else float(x), scores)
 
     for week, score in enumerate(scores):
-        sc = ScoreEntry(week=week+1, player=player, points=float(score), league=league)
+        sc = ScoreEntry(week=week+1, player=player, points=float(score))
         sc.save()
+"""
 
 def load_teams_from_standings(html, league):
     pool = BeautifulSoup(html)

@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import connection
-from teams.models import League, EspnUser, Player, ScoreEntry, Team, ScorecardEntry, Scorecard
+from teams.models import League, EspnUser, Player, ScoreEntry, Team, ScorecardEntry, Scorecard, PlayerScoreStats
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from teams.scraper.html_scrapes import get_leagues_from_entrance, get_teams_from_standings, get_num_weeks_from_matchups, \
@@ -54,6 +54,27 @@ class LeagueCreatorTest(unittest.TestCase):
         self.assertTrue(self.sqlstore.has_player(league, '1428'))
         self.assertTrue(self.sqlstore.has_player(league, '5362'))
 
+
+    def test_load_player(self):
+        html = self.browser.get_player('2580', None)
+        brees = Player.objects.create(name='Drew Brees', espn_id='2580', position='QB')
+        load_scores_from_playersheet(html, '2014')
+        self.assertEquals(17, PlayerScoreStats.objects.all().count())
+
+        sc = ScoreEntry.objects.get(week=1, year='2014', player=brees)
+        ps1 = sc.player_score_stats
+        self.assertEquals(ps1.pass_yards, 333)
+        self.assertEquals(ps1.pass_td, 1)
+        self.assertEquals(ps1.default_points, 15)
+
+        sc2 = ScoreEntry.objects.get(week=2, year='2014', player=brees)
+        ps2 = sc2.player_score_stats
+        self.assertEquals(ps2.pass_yards, 237)
+        self.assertEquals(ps2.pass_td, 2)
+        self.assertEquals(ps2.default_points, 15)
+
+
+    """
     def test_load_players(self):
         league = League.objects.create(espn_id='930248',year='2014')
 
@@ -69,7 +90,7 @@ class LeagueCreatorTest(unittest.TestCase):
         self.assertEqual(len(entries), 17)
         self.assertEqual(entries.get(week=1).points, 15)
         self.assertEqual(entries.get(week=17).points, 0)
-
+    """
     def test_load_teams(self):
         league = League.objects.create(espn_id='930248',year='2014')
 
@@ -174,7 +195,6 @@ class ScraperTest(unittest.TestCase):
 
         num_weeks = get_num_weeks_from_matchups(self.browser.get_matchups(league, 1))
         self.assertEquals(num_weeks, 13)
-
 
 
 

@@ -16,15 +16,10 @@ import datetime
 
 logger = logging.getLogger(__name__)
 
-
-
 def load_players_from_playerpage(html):
     pool = BeautifulSoup(html)
     rows = pool.find_all('table')[2].find_all('tr')[1:]
     return [row.find_all('td')[-1].string for row in rows]
-
-
-
 
 @transaction.commit_on_success
 def load_games_from_scoreboard(html, league, week):
@@ -164,10 +159,14 @@ def get_scraper(espn_user):
             logger.debug("returning espn scraper")
             return scraper
 
-
-
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        scraper = EspnScraper()
+        html = scraper.get_season_totals(0)
+        file_browser = FileBrowser()
+        file_browser.put_season_totals(0, html)
+
+"""
         email = args[0]
         store = SqlStore()
         user = User.objects.get(username=email)
@@ -176,4 +175,5 @@ class Command(BaseCommand):
             scraper = get_scraper(espn_user)
             league_scraper = LeagueScraper(scraper, store)
             league_scraper.scrape_leagues(espn_user)
+"""
 

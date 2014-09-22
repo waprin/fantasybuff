@@ -55,10 +55,12 @@ class Player(models.Model):
     def __unicode__(self):
         return self.name
 
+
+
 class Scorecard(models.Model):
     team = models.ForeignKey(Team)
     week = models.IntegerField()
-    actual = models.BooleanField()
+    actual = models.BooleanField(default=False)
     points = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
 
     class Meta:
@@ -104,11 +106,89 @@ class ScorecardEntry(models.Model):
 class ScoreEntry(models.Model):
     week = models.IntegerField()
     player = models.ForeignKey(Player)
-    points = models.DecimalField(decimal_places=4, max_digits=7)
-    league = models.ForeignKey(League)
+    year = models.CharField(max_length=5)
 
     class Meta:
-        unique_together = ('week', 'player', 'league')
+        unique_together = (('week', 'player'))
+
+
+class PlayerScoreStats(models.Model):
+    score_entry = models.OneToOneField(ScoreEntry, primary_key=True, related_name='player_score_stats')
+
+    pass_yards = models.IntegerField(null=True)
+    pass_td = models.IntegerField(null=True)
+    interceptions = models.IntegerField(null=True)
+
+    run_attempts = models.IntegerField(null=True)
+    run_yards = models.IntegerField(null=True)
+    run_td = models.IntegerField(null=True)
+
+    receptions = models.IntegerField(null=True)
+    reception_yards = models.IntegerField(null=True)
+    reception_td = models.IntegerField(null=True)
+
+    return_td = models.IntegerField(null=True)
+
+    blocked_kr = models.IntegerField(null=True)
+    int_td = models.IntegerField(null=True)
+    fr_td = models.IntegerField(null=True)
+
+    return_td = models.IntegerField(null=True)
+
+    default_points = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+
+class ScoringSystem(models.Model):
+
+    py25 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    int_thrown = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    td_pass = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    twopt_pass = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+
+    run10 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    td_rush = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    twopt_rush = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+
+    rec10 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    rec_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    twopt_rec = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+
+    kr_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    pr_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    fum_lost = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    fum_rec_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    fum_ret_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+
+    pat_made = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    fg_missed = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    fg_0 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    fg_40 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    fg_50 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+
+    d_sack = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_int_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_fr_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_pr_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_blocked_kick = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_fr = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_kickoff_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_blocked_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_int = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_sf = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_pa_0 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_pa_1 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_pa_7 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_pa_14 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_pa_28 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_pa_35 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_pa_46 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_ya_100 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_ya_199 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_ya_299 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_ya_399 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_ya_449 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_ya_499 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_ya_549 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    da_ya_550 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
 
 
 class TransLogEntry(models.Model):
@@ -126,7 +206,7 @@ class AddDrop(TransLogEntry):
     player_added = models.ForeignKey(Player, related_name='adddrop_added')
     player_dropped = models.ForeignKey(Player, related_name='addrop_dropped')
     """waiver - true if picked from the waiver, false if picked from FA"""
-    waiver = models.BooleanField()
+    waiver = models.BooleanField(default=True)
 
 
 # scraper models
