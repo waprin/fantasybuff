@@ -12,6 +12,9 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
+YAHOO_CONSUMER_KEY           = 'dj0yJmk9YUhSTTNlZFVyQ29yJmQ9WVdrOU1GTmlXSEpxTlRRbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD0xMQ--'
+YAHOO_CONSUMER_SECRET        = os.environ['YAHOO_FF_SECRET']
+
 try:
     if os.environ['FF_LOCAL'] == 'True':
         LOCAL=True
@@ -21,6 +24,8 @@ except KeyError:
     LOCAL = True
 
 MANAGERS = ADMINS
+
+
 
 
 DATABASES = {
@@ -112,6 +117,15 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.Loader',
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.contrib.messages.context_processors.messages',
+    'social_auth.context_processors.social_auth_by_name_backends',
+)
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -142,10 +156,17 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'teams', # Uncomment the next line to enable the admin:
      'django.contrib.admin',
-    'django_rq'
+    'django_rq',
+    'social_auth'
     # Uncomment the next line to enable admin documentation:
      #'django.contrib.admindocs',
 )
+
+AUTHENTICATION_BACKENDS = (
+     'django.contrib.auth.backends.ModelBackend',
+     'social_auth.backends.contrib.yahoo.YahooOAuthBackend',
+)
+
 
 LOGIN_URL = '/signin/'
 

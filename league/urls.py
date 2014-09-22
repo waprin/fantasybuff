@@ -30,6 +30,7 @@ urlpatterns = patterns('',
      url(r'^league/(\d*)/(\d\d\d\d)/$', 'teams.views.show_league'),
      url(r'^league/(\d*)/(\d\d\d\d)/(\d*)/$', 'teams.views.show_team'),
      url(r'^league/(\d*)/(\d\d\d\d)/(\d*)/(\d*)', 'teams.views.show_week'),
+     url(r'', include('social_auth.urls')),
 
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

@@ -1,4 +1,5 @@
 {% extends "teams/base.html" %}
+{% load url from future %}
 
 {% block header %}
 Sign Up
@@ -22,6 +23,28 @@ Sign Up
           </div>
 
           <div class="col-lg-6">
+            <div>
+              <h3>Login using <a href="http://openid.net/" title="OpenId">OpenId</a> from:</h3>
+              <ul>
+              {% for name in social_auth.backends.oauth %}
+                  {{ name }}
+                <li>
+                  <a rel="nofollow" href="{% url "socialauth_begin" name %}">{{ name|title }}</a>
+                </li>
+              {% endfor %}
+              {% for name in social_auth.backends.openid %}
+                  {{ name }}
+                <li>
+                  <a rel="nofollow" href="{% url "socialauth_begin" name %}">{{ name|title }}</a>
+                </li>
+              {% endfor %}
+              </ul>
+            </div>
+          </div>
+      </div>
+
+
+<!--
               <form method="POST" role="form" action="signup/">
                   <div class="form-group">
                       {% csrf_token %}
@@ -34,7 +57,9 @@ Sign Up
                   <button type="submit" class="btn btn-default">Create New Account</button>
 
               </form>
-          </div>
+-->
+
+
                 <!-- /.row -->
     </div> <!--container-fluid-->
 {% endblock %}
