@@ -27,14 +27,13 @@ class League(models.Model):
 
 class Team(models.Model):
     league = models.ForeignKey(League)
-    league_espn_id = models.CharField(max_length=30)
     espn_id = models.CharField(max_length=5)
     team_name = models.CharField(max_length=100, null=True)
     owner_name = models.CharField(max_length=100, null=True)
     average_delta = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
 
     class Meta:
-        unique_together = ('league_espn_id', 'espn_id',)
+        unique_together = ('league', 'espn_id',)
 
     def __unicode__(self):
         return "%s (%s, %s)" % (self.team_name, self.league_espn_id, self.espn_id)

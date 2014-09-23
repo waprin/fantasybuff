@@ -1,34 +1,59 @@
 from django.contrib.auth.models import User
-from django.db import connection
-from teams.models import League, EspnUser, Player, ScoreEntry, Team, ScorecardEntry, Scorecard, PlayerScoreStats
+from teams.models import EspnUser, ScoreEntry, PlayerScoreStats
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
-from teams.scraper.html_scrapes import get_leagues_from_entrance, get_teams_from_standings, get_num_weeks_from_matchups, \
-    get_player_ids_from_lineup
-from teams.scraper.league_loader import load_scores_from_game
+from django.utils import unittest
 
 __author__ = 'bill'
 
-
-from django.utils import unittest
 import logging
-
 logger = logging.getLogger(__name__)
 
 from scraper import *
-from teams.utils.db_utils import clear_test_database
 
 def clearDb():
-    logger.info("clearing: conncetion queries is %s" % str(connection.queries))
     for user in User.objects.all():
         user.delete()
     for user in EspnUser.objects.all():
         user.delete()
     for league in League.objects.all():
         league.delete()
-    for player_stats in PlayerScoreStats.objects.all():
-        player_stats.delete()
+    for player in Player.objects.all():
+        player.delete()
 
+class IntegrationTest(unittest.TestCase):
+
+    def setUp(self):
+        clearDb()
+        self.browser = FileBrowser()
+        self.sqlstore = SqlStore()
+        self.league_scraper = LeagueScraper(self.browser, self.sqlstore)
+
+    def test_entire_load_league(self):
+        league = League.objects.create(espn_id='930248',year='2013')
+        self.league_scraper.scrape_league(league)
+
+        self.assertTrue(self.sqlstore.has_roster(league, '1', 1))
+        self.assertTrue(self.sqlstore.has_roster(league, '12', 2))
+
+        self.assertTrue(self.sqlstore.has_player(league, '1428'))
+        self.assertTrue(self.sqlstore.has_player(league, '5362'))
+
+        self.league_scraper.load_league(league)
+        team = Team.objects.get(league=league, espn_id='1')
+        scorecard = Scorecard.objects.get(team=team, week=1, actual=True)
+        self.assertEquals(scorecard.points, 96)
+
+    def test_entire_load_league_2014(self):
+        league2 = League.objects.create(espn_id='930248',year='2014')
+        self.league_scraper.scrape_league(league2)
+        self.assertTrue(self.sqlstore.has_game(league2, '1', 1))
+
+        self.league_scraper.load_league(league2)
+
+        team = Team.objects.get(league=league2, espn_id='1')
+        scorecard = Scorecard.objects.get(team=team, week=1, actual=True)
+        self.assertEquals(scorecard.points, 104)
 
 
 class LeagueCreatorTest(unittest.TestCase):
@@ -38,7 +63,6 @@ class LeagueCreatorTest(unittest.TestCase):
         self.browser = FileBrowser()
         self.sqlstore = SqlStore()
         self.league_scraper = LeagueScraper(self.browser, self.sqlstore)
-        #logging.disable(logging.CRITICAL)
 
     def test_create_espn_user_leagues(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
@@ -47,23 +71,26 @@ class LeagueCreatorTest(unittest.TestCase):
         self.league_scraper.scrape_espn_user_leagues(espn_user)
         self.assertTrue(self.sqlstore.has_entrance(espn_user))
 
-    @unittest.skip("will fix in a bit")
-    def test_scrape_league(self):
-        league = League.objects.create(espn_id='930248',year='2014')
-        self.league_scraper.scrape_league(league)
-        self.league_scraper.scrape_players(league)
+    def test_load_legacy_entire_lineup(self):
+        league = League.objects.create(espn_id='930248',year='2013')
+        team_id='1'
+        week=1
+        team = Team.objects.create(league=league, espn_id=team_id)
+        roster_html = self.browser.get_roster(league, team_id, week
+        )
+        player_ids = get_player_ids_from_lineup(roster_html)
+        for player_id in player_ids:
+            player_html = self.browser.get_player(player_id)
+            load_scores_from_playersheet(player_html, player_id, league.year)
+        load_week_from_lineup(roster_html, week, team)
 
-        self.assertTrue(self.sqlstore.has_roster(league, '1', 1))
-        self.assertTrue(self.sqlstore.has_roster(league, '12', 2))
-
-        self.assertTrue(self.sqlstore.has_player(league, '1428'))
-        self.assertTrue(self.sqlstore.has_player(league, '5362'))
-
+        scorecard = Scorecard.objects.get(team=team, week=1)
+        self.assertEquals(scorecard.points, 96)
 
     def test_load_player(self):
-        html = self.browser.get_player('2580', None)
+        html = self.browser.get_player('2580', year='2014')
         brees = Player.objects.create(name='Drew Brees', espn_id='2580', position='QB')
-        load_scores_from_playersheet(html, '2014')
+        load_scores_from_playersheet(html, '2580', '2014')
         self.assertEquals(17, PlayerScoreStats.objects.all().count())
 
         sc = ScoreEntry.objects.get(week=1, year='2014', player=brees)
@@ -78,23 +105,6 @@ class LeagueCreatorTest(unittest.TestCase):
         self.assertEquals(ps2.pass_td, 2)
         self.assertEquals(ps2.default_points, 15)
 
-    @unittest.skip("will fix in a bit")
-    def test_load_players(self):
-        league = League.objects.create(espn_id='930248',year='2014')
-
-        self.league_scraper.scrape_league(league)
-        self.league_scraper.scrape_players(league)
-        self.league_scraper.load_players(league)
-
-        brees = Player.objects.get(espn_id='2580')
-        self.assertEqual(brees.name, 'Drew Brees')
-        self.assertEquals(brees.position, 'QB')
-
-        entries = ScoreEntry.objects.filter(player=brees)
-        self.assertEqual(len(entries), 17)
-        self.assertEqual(entries.get(week=1).points, 15)
-        self.assertEqual(entries.get(week=17).points, 0)
-
     def test_load_teams(self):
         league = League.objects.create(espn_id='930248',year='2014')
 
@@ -105,29 +115,10 @@ class LeagueCreatorTest(unittest.TestCase):
         teams = Team.objects.filter(league=league)
         self.assertEqual(len(teams), 12)
 
-    @unittest.skip("will fix in a bit")
-    def test_load_lineups(self):
-        league = League.objects.create(espn_id='930248',year='2014')
-
-        self.league_scraper.scrape_league(league)
-
-        self.league_scraper.load_teams(league)
-        self.league_scraper.load_players(league)
-        self.league_scraper.load_lineups(league)
-
-
-        edelman = Player.objects.get(name='Julian Edelman')
-        team_1 = Team.objects.get(espn_id='1')
-
-        scorecard = Scorecard.objects.get(team=team_1, week=1)
-        scorecard_entry = ScorecardEntry.objects.get(player=edelman, scorecard=scorecard)
-        self.assertEquals(scorecard_entry.slot, 'Bench')
-        self.assertEquals(scorecard_entry.points, 11)
-
     def test_load_game(self):
         league = League.objects.create(espn_id='930248',year='2014')
-        team = Team.objects.create(espn_id='11', league=league, league_espn_id='930248')
-        team2 = Team.objects.create(espn_id='3', league=league, league_espn_id='930248')
+        team = Team.objects.create(espn_id='11', league=league)
+        team2 = Team.objects.create(espn_id='3', league=league)
         game_html = self.browser.get_game(league, '11', 3)
         load_scores_from_game(league, 3, game_html)
 
@@ -135,11 +126,6 @@ class LeagueCreatorTest(unittest.TestCase):
         scorecard2 = Scorecard.objects.get(team=team2, week=3)
         self.assertEquals(scorecard.points, 84)
         self.assertEquals(scorecard2.points, 105)
-
-    @unittest.skip("will fix in a bit")
-    def test_entire_load_league(self):
-        league = League.objects.create(espn_id='930248',year='2014')
-        self.league_scraper.load_league(league)
 
     def test_get_real_num_weeks(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')

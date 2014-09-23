@@ -68,16 +68,16 @@ class SqlStore:
 
     def get_all_player_htmls(self, league):
         htmls = []
-        for player_html in PlayerHtmlScrape.objects.filter(league=league):
-            htmls.append(player_html.html)
+        for player_scrape in PlayerHtmlScrape.objects.filter(league=league):
+            htmls.append((player_scrape.player_id, player_scrape.html))
         return htmls
 
 ## games
     def has_game(self, league, team_id, week):
-        return len(GameHtmlScrape.objects.filter(Q(first_team=team_id) | Q(second_team=team_id) , league=league)) > 0
+        return len(GameHtmlScrape.objects.filter(Q(first_team=team_id) | Q(second_team=team_id) , league=league, week=week)) > 0
 
     def get_game(self, league, team_id, week):
-        return GameHtmlScrape.objects.filter(Q(first_team=team_id) | Q(second_team=team_id), league=league)[0].html
+        return GameHtmlScrape.objects.filter(Q(first_team=team_id) | Q(second_team=team_id), league=league, week=week)[0].html
 
     def write_game(self, league, team_id, week, html):
         GameHtmlScrape.objects.create(first_team=team_id, html=html, league=league, week=week)
@@ -85,6 +85,6 @@ class SqlStore:
     def get_all_games(self, league, week):
         htmls = []
         for game_html in GameHtmlScrape.objects.filter(league=league, week=week):
-            htmls.append(game_html)
+            htmls.append(game_html.html)
         return htmls
 

@@ -12,7 +12,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 def __get_player_id_from_playerpage(html):
-     return re.findall(r'playerId=(\d+)', html)[0]
+    try:
+        return re.findall(r'playerId=(\d+)', html)[0]
+    except IndexError:
+        f = open('error_html' , 'w')
+        f.write(html)
+        raise
 
 def __get_player_name_from_playerpage(html):
     pool = BeautifulSoup(html)
@@ -38,8 +43,6 @@ def load_leagues_from_entrance(html, espn_user):
     return leagues
 
 def get_passing_stats(player_score_stats, stats):
-    logger.debug("get_passing_stats %s : %s" % (str(player_score_stats), str(stats)))
-    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
     player_score_stats.pass_yards = int(stats[2])
     player_score_stats.pass_td = int(stats[3])
     (interceptions, fumbles) = stats[4].split('/') if stats[4] != 0 else ('0', '0')
@@ -49,27 +52,24 @@ def get_passing_stats(player_score_stats, stats):
     player_score_stats.save()
 
 def get_running_stats(player_score_stats, stats):
-    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
     player_score_stats.run_yards = int(stats[3])
     player_score_stats.run_td = int(stats[3])
-    return player_score_stats
+    player_score_stats.default_points = Decimal(stats[5])
+    player_score_stats.save()
 
 def get_receiving_stats(player_score_stats, stats):
-    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
     player_score_stats.receptions = int(stats[2])
     player_score_stats.receiving_yards = int(stats[3])
     player_score_stats.receving_td = int(stats[4])
     player_score_stats.save()
 
 def get_special_stats(player_score_stats, stats):
-    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
     player_score_stats.blocked_kr = int(stats[2])
     player_score_stats.int_td = int(stats[3])
     player_score_stats.fr_td = int(stats[4])
     player_score_stats.save()
 
 def get_kicking_stats(player_score_stats, stats):
-    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
     player_score_stats.pat_made = Decimal(stats[4])
     fg_made = Decimal(stats[2])
     fg_attempted = Decimal(stats[3])
@@ -78,7 +78,6 @@ def get_kicking_stats(player_score_stats, stats):
     player_score_stats.save()
 
 def get_fg_distance_stats(player_score_stats, stats):
-    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
     player_score_stats.fg_0 = Decimal(stats[2])
     player_score_stats.fg_40 = Decimal(stats[3])
     player_score_stats.fg_50 = Decimal(stats[4])
@@ -105,11 +104,11 @@ def get_stats_function(headers):
         raise Exception("unknown headers %s" % str(headers))
 
 
-def load_scores_from_playersheet(html, year, overwrite=False):
+def load_scores_from_playersheet(html, player_id, year, overwrite=False):
     pool = BeautifulSoup(html)
 
     name = __get_player_name_from_playerpage(html)
-    player_id = __get_player_id_from_playerpage(html)
+    #player_id = __get_player_id_from_playerpage(html)
     position = __get_player_position_from_playerpage(html)
 
     (player, new) = Player.objects.get_or_create(name=name, espn_id=player_id, position=position)
@@ -130,24 +129,14 @@ def load_scores_from_playersheet(html, year, overwrite=False):
             week = i + 1
             sc = ScoreEntry.objects.get_or_create(week=week, year=year, player=player)[0]
             stats = [td.string for td in row]
-            try:
-                stats_function(sc.player_score_stats, stats)
-            except ObjectDoesNotExist:
-                pss = PlayerScoreStats(score_entry=sc)
-                pss.save()
+            stats = map(lambda stat: 0 if stat == '-' else stat, stats)
+            pss = PlayerScoreStats.objects.get_or_create(score_entry=sc)[0]
+            if stats_function:
                 stats_function(pss, stats)
+            if not pss.default_points:
+                pss.default_points = Decimal(stats[5])
+                pss.save()
 
-
-"""
-    logger.debug("updating scores for player %s: %s" % (player.name, player.espn_id))
-    rows = pool.find_all('table')[2].find_all('tr')[1:]
-    scores = [row.find_all('td')[-1].string for row in rows]
-    scores = map(lambda x : 0 if x == '-' else float(x), scores)
-
-    for week, score in enumerate(scores):
-        sc = ScoreEntry(week=week+1, player=player, points=float(score))
-        sc.save()
-"""
 
 def load_teams_from_standings(html, league):
     pool = BeautifulSoup(html)
@@ -162,7 +151,7 @@ def load_teams_from_standings(html, league):
         matched_name = re.search("(.*)\s*\((.*)\)", fullname)
         team_name = matched_name.group(1)
         owner_name = matched_name.group(2)
-        team, created = Team.objects.get_or_create(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league, league_espn_id=league.espn_id)
+        team, created = Team.objects.get_or_create(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league)
         if not created:
             logger.warn("created duplicate team %s %s" % (league.espn_id, team.espn_id))
 
@@ -188,13 +177,14 @@ def load_week_from_lineup(html, week, team):
     players = __get_players_from_lineup(html)
     total_points = Decimal(0)
     for player_id in players:
+        logger.debug("loading score entry for player %s" % str(player_id))
         try:
             player = Player.objects.get(espn_id=player_id[1])
         except Player.DoesNotExist:
             logger.error("could not find player id %s" % str(player_id))
             raise
         try:
-            points = ScoreEntry.objects.get(player=player, week=week).points
+            points = ScoreEntry.objects.get(player=player, week=week).player_score_stats.default_points
         except ScoreEntry.DoesNotExist:
             logger.error("could not find scoreentry for player id %s" % str(player_id))
             raise

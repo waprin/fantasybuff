@@ -9,12 +9,8 @@ from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_
 
 __author__ = 'bill'
 
-import re, os
-from bs4 import BeautifulSoup
 import logging
 logger = logging.getLogger(__name__)
-from teams.management.commands import scrape
-from teams.utils.league_files import choose_league_directory, create_league_directory
 
 
 def get_real_num_weeks(num_weeks, league):
@@ -161,24 +157,26 @@ class LeagueScraper(object):
         league.save()
 
     def scrape_players(self, league):
-        if league.year == '2013':
-            teams = get_teams_from_standings(self.store.get_standings(league))
-            num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
-            num_weeks = get_real_num_weeks(num_weeks, league)
-            all_player_ids = []
-            for team in teams:
-                for week in range(1, num_weeks + 1):
-                    player_ids = get_player_ids_from_lineup(self.store.get_roster(league, team[0], week))
-                    all_player_ids = all_player_ids + player_ids
-            all_player_ids = list(set(all_player_ids))
-            for player_id in all_player_ids:
-                self.create_player(league, player_id)
-            league.players_scrape_finish_time = datetime.datetime.now()
-            league.save()
+        if league.year == '2014':
+            return
+        teams = get_teams_from_standings(self.store.get_standings(league))
+        num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
+        num_weeks = get_real_num_weeks(num_weeks, league)
+        all_player_ids = []
+        for team in teams:
+            for week in range(1, num_weeks + 1):
+                player_ids = get_player_ids_from_lineup(self.store.get_roster(league, team[0], week))
+                all_player_ids = all_player_ids + player_ids
+        all_player_ids = list(set(all_player_ids))
+        for player_id in all_player_ids:
+            self.create_player(league, player_id)
+        league.players_scrape_finish_time = datetime.datetime.now()
+        league.save()
 
     def scrape_league(self, league):
         self.scrape_core_and_matchups(league)
-#        self.scrape_players(league)
+        if league.year == '2013':
+            self.scrape_players(league)
 
     def scrape_espn_user_leagues(self, espn_user):
         logger.debug("scraping welcome page for espn user %s" % (espn_user.id))
@@ -193,15 +191,18 @@ class LeagueScraper(object):
         self.load_espn_user_leagues(espn_user)
 
     def load_league(self, league):
-        self.scrape_league(league)
-        self.scrape_players(league)
-
-        self.load_players(league)
         self.load_teams(league)
-        self.load_lineups(league)
-        self.load_games(league)
+
+        if league.year == '2013':
+            self.load_players(league)
+            self.load_lineups(league)
+        elif league.year == '2014':
+            self.load_games(league)
+        else:
+            raise Exception("Invalid year")
 
         self.load_optimal_lineups(league)
+
         league.league_loaded_finish_time = datetime.datetime.now()
         league.loaded = True
         league.save()
@@ -215,7 +216,7 @@ class LeagueScraper(object):
         logger.debug("loading players for league %s" % league)
         player_htmls = self.store.get_all_player_htmls(league)
         for player_html in player_htmls:
-            load_scores_from_playersheet(player_html, league.year)
+            load_scores_from_playersheet(player_html[1], player_html[0], league.year)
         logger.debug("%d players loaded" % (len(Player.objects.all())))
 
     def load_teams(self, league):
@@ -224,8 +225,6 @@ class LeagueScraper(object):
         load_teams_from_standings(standings_html, league)
 
     def load_lineups(self, league):
-        if league.year != '2013':
-            return
         logger.debug("loading linups for league %s" % league)
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)

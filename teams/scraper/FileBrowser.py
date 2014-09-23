@@ -114,9 +114,9 @@ class FileBrowser(object):
     def has_player(self, league, player_id):
         return os.path.exists(self.player_path(league, player_id))
 
-    def get_player(self, player_id, league):
+    def get_player(self, player_id, league=None, year='2013'):
         if league is None:
-            league = League(espn_id='930248', year='2014')
+            league = League(espn_id='930248', year=year)
         return open(self.player_path(league, player_id)).read()
 
     def write_player(self, league, player_id, html):
@@ -130,7 +130,8 @@ class FileBrowser(object):
         mkdir_p(dirpath)
         player_files = os.listdir(dirpath)
         for player_html in player_files:
-            htmls.append(open(player_html).read())
+            id = re.match(r'player_(\d*).html', player_html).group(1)
+            htmls.append((id, open(player_html).read()))
         return htmls
 
     def game_path(self, league, team_id, week):

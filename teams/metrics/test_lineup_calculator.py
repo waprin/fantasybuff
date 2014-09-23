@@ -6,12 +6,13 @@ from django.utils import unittest
 
 from teams.models import League, Team, Scorecard, ScorecardEntry, Player
 from lineup_calculator import  calculate_optimal_lineup, get_lineup_score, can_fill_slot
-
-from teams.tests import clear_test_database
+from teams.utils.db_utils import clearDb
 
 class LineupCalculatorTest(unittest.TestCase):
 
-    @clear_test_database
+    def setUp(self):
+        clearDb()
+
     def test_can_fill_slot(self):
         league = League.objects.create(name="test league", espn_id='12345', year=2013)
         rogues_team = Team.objects.create(league=league, espn_id='3', team_name='Gotham City Rogues', owner_name='Bill Prin')
@@ -33,7 +34,6 @@ class LineupCalculatorTest(unittest.TestCase):
         available_players = filter(partial(can_fill_slot, 'FLEX'), entries)
         self.assertEquals(len(available_players), 2)
 
-    @clear_test_database
     def test_calculate_lineup(self):
         league = League.objects.create(name="test league", espn_id='12345', year=2013)
         rogues_team = Team.objects.create(league=league, espn_id='3', team_name='Gotham City Rogues', owner_name='Bill Prin')
