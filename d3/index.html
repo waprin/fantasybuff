@@ -2,8 +2,8 @@
 
 <style>
 
-.chart {
-    fill: steelblue;
+.chart rect {
+    fill: #4682b4;
 }
 
 .chart .score  {
@@ -43,9 +43,13 @@
   </g>-->
 </svg>
 </div>
+<div class="words">
+
+</div>
 
 
 <script src="http://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"> </script>
 <script type="text/javascript">
 
     var data = [{"title": "Lineup",  "value": 40}, {"title": "Waiver Wire", "value": 90}, {"title": "Trading", "value": 70}];
@@ -71,17 +75,20 @@
              .transition()
     .attr("width", function(d) { return x(d.value)})
              .duration(700)
-             .delay(function(d, i) { return i * 700;})
+             .delay(function(d, i) { return i * 1200;})
              .transition()
-             .attr("fill", function(d) {
+             .duration(500)
+             .style("fill", function(d) {
                  if (d.value < 50) {
-                     return "red";
+                     return "#F00";
                  } else if (d.value < 80) {
                      return "#EEE34E";
                  }
                  else {
-                     return "green";
+                     return "#0F0";
                  }
+             }).each("end", function(d) {
+                 $(".words").append('<p>' + d.title + ":" + d.value + "</p>" );
              });
 
 
