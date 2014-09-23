@@ -46,7 +46,7 @@ def get_passing_stats(player_score_stats, stats):
     player_score_stats.interceptions = int(interceptions.strip())
     player_score_stats.fumbles = int(fumbles.strip())
     player_score_stats.default_points = Decimal(stats[5])
-    return player_score_stats
+    player_score_stats.save()
 
 def get_running_stats(player_score_stats, stats):
     stats = map(lambda stat: 0 if stat == '-' else stat, stats)
@@ -59,14 +59,30 @@ def get_receiving_stats(player_score_stats, stats):
     player_score_stats.receptions = int(stats[2])
     player_score_stats.receiving_yards = int(stats[3])
     player_score_stats.receving_td = int(stats[4])
-    return player_score_stats
+    player_score_stats.save()
 
 def get_special_stats(player_score_stats, stats):
     stats = map(lambda stat: 0 if stat == '-' else stat, stats)
     player_score_stats.blocked_kr = int(stats[2])
     player_score_stats.int_td = int(stats[3])
     player_score_stats.fr_td = int(stats[4])
+    player_score_stats.save()
 
+def get_kicking_stats(player_score_stats, stats):
+    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
+    player_score_stats.pat_made = Decimal(stats[4])
+    fg_made = Decimal(stats[2])
+    fg_attempted = Decimal(stats[3])
+    fg_missed = fg_attempted - fg_made
+    player_score_stats.fg_missed = fg_missed
+    player_score_stats.save()
+
+def get_fg_distance_stats(player_score_stats, stats):
+    stats = map(lambda stat: 0 if stat == '-' else stat, stats)
+    player_score_stats.fg_0 = Decimal(stats[2])
+    player_score_stats.fg_40 = Decimal(stats[3])
+    player_score_stats.fg_50 = Decimal(stats[4])
+    player_score_stats.save()
 
 def get_stats_function(headers):
     if headers == ['WK', 'OPP', 'YDS', 'TD', 'I/F', 'PTS']:
@@ -77,6 +93,16 @@ def get_stats_function(headers):
         return get_receiving_stats
     elif headers == [u'WK', u'OPP', u'BLKKRTD', u'INTTD', u'FRTD', u'PTS']:
         return get_special_stats
+    elif headers == [u'WK', u'OPP', u'FGM', u'FGA', u'XPM', u'PTS']:
+        return get_kicking_stats
+    elif headers == [u'WK', u'OPP', u'1-39', u'40-49', u'50+', u'PTS']:
+        return get_fg_distance_stats
+    elif headers == [u'WK', u'OPP', u'PA', u'I', u'FR', u'TD', u'PTS']:
+        pass
+    elif headers == [u'WK', u'OPP', u'PTD', u'KTD', u'SCK', u'PTS']:
+        pass
+    else:
+        raise Exception("unknown headers %s" % str(headers))
 
 
 def load_scores_from_playersheet(html, year, overwrite=False):
@@ -109,9 +135,8 @@ def load_scores_from_playersheet(html, year, overwrite=False):
             except ObjectDoesNotExist:
                 pss = PlayerScoreStats(score_entry=sc)
                 pss.save()
-                sc = ScoreEntry.objects.get_or_create(week=week, year=year, player=player)[0]
-                pss = stats_function(pss, stats)
-                pss.save()
+                stats_function(pss, stats)
+
 
 """
     logger.debug("updating scores for player %s: %s" % (player.name, player.espn_id))
@@ -180,3 +205,45 @@ def load_week_from_lineup(html, week, team):
         ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
     scorecard.points = total_points
     scorecard.save()
+
+
+def load_scores_from_game(league, week, html):
+    logger.debug('load scores(): begin ... ')
+    pool = BeautifulSoup(html)
+
+    team_id_blocks = pool.find(id='teamInfos').find_all('a', href=re.compile(r'.*teamId.*'))
+    team_ids = []
+    for block in team_id_blocks:
+        team_id = re.match('.*teamId=(\d*)', block['href']).group(1)
+        team_ids.append(team_id)
+
+    second_team_block = pool.find_all('div', {'style' : 'clear: both;'})[1].previous_sibling
+    first_team_block = second_team_block.previous_sibling
+
+    team_blocks = [(team_ids[0], first_team_block), (team_ids[1], second_team_block)]
+
+    for team_block in team_blocks:
+        team = Team.objects.get(league=league, espn_id=team_block[0])
+        scorecard = Scorecard.objects.create(team=team, week=week, actual=True)
+
+        player_rows = team_block[1].find_all('tr', id=re.compile(r'plyr\d*'))
+        total_points = Decimal(0)
+        for player_row in player_rows:
+            slot = player_row.td.string
+            player_link = player_row.find('td', 'playertablePlayerName').a
+            player_id = player_link['playerid']
+            points = player_row.find('td', 'appliedPoints').string
+            if points == '--':
+                points = '0'
+            points = Decimal(points)
+            try:
+                player = Player.objects.get(espn_id=player_id)
+            except Player.DoesNotExist:
+                name = player_link.string
+                position = player_link.next_sibling.split()[-1]
+                player = Player.objects.create(espn_id=player_id, name=name, position=position)
+            ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
+            if slot != 'Bench':
+                total_points += points
+        scorecard.points = total_points
+        scorecard.save()

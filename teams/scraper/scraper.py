@@ -3,9 +3,9 @@ from decimal import Decimal
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
 from teams.models import League, Team, Scorecard, ScorecardEntry, Player
 from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
-    get_leagues_from_entrance
+    get_leagues_from_entrance, get_teams_from_matchups
 from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet, \
-    load_teams_from_standings, load_week_from_lineup
+    load_teams_from_standings, load_week_from_lineup, load_scores_from_game
 
 __author__ = 'bill'
 
@@ -110,7 +110,7 @@ class LeagueScraper(object):
     def create_player(self, league, player_id):
         if not self.overwrite and self.store.has_player(league, player_id):
             return False
-        player_html = self.scraper.get_player(league, player_id)
+        player_html = self.scraper.get_player(player_id, league)
         self.store.write_player(league, player_id, player_html)
         return True
 
@@ -120,6 +120,24 @@ class LeagueScraper(object):
         for player_id in player_ids:
             self.create_player(league, player_id)
 
+    def create_game(self, league, team_id, week):
+        logger.debug("creating game %s %s %d" % (str(league), team_id, week))
+        if not self.overwrite and self.store.has_game(league, team_id, week):
+            return False
+        game_html = self.scraper.get_game(league, team_id, week)
+        self.store.write_game(league, team_id, week, game_html)
+        return True
+
+    def create_weekly_matchups(self, league, week):
+        logger.debug("create weekly matchups(): begin %d " % week)
+        self.create_matchups_page(league, week)
+        matchups_html = self.store.get_matchups(league, week)
+        teams = get_teams_from_matchups(matchups_html)
+        logger.debug("teams is %s" % str(teams))
+        for team_id in teams:
+            team_id = team_id[0]
+            logger.debug("create weekly matchups(): %s %s %d" % (league, team_id, week))
+            self.create_game(league, team_id, week)
 
     def scrape_core_and_matchups(self, league):
         league.league_scrape_start_time = datetime.datetime.now()
@@ -129,30 +147,38 @@ class LeagueScraper(object):
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
-        for team in teams:
+        if league.year == '2013':
+            for team in teams:
+                for week in range(1, num_weeks + 1):
+                    self.create_team_week_roster(league, team[0], week)
+        elif league.year == '2014':
+            logger.debug("scrape_core: 2014 logic")
             for week in range(1, num_weeks + 1):
-                self.create_team_week_roster(league, team[0], week)
+                self.create_weekly_matchups(league, week)
+        else:
+            raise Exception("Unsupported year %s" % league.year)
         league.lineups_scrape_finish_time = datetime.datetime.now()
         league.save()
 
     def scrape_players(self, league):
-        teams = get_teams_from_standings(self.store.get_standings(league))
-        num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
-        num_weeks = get_real_num_weeks(num_weeks, league)
-        all_player_ids = []
-        for team in teams:
-            for week in range(1, num_weeks + 1):
-                player_ids = get_player_ids_from_lineup(self.store.get_roster(league, team[0], week))
-                all_player_ids = all_player_ids + player_ids
-        all_player_ids = list(set(all_player_ids))
-        for player_id in all_player_ids:
-            self.create_player(league, player_id)
-        league.players_scrape_finish_time = datetime.datetime.now()
-        league.save()
+        if league.year == '2013':
+            teams = get_teams_from_standings(self.store.get_standings(league))
+            num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
+            num_weeks = get_real_num_weeks(num_weeks, league)
+            all_player_ids = []
+            for team in teams:
+                for week in range(1, num_weeks + 1):
+                    player_ids = get_player_ids_from_lineup(self.store.get_roster(league, team[0], week))
+                    all_player_ids = all_player_ids + player_ids
+            all_player_ids = list(set(all_player_ids))
+            for player_id in all_player_ids:
+                self.create_player(league, player_id)
+            league.players_scrape_finish_time = datetime.datetime.now()
+            league.save()
 
     def scrape_league(self, league):
         self.scrape_core_and_matchups(league)
-        self.scrape_players(league)
+#        self.scrape_players(league)
 
     def scrape_espn_user_leagues(self, espn_user):
         logger.debug("scraping welcome page for espn user %s" % (espn_user.id))
@@ -173,23 +199,23 @@ class LeagueScraper(object):
         self.load_players(league)
         self.load_teams(league)
         self.load_lineups(league)
+        self.load_games(league)
+
         self.load_optimal_lineups(league)
         league.league_loaded_finish_time = datetime.datetime.now()
         league.loaded = True
         league.save()
 
     def reload_lineups(self, league):
-#        ScorecardEntry.objects.filter(scorecard__team__league=league).delete()
         Scorecard.objects.filter(team__league=league).delete()
         self.load_lineups(league)
         self.load_optimal_lineups(league)
-
 
     def load_players(self, league):
         logger.debug("loading players for league %s" % league)
         player_htmls = self.store.get_all_player_htmls(league)
         for player_html in player_htmls:
-            load_scores_from_playersheet(player_html, league)
+            load_scores_from_playersheet(player_html, league.year)
         logger.debug("%d players loaded" % (len(Player.objects.all())))
 
     def load_teams(self, league):
@@ -198,6 +224,8 @@ class LeagueScraper(object):
         load_teams_from_standings(standings_html, league)
 
     def load_lineups(self, league):
+        if league.year != '2013':
+            return
         logger.debug("loading linups for league %s" % league)
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
@@ -206,6 +234,16 @@ class LeagueScraper(object):
             for week in range(1, num_weeks+1):
                 lineup_html = self.store.get_roster(league, team.espn_id, week)
                 load_week_from_lineup(lineup_html, week, team)
+
+    def load_games(self, league):
+        if league.year != '2014':
+            return False
+        num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
+        num_weeks = get_real_num_weeks(num_weeks, league)
+        for week in range(1, num_weeks+1):
+            htmls = self.store.get_all_games(league, week)
+            for html in htmls:
+                load_scores_from_game(league, week, html)
 
     def load_optimal_lineups(self, league):
         logger.debug("loading optimal lineups for league %s" % league)
@@ -241,40 +279,6 @@ class LeagueScraper(object):
             team.average_delta = average_delta
             team.save()
 
-    def create_games(self, file_browser, espn_id, week_num):
-        self.browser =  scrape.EspnScraper()
-        logger.debug("create_games(): created browser")
-        self.browser.login(self.username, self.password)
-        logger.debug("create_games(): sucessfully logged in")
-
-        scoreboard_html = file_browser.scrape_scoreboard(espn_id, week_num)
-        team_ids = get_teams_from_scoreboard(scoreboard_html)
-
-        os.makedirs(os.path.join(self.d, 'week_%d' % week_num, 'games'))
-        for team_id in team_ids:
-            html = self.browser.scrape_game(espn_id, team_id, week_num)
-#            print "team id is %s" % team_id
-            filepath = os.path.join(self.d, 'week_%d' % week_num, 'games', 'game_%s.html' % team_id)
-            logger.debug("writing game html to filepath %s" % filepath)
-            f = open(filepath, 'w')
-            f.write(html)
-
-    def create_trans_logs(self, file_browser, espn_id):
-        self.browser =  scrape.EspnScraper()
-        logger.debug("create_trans_logs(): created browser")
-        self.browser.login(self.username, self.password)
-        logger.debug("create_trans_logs(): sucessfully logged in")
-
-        scoreboard_html = file_browser.scrape_scoreboard(espn_id, 1)
-        team_ids = get_teams_from_scoreboard(scoreboard_html)
-
-#        print "team ids: "
-#        print team_ids
-        os.makedirs(os.path.join(self.d, 'translogs'))
-
-        for team_id in team_ids:
-            pass
-            #self.browser.scrape_translog()
 
 
 

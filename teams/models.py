@@ -133,6 +133,12 @@ class PlayerScoreStats(models.Model):
     int_td = models.IntegerField(null=True)
     fr_td = models.IntegerField(null=True)
 
+    pat_made = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    fg_missed = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    fg_0 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    fg_40 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    fg_50 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+
     return_td = models.IntegerField(null=True)
 
     default_points = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
@@ -238,5 +244,9 @@ class PlayerHtmlScrape(HtmlScrape):
     player_id = models.CharField(max_length=20)
     league = models.ForeignKey(League)
 
-
+class GameHtmlScrape(HtmlScrape):
+    first_team = models.CharField(max_length=20)
+    second_team = models.CharField(max_length=20)
+    week = models.IntegerField()
+    league = models.ForeignKey(League)
 

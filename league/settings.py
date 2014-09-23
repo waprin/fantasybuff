@@ -13,7 +13,7 @@ ADMINS = (
 )
 
 YAHOO_CONSUMER_KEY           = 'dj0yJmk9YUhSTTNlZFVyQ29yJmQ9WVdrOU1GTmlXSEpxTlRRbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD0xMQ--'
-YAHOO_CONSUMER_SECRET        = os.environ['YAHOO_FF_SECRET']
+
 
 try:
     if os.environ['FF_LOCAL'] == 'True':
@@ -25,7 +25,15 @@ except KeyError:
 
 MANAGERS = ADMINS
 
+try :
+    YAHOO_CONSUMER_SECRET        = os.environ['YAHOO_FF_SECRET']
+except KeyError:
+    if LOCAL:
+        YAHOO_CONSUMER_KEY = ''
+    else:
+        raise Exception("No YAHOO_FF_SECRET")
 
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 
 DATABASES = {

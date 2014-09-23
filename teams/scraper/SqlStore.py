@@ -3,8 +3,10 @@ __author__ = 'bprin'
 import logging
 logger = logging.getLogger(__name__)
 
+from django.db.models import Q
+
 from teams.models import EntranceHtmlScrape, MatchupsWeekHtmlScrape, RosterHtmlScrape, StandingsHtmlScrape, \
-    PlayerHtmlScrape
+    PlayerHtmlScrape, GameHtmlScrape
 
 
 class SqlStore:
@@ -58,7 +60,7 @@ class SqlStore:
     def has_player(self, league, player_id):
         return len(PlayerHtmlScrape.objects.filter(player_id=player_id, league=league)) > 0
 
-    def get_player(self, league, player_id):
+    def get_player(self, player_id, league):
         return PlayerHtmlScrape.objects.filter(league=league, player_id=player_id)[0].html
 
     def write_player(self, league, player_id, html):
@@ -69,3 +71,20 @@ class SqlStore:
         for player_html in PlayerHtmlScrape.objects.filter(league=league):
             htmls.append(player_html.html)
         return htmls
+
+## games
+    def has_game(self, league, team_id, week):
+        return len(GameHtmlScrape.objects.filter(Q(first_team=team_id) | Q(second_team=team_id) , league=league)) > 0
+
+    def get_game(self, league, team_id, week):
+        return GameHtmlScrape.objects.filter(Q(first_team=team_id) | Q(second_team=team_id), league=league)[0].html
+
+    def write_game(self, league, team_id, week, html):
+        GameHtmlScrape.objects.create(first_team=team_id, html=html, league=league, week=week)
+
+    def get_all_games(self, league, week):
+        htmls = []
+        for game_html in GameHtmlScrape.objects.filter(league=league, week=week):
+            htmls.append(game_html)
+        return htmls
+

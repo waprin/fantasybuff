@@ -133,22 +133,32 @@ class FileBrowser(object):
             htmls.append(open(player_html).read())
         return htmls
 
-    def put_season_totals(self, index, html):
-        with open(os.path.join(self.d, 'season_totals_%d.html' % index), 'w') as f:
+    def game_path(self, league, team_id, week):
+        instance_dir = self.create_instance_directory(league.espn_id, league.year)
+        dirpath = os.path.join(instance_dir, "week_%d" % week)
+        mkdir_p(dirpath)
+        logger.debug("team id is " + str(team_id))
+        return os.path.join(dirpath, "game_%s.html" % team_id)
+
+    def has_game(self, league, team_id, week):
+        return os.path.exists(self.game_path(league, team_id, week))
+
+    def get_game(self, league, team_id, week):
+        return open(self.game_path(league, team_id, week)).read()
+
+    def write_game(self, league, team_id, week, html):
+        with open(self.game_path(league, team_id ,week), 'w') as f:
             f.write(html)
 
-
-
-    def scrape_all_games(self, week_num):
-        path = os.path.join(self.d, 'week_%d' % week_num, 'games')
-        game_files = os.listdir(path)
+    def get_all_games(self, league, week):
+        instance_dir = self.create_instance_directory(league.espn_id, league.year)
+        dirpath = os.path.join(instance_dir, "week_%d" % week)
+        mkdir_p(dirpath)
+        game_files = os.listdir(dirpath)
         htmls = []
         for game_file in game_files:
-            game_file_path = os.path.join(path, game_file)
-            html = open(game_file_path).read()
-            htmls.append(html)
+            htmls.append(open(game_file).read())
         return htmls
-
 
     def scrape_translogs(self, team_id):
         return open('translog.html').read()

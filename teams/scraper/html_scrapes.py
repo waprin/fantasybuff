@@ -58,19 +58,7 @@ def parse_scores_from_playersheet(html):
     rows = pool.find_all('table')[2].find_all('tr')[1:]
     return [row.find_all('td')[-1].string for row in rows]
 
-
-"""
-    rows = soup.find('table', 'playerTableTable').find_all('tr')[2:-1]
-    players = []
-    for row in rows:
-        playerId = row.contents[0].a['playerid']
-        playerName = row.contents[0].a.string
-        players.append((playerId, playerName))
-
-"""
-
-"""
-def get_teams_from_scoreboard(html):
+def get_teams_from_matchups(html):
     soup = BeautifulSoup(html)
     matchups = soup.find_all('table', 'matchup')
 
@@ -80,6 +68,7 @@ def get_teams_from_scoreboard(html):
         logger.debug("teams is " + str(teams))
         first_id_string = teams[0]['id']
         first_id = re.search(r'teamscrg_(\d*)_', first_id_string).group(1)
-        games.append(first_id)
+        second_id_string = teams[1]['id']
+        second_id = re.search(r'teamscrg_(\d*)_', second_id_string).group(1)
+        games.append((first_id, second_id))
     return games
-"""

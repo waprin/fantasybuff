@@ -56,24 +56,22 @@ class EspnScraper:
         html = r.read()
         return html
 
-    def get_player(self, league, player_id):
+    def get_player(self, player_id, league):
         time.sleep(3)
         request = "http://games.espn.go.com/ffl/format/playerpop/overview?leagueId=%s&playerId=%s&playerIdType=playerId&seasonId=%s" % (league.espn_id, player_id, league.year)
         logger.debug("get_player(): url is %s" % request)
         r = self.br.open(request)
         html = r.read()
         return html
-    """
-    def scrape_game(self, espn_id, team_id, week):
+
+    def get_game(self, league, team_id, week):
         time.sleep(1)
         logger.debug('scrape game(): begin .. ')
-#        team_id = game.first_scorecard.team.espn_id
-        url = "http://games.espn.go.com/ffl/boxscorefull?leagueId=%s&teamId=%s&scoringPeriodId=%d&seasonId=%s&view=scoringperiod&version=full" % (espn_id)
-        logger.info("scrape_game(): scraping url %s" % url)
+        url = "http://games.espn.go.com/ffl/boxscorefull?leagueId=%s&teamId=%s&scoringPeriodId=%d&seasonId=%s&view=scoringperiod&version=full" % (league.espn_id, team_id, week, league.year)
+        logger.debug("scrape_game(): scraping url %s" % url)
         r = self.br.open(url)
         html = r.read()
         return html
-        """
 
     def get_matchups(self, league, week):
         time.sleep(1)
