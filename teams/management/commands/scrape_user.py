@@ -9,9 +9,12 @@ import django_rq
 __author__ = 'bprin'
 
 def defer_league_scrape(espn_user, league):
+    league.loaded = False
+    league.save()
     store = SqlStore()
     scraper = get_scraper(espn_user)
     league_scraper = LeagueScraper(scraper, store)
+    league_scraper.scrape_league(league)
     league_scraper.load_league(league)
 
 def defer_espn_user_scrape(espn_user):

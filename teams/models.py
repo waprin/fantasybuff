@@ -49,7 +49,7 @@ class Player(models.Model):
     )
     name = models.CharField(max_length=100)
     position = models.CharField(max_length=20, choices=POSITIONS)
-    espn_id = models.CharField(max_length=20)
+    espn_id = models.CharField(max_length=20, unique=True)
 
     def __unicode__(self):
         return self.name
@@ -108,7 +108,7 @@ class ScoreEntry(models.Model):
     year = models.CharField(max_length=5)
 
     class Meta:
-        unique_together = (('week', 'player'))
+        unique_together = (('week', 'player', 'year'))
 
 
 class PlayerScoreStats(models.Model):

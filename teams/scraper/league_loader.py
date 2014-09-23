@@ -110,8 +110,13 @@ def load_scores_from_playersheet(html, player_id, year, overwrite=False):
     name = __get_player_name_from_playerpage(html)
     #player_id = __get_player_id_from_playerpage(html)
     position = __get_player_position_from_playerpage(html)
+    new = True
 
-    (player, new) = Player.objects.get_or_create(name=name, espn_id=player_id, position=position)
+    try:
+        player = Player.objects.get(espn_id=player_id)
+    except Player.DoesNotExist:
+        new = False
+        player = Player.objects.create(name=name, espn_id=player_id, position=position)
 
     if not new:
         entries = ScoreEntry.objects.filter(player=player, year=year)
@@ -152,9 +157,6 @@ def load_teams_from_standings(html, league):
         team_name = matched_name.group(1)
         owner_name = matched_name.group(2)
         team, created = Team.objects.get_or_create(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league)
-        if not created:
-            logger.warn("created duplicate team %s %s" % (league.espn_id, team.espn_id))
-
 
 
 def __get_players_from_lineup(html):
@@ -177,14 +179,14 @@ def load_week_from_lineup(html, week, team):
     players = __get_players_from_lineup(html)
     total_points = Decimal(0)
     for player_id in players:
-        logger.debug("loading score entry for player %s" % str(player_id))
+        #logger.debug("loading score entry for player %s" % str(player_id))
         try:
             player = Player.objects.get(espn_id=player_id[1])
         except Player.DoesNotExist:
             logger.error("could not find player id %s" % str(player_id))
             raise
         try:
-            points = ScoreEntry.objects.get(player=player, week=week).player_score_stats.default_points
+            points = ScoreEntry.objects.get(player=player, week=week, year=team.league.year).player_score_stats.default_points
         except ScoreEntry.DoesNotExist:
             logger.error("could not find scoreentry for player id %s" % str(player_id))
             raise

@@ -62,15 +62,3 @@ class Command(BaseCommand):
         league_scraper = LeagueScraper(scraper, file_browser)
         league = League.objects.get(espn_id='930248', year='2014')
         league_scraper.scrape_league(league)
-
-"""
-        email = args[0]
-        store = SqlStore()
-        user = User.objects.get(username=email)
-        espn_users = EspnUser.objects.filter(user=user)
-        for espn_user in espn_users:
-            scraper = get_scraper(espn_user)
-            league_scraper = LeagueScraper(scraper, store)
-            league_scraper.scrape_leagues(espn_user)
-"""
-

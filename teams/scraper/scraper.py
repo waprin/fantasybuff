@@ -65,9 +65,6 @@ def is_league_players_scraped(league, store):
     return True
 
 
-def is_league_loaded(league, store):
-    return False
-
 class LeagueScraper(object):
 
     def __init__(self, scraper, store, overwrite=False):
@@ -191,6 +188,11 @@ class LeagueScraper(object):
         self.load_espn_user_leagues(espn_user)
 
     def load_league(self, league):
+        league.loaded = False
+        league.save()
+
+        Team.objects.filter(league=league).delete()
+
         self.load_teams(league)
 
         if league.year == '2013':
