@@ -235,7 +235,8 @@ class StandingsHtmlScrape(HtmlScrape):
     league = models.ForeignKey(League)
 
 class SettingsHtmlScrape(HtmlScrape):
-    league = models.ForeignKey(League)
+    league_id = models.CharField(max_length=20)
+    year = models.CharField(max_length=5)
 
 class RosterHtmlScrape(HtmlScrape):
     week = models.IntegerField()

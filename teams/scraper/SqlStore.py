@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 from django.db.models import Q
 
 from teams.models import EntranceHtmlScrape, MatchupsWeekHtmlScrape, RosterHtmlScrape, StandingsHtmlScrape, \
-    PlayerHtmlScrape, GameHtmlScrape
+    PlayerHtmlScrape, GameHtmlScrape, SettingsHtmlScrape
 
 
 class SqlStore:
@@ -43,6 +43,17 @@ class SqlStore:
 
     def get_standings(self, league):
         return StandingsHtmlScrape.objects.filter(league=league)[0].html
+
+## settings
+
+    def has_settings(self, league_id, year):
+        return len(SettingsHtmlScrape.objects.filter(league_id=league_id, year=year)) > 0
+
+    def write_settingss(self, league_id, year, html):
+        SettingsHtmlScrape.objects.create(html=html, league_id=league_id, year=year)
+
+    def get_settings(self, league_id, year):
+        return SettingsHtmlScrape.objects.filter(league_id=league_id, year=year)[0].html
 
 ## rosters
 

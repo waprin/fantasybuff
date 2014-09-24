@@ -87,10 +87,10 @@ class LeagueScraper(object):
         return True
 
     def create_settings_page(self, league):
-        if not self.overwrite and self.store.has_settings(league):
+        if not self.overwrite and self.store.has_settings(league.espn_id, league.year):
             return False
-        settings_html = self.scraper.get_settings(league)
-        self.store.write_settings(league, settings_html)
+        settings_html = self.scraper.get_settings(league.espn_id, league.year)
+        self.store.write_settings(league.espn_id, league.year, settings_html)
         return True
 
     def create_matchups_page(self, league, week):

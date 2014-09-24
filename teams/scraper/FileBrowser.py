@@ -74,6 +74,20 @@ class FileBrowser(object):
         with open(self.matchup_path(league), 'w') as f:
             f.write(html)
 
+    def settings_path(self, league_id, year):
+        instance_dir = self.create_instance_directory(league_id, year)
+        return os.path.join(instance_dir, 'settings.html')
+
+    def has_settings(self, league_id, year):
+        return os.path.exists(self.settings_path(league_id, year))
+
+    def get_settings(self, league_id, year):
+        return open(self.settings_path(league_id, year)).read()
+
+    def write_settings(self, league_id, year, html):
+        with open(self.settings_path(league_id, year), 'w') as f:
+            f.write(html)
+
     def matchup_path(self, league, week):
         instance_dir = self.create_instance_directory(league.espn_id, league.year)
         return os.path.join(instance_dir, 'matchups_%d.html' % week)
@@ -162,16 +176,16 @@ class FileBrowser(object):
 
     def translog_path(self, league_id, year, team_id):
         instance_dir = self.create_instance_directory(league_id, year)
-        return os.path.join(instance_dir, "translog_%s.htm" % team_id)
+        return os.path.join(instance_dir, "translog_%s.html" % team_id)
 
     def has_translog(self, league_id, year, team_id):
-        return os.path.exists(self.game_path(league_id, year, team_id))
+        return os.path.exists(self.translog_path(league_id, year, team_id))
 
     def get_translog(self, league_id, year, team_id):
-        return open(self.game_path(league, team_id, week)).read()
+        return open(self.translog_path(league_id, year, team_id)).read()
 
-    def write_translog(self, league, team_id, week, html):
-        with open(self.game_path(league, team_id ,week), 'w') as f:
+    def write_translog(self, league_id, year, team_id, html):
+        with open(self.translog_path(league_id, year, team_id), 'w') as f:
             f.write(html)
 
 
