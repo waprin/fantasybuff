@@ -1,6 +1,7 @@
 from decimal import Decimal
+import datetime
 from django.core.exceptions import ObjectDoesNotExist
-from teams.models import League, Player, ScoreEntry, Team, Scorecard, ScorecardEntry, PlayerScoreStats
+from teams.models import League, Player, ScoreEntry, Team, Scorecard, ScorecardEntry, PlayerScoreStats, DraftClaim
 from teams.scraper.html_scrapes import get_leagues_from_entrance
 
 import re
@@ -239,3 +240,24 @@ def load_scores_from_game(league, week, html):
                 total_points += points
         scorecard.points = total_points
         scorecard.save()
+
+
+def load_transactions(html, year, team):
+    soup = BeautifulSoup(html)
+    rows = soup.find_all('table')[0].find_all('tr')[3:]
+    rows.reverse()
+    draft_round = 1
+    for row in rows:
+        player_name = row.contents[2].b.string
+        transaction_type = rows[0].contents[1].contents[-1]
+
+        date_str = ' '.join(list(rows[0].contents[0].strings))
+        date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
+        date.replace(year=year)
+
+        player = Player.objects.get(name=str(player_name))
+
+        if transaction_type == 'Draft':
+            draft_entry = DraftClaim(date=date,round=draft_round, player_added=player, player=team)
+            draft_round = draft_round + 1
+            draft_entry.save()

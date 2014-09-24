@@ -1,8 +1,9 @@
 from django.contrib.auth.models import User
-from teams.models import EspnUser, ScoreEntry, PlayerScoreStats
+from teams.models import EspnUser, ScoreEntry, PlayerScoreStats, DraftClaim
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from django.utils import unittest
+from teams.scraper.league_loader import load_transactions
 
 __author__ = 'bill'
 
@@ -141,6 +142,15 @@ class LeagueCreatorTest(unittest.TestCase):
         current_league = League.objects.filter(year=2014)[0]
         current_num_weeks = get_real_num_weeks(13, league=current_league)
         self.assertLess(current_num_weeks, 13)
+
+    def test_load_translog(self):
+        league = League.objects.create(espn_id='930248',year='2014')
+        team = Team.objects.create(espn_id='11', league=league)
+        html = self.browser.get_translog(league.espn_id, league.year, team.espn_id)
+
+        load_transactions(html, league.year, team.espn_id)
+
+        self.assertEquals(13, len(DraftClaim.objects.filter(team=team)))
 
 
 

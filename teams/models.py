@@ -198,7 +198,7 @@ class ScoringSystem(models.Model):
 
 class TransLogEntry(models.Model):
     date = models.DateField()
-    player = models.ForeignKey(Team)
+    team = models.ForeignKey(Team)
 
     class Meta:
         abstract = True
@@ -234,6 +234,9 @@ class MatchupsWeekHtmlScrape(HtmlScrape):
 class StandingsHtmlScrape(HtmlScrape):
     league = models.ForeignKey(League)
 
+class SettingsHtmlScrape(HtmlScrape):
+    league = models.ForeignKey(League)
+
 class RosterHtmlScrape(HtmlScrape):
     week = models.IntegerField()
     team_id = models.CharField(max_length=10)
@@ -249,3 +252,7 @@ class GameHtmlScrape(HtmlScrape):
     week = models.IntegerField()
     league = models.ForeignKey(League)
 
+class TranslogHtmlScrape(HtmlScrape):
+    team_id = models.CharField(max_length=20)
+    league_id = models.CharField(max_length=20)
+    year = models.CharField(max_length=5)

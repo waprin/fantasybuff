@@ -45,7 +45,6 @@ class FileBrowser(object):
 
     def get_entrance(self, espn_user):
         time.sleep(1)
-        #return open(os.path.join(self.d, 'entrance_%d.html' % espn_user.id)).read()
         return open(os.path.join(self.d, 'entrance_1.html')).read()
 
     def write_entrance(self, espn_user, html):
@@ -161,31 +160,19 @@ class FileBrowser(object):
             htmls.append(open(game_file).read())
         return htmls
 
-    def scrape_translogs(self, team_id):
-        return open('translog.html').read()
+    def translog_path(self, league_id, year, team_id):
+        instance_dir = self.create_instance_directory(league_id, year)
+        return os.path.join(instance_dir, "translog_%s.htm" % team_id)
 
+    def has_translog(self, league_id, year, team_id):
+        return os.path.exists(self.game_path(league_id, year, team_id))
 
-    def scrape_lineup(self, team_id, week):
-        path = os.path.join(self.d, 'team_%s' % team_id, 'week_%d.html' % week)
-        return open(path).read()
+    def get_translog(self, league_id, year, team_id):
+        return open(self.game_path(league, team_id, week)).read()
 
-
-    def scrape_all_players(self):
-        path = os.path.join(self.d, "players")
-        player_files = listdir_nohidden(path)
-        htmls = []
-        for player_file in player_files:
-            player_file_path = os.path.join(path, player_file)
-            espn_id = re.match(r'player_(\d*).*', player_file).group(1)
-            html = open(player_file_path).read()
-            htmls.append((espn_id, html))
-        return htmls
-
-    def contains_player(self, player_id):
-        players_path = os.path.join(self.d, "players")
-        player_files = listdir_nohidden(players_path)
-        player_str = "player_" + player_id + ".html"
-        return player_str in player_files
+    def write_translog(self, league, team_id, week, html):
+        with open(self.game_path(league, team_id ,week), 'w') as f:
+            f.write(html)
 
 
 

@@ -86,6 +86,13 @@ class LeagueScraper(object):
         self.store.write_standings(league, standings_html)
         return True
 
+    def create_settings_page(self, league):
+        if not self.overwrite and self.store.has_settings(league):
+            return False
+        settings_html = self.scraper.get_settings(league)
+        self.store.write_settings(league, settings_html)
+        return True
+
     def create_matchups_page(self, league, week):
         if not self.overwrite and self.store.has_matchups(league, week):
             return False
@@ -121,6 +128,13 @@ class LeagueScraper(object):
         self.store.write_game(league, team_id, week, game_html)
         return True
 
+    def create_translog(self, league, team):
+        if not self.overwrite and self.store.has_translog(league.espn_id, league.year, team.espn_id):
+            return False
+        translog_html = self.scraper.get_translog(league.espn_id, league.year, team.espn_id)
+        self.store.write_translog(league.espn_id, league.year, team.espn_id, translog_html)
+        return True
+
     def create_weekly_matchups(self, league, week):
         logger.debug("create weekly matchups(): begin %d " % week)
         self.create_matchups_page(league, week)
@@ -136,6 +150,7 @@ class LeagueScraper(object):
         league.league_scrape_start_time = datetime.datetime.now()
         league.save()
         self.create_standings_page(league)
+        self.create_settings_page(league)
         self.create_matchups_page(league, 1)
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
@@ -150,6 +165,8 @@ class LeagueScraper(object):
                 self.create_weekly_matchups(league, week)
         else:
             raise Exception("Unsupported year %s" % league.year)
+        for team in teams:
+            self.create_translog(league, team)
         league.lineups_scrape_finish_time = datetime.datetime.now()
         league.save()
 

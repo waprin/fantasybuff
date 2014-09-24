@@ -85,19 +85,16 @@ class EspnScraper:
         r = self.br.open("http://games.espn.go.com/ffl/leaders?&seasonTotals=true&seasonId=2013&startIndex=%d" % index)
         return r.read()
 
-
-    """
-    def scrape_translog(self, espn_id, team_id):
+    def get_translog(self, league_id, year, team_id):
         time.sleep(1)
-        r = self.br.open("http://games.espn.go.com/ffl/recentactivity?leagueId=%s&seasonId=2013&activityType=2&startDate=20130805&endDate=20140909&teamId=%d&tranType=-1" % (espn_id, team_id))
+        next_year = str(int(year) + 1)
+        r = self.br.open("http://games.espn.go.com/ffl/recentactivity?leagueId=%s&seasonId=%s&activityType=2&startDate=%s0805&endDate=%s0909&teamId=%s&tranType=-1" %
+                         (league_id, year, year, next_year, team_id))
         html = r.read()
         return html
-    """
 
+    def get_settings(self):
+        pass
 
-if __name__ == '__main__':
-    scraper = EspnScraper()
-    scraper.login('gothamcityrogues', 'sincere1')
-    scraper.save_scoreboard()
 
 
