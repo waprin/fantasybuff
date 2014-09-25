@@ -1,3 +1,5 @@
+import os
+
 __author__ = 'bprin'
 
 import logging
@@ -6,7 +8,7 @@ logger = logging.getLogger(__name__)
 from django.db.models import Q
 
 from teams.models import EntranceHtmlScrape, MatchupsWeekHtmlScrape, RosterHtmlScrape, StandingsHtmlScrape, \
-    PlayerHtmlScrape, GameHtmlScrape, SettingsHtmlScrape
+    PlayerHtmlScrape, GameHtmlScrape, SettingsHtmlScrape, TranslogHtmlScrape
 
 
 class SqlStore:
@@ -47,7 +49,7 @@ class SqlStore:
 ## settings
 
     def has_settings(self, league_id, year):
-        return len(SettingsHtmlScrape.objects.filter(league_id=league_id, year=year)) > 0
+        return SettingsHtmlScrape.objects.filter(league_id=league_id, year=year).count() > 0
 
     def write_settingss(self, league_id, year, html):
         SettingsHtmlScrape.objects.create(html=html, league_id=league_id, year=year)
@@ -58,7 +60,7 @@ class SqlStore:
 ## rosters
 
     def has_roster(self, league, team_id, week):
-        return len(RosterHtmlScrape.objects.filter(team_id=team_id, week=week, league=league)) > 0
+        return RosterHtmlScrape.objects.filter(team_id=team_id, week=week, league=league).count() > 0
 
     def write_roster(self, league, team_id, week, html):
         RosterHtmlScrape.objects.create(html=html, league=league, week=week, team_id=team_id)
@@ -66,10 +68,21 @@ class SqlStore:
     def get_roster(self, league, team_id, week):
         return RosterHtmlScrape.objects.filter(league=league, team_id=team_id, week=week)[0].html
 
+## translog
+
+    def has_translog(self, league_id, year, team_id):
+        return TranslogHtmlScrape.objects.filter(league_id=league_id, year=year, team_id=team_id).count() > 0
+
+    def write_translog(self, league_id, year, team_id, html):
+        TranslogHtmlScrape.objects.create(league_id=league_id, year=year, team_id=team_id, html=html)
+
+    def get_translog(self, league_id, year, team_id):
+        return TranslogHtmlScrape.objects.filter(league_id=league_id, year=year, team_id=team_id)
+
 ## players
 
     def has_player(self, league, player_id):
-        return len(PlayerHtmlScrape.objects.filter(player_id=player_id, league=league)) > 0
+        return PlayerHtmlScrape.objects.filter(player_id=player_id, league=league).count() > 0
 
     def get_player(self, player_id, league):
         return PlayerHtmlScrape.objects.filter(league=league, player_id=player_id)[0].html
@@ -85,7 +98,7 @@ class SqlStore:
 
 ## games
     def has_game(self, league, team_id, week):
-        return len(GameHtmlScrape.objects.filter(Q(first_team=team_id) | Q(second_team=team_id) , league=league, week=week)) > 0
+        return GameHtmlScrape.objects.filter(Q(first_team=team_id) | Q(second_team=team_id) , league=league, week=week).count() > 0
 
     def get_game(self, league, team_id, week):
         return GameHtmlScrape.objects.filter(Q(first_team=team_id) | Q(second_team=team_id), league=league, week=week)[0].html

@@ -10,4 +10,5 @@ def clearDb():
     EspnUser.objects.all().delete()
     League.objects.all().delete()
     Player.objects.all().delete()
+    Team.objects.all().delete()
 

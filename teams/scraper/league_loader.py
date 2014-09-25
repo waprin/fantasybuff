@@ -234,6 +234,7 @@ def load_scores_from_game(league, week, html):
             except Player.DoesNotExist:
                 name = player_link.string
                 position = player_link.next_sibling.split()[-1]
+                logger.debug('creating new player %s' % name)
                 player = Player.objects.create(espn_id=player_id, name=name, position=position)
             ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
             if slot != 'Bench':
@@ -253,11 +254,14 @@ def load_transactions(html, year, team):
 
         date_str = ' '.join(list(rows[0].contents[0].strings))
         date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
-        date.replace(year=year)
+        date.replace(year=int(year))
 
-        player = Player.objects.get(name=str(player_name))
+        player_name = str(player_name)
+        if player_name[-1] == '*':
+            player_name = player_name[:-1]
+        player = Player.objects.get(name=player_name)
 
         if transaction_type == 'Draft':
-            draft_entry = DraftClaim(date=date,round=draft_round, player_added=player, player=team)
+            draft_entry = DraftClaim(date=date,round=draft_round, player_added=player, team=team)
             draft_round = draft_round + 1
             draft_entry.save()

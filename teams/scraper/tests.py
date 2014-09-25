@@ -4,6 +4,7 @@ from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from django.utils import unittest
 from teams.scraper.league_loader import load_transactions
+from teams.utils.db_utils import clearDb
 
 __author__ = 'bill'
 
@@ -12,16 +13,7 @@ logger = logging.getLogger(__name__)
 
 from scraper import *
 
-def clearDb():
-    for user in User.objects.all():
-        user.delete()
-    for user in EspnUser.objects.all():
-        user.delete()
-    for league in League.objects.all():
-        league.delete()
-    for player in Player.objects.all():
-        player.delete()
-
+@unittest.skip("too long")
 class IntegrationTest(unittest.TestCase):
 
     def setUp(self):
@@ -108,10 +100,8 @@ class LeagueCreatorTest(unittest.TestCase):
 
     def test_load_teams(self):
         league = League.objects.create(espn_id='930248',year='2014')
-
-        self.league_scraper.scrape_league(league)
-        self.league_scraper.scrape_players(league)
-        self.league_scraper.load_teams(league)
+        html = self.browser.get_standings(league)
+        load_teams_from_standings(html, league)
 
         teams = Team.objects.filter(league=league)
         self.assertEqual(len(teams), 12)
@@ -143,15 +133,16 @@ class LeagueCreatorTest(unittest.TestCase):
         current_num_weeks = get_real_num_weeks(13, league=current_league)
         self.assertLess(current_num_weeks, 13)
 
-    @unittest.skip("broken")
     def test_load_translog(self):
         league = League.objects.create(espn_id='930248',year='2014')
-        team = Team.objects.create(espn_id='11', league=league)
+        self.league_scraper.scrape_league(league)
+        self.league_scraper.load_league(league)
+        team = Team.objects.get(espn_id='6')
+
         html = self.browser.get_translog(league.espn_id, league.year, team.espn_id)
+        load_transactions(html, league.year, team)
 
-        load_transactions(html, league.year, team.espn_id)
-
-        self.assertEquals(13, len(DraftClaim.objects.filter(team=team)))
+        self.assertEquals(16, len(DraftClaim.objects.filter(team=team)))
 
 
 

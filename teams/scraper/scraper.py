@@ -129,10 +129,10 @@ class LeagueScraper(object):
         return True
 
     def create_translog(self, league, team):
-        if not self.overwrite and self.store.has_translog(league.espn_id, league.year, team.espn_id):
+        if not self.overwrite and self.store.has_translog(league.espn_id, league.year, team[0]):
             return False
-        translog_html = self.scraper.get_translog(league.espn_id, league.year, team.espn_id)
-        self.store.write_translog(league.espn_id, league.year, team.espn_id, translog_html)
+        translog_html = self.scraper.get_translog(league.espn_id, league.year, team[0])
+        self.store.write_translog(league.espn_id, league.year, team[0], translog_html)
         return True
 
     def create_weekly_matchups(self, league, week):
@@ -150,7 +150,7 @@ class LeagueScraper(object):
         league.league_scrape_start_time = datetime.datetime.now()
         league.save()
         self.create_standings_page(league)
-        self.create_settings_page(league)
+        #self.create_settings_page(league)
         self.create_matchups_page(league, 1)
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
