@@ -229,3 +229,9 @@ def espn_create(request):
     return redirect(show_all_leagues)
 
 
+def backbone(request):
+    template = loader.get_template('teams/backbone.html')
+    context = RequestContext(request, {
+        'navigation': ['Leagues']
+    })
+    return HttpResponse(template.render(context))
