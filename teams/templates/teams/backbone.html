@@ -14,6 +14,13 @@
     .bullet .measure.s1 { fill: steelblue; }
     .bullet .title { font-size: 14px; font-weight: bold; }
     .bullet .subtitle { fill: #999; }
+
+
+    .domain {
+      fill: none;
+      stroke: black;
+      stroke-width: 1;
+    }
     </style>
     {% endblock %}
 
@@ -48,7 +55,7 @@
                       <!--</row>-->
                 </div>
                 <div class="row">
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="panel panel-green">
                             <div class="panel-heading">
                                     Lineup Score 81
@@ -58,7 +65,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="panel-yellow">
                             <div class="panel-heading">
                                     Trade Score 79
@@ -68,10 +75,20 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="panel panel-red">
                             <div class="panel-heading ">
                                     Waiver Score 40
+                            </div>
+                            <div class="panel-footer">
+                                Learn More
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="panel panel-red">
+                            <div class="panel-heading ">
+                                    Draft Score 32
                             </div>
                             <div class="panel-footer">
                                 Learn More
@@ -82,7 +99,23 @@
             </div>
         </div>
         <div class="tab-pane" id="analyze">
-            HELLO WORLD
+            <div class="title" style="text-align: center"><h1>Week-By-Week Analysis <br /> <span style="font-style: italic">Gotham City Rogues </span></h1></div>
+            <div id="lineup-vis-container" style="text-align: center">
+                <h1>Lineup Calculations</h1>
+                <svg id="lineup-vis" width="1000" height="200"></svg>
+            </div>
+            <div id="waiver-vis-container"style="text-align: center">
+                <h1>Waiver Week-By-Week</h1>
+                <svg id="waiver-vis" width="1000" height="200"></svg>
+            </div>
+            <div id="draft-vis-container"style="text-align: center">
+                <h1>Draft Week-By-Week</h1>
+                <svg id="draft-vis" width="1000" height="200"></svg>
+            </div>
+            <div id="draft-vis-container"style="text-align: center">
+                <h1>Trade Week-By-Week</h1>
+                <svg id="trade-vis" width="1000" height="200"></svg>
+            </div>
         </div>
     </div>
 
@@ -158,11 +191,16 @@
 $(document).ready(function() {
     data = [
         {"title": "Lineup", "subtitle": "Points Missed", "ranges": [25, 75, 100], "measures": [90], "markers": [64]},
-        {"title": "Trades", "subtitle": "Value Gained", "ranges": [25, 75, 100], "measures": [50], "markers": [74]},
-        {"title": "Waiver", "subtitle": "Value Gained", "ranges": [25, 75, 100], "measures": [35], "markers": [25]}
+        {"title": "Waiver", "subtitle": "Value Gained", "ranges": [25, 75, 100], "measures": [35], "markers": [25]},
+        {"title": "Draft", "subtitle": "Value Gained", "ranges": [25, 75, 100], "measures": [25], "markers": [25]},
+        {"title": "Trades", "subtitle": "Value Gained", "ranges": [25, 75, 100], "measures": [50], "markers": [74]}
     ];
 
     buildBullets(data);
+    buildLineCharts("#lineup-vis");
+    buildLineCharts("#draft-vis");
+    buildLineCharts("#trade-vis");
+    buildLineCharts("#waiver-vis");
     $('[href="#report-card"]').click(function() {
         buildBullets(freshData);
         buildBullets(data);
@@ -224,6 +262,79 @@ function buildBullets(data) {
             return Math.max(0, d + k * (Math.random() - .5));
         };
     }
+}
+
+function buildLineCharts(element) {
+    var lineData = [{
+      x: 1,
+      y: 5
+    }, {
+      x: 2,
+      y: 20
+    }, {
+      x: 3,
+      y: 10
+    }, {
+      x: 4,
+      y: 40
+    }, {
+      x: 5,
+      y: 5
+    }, {
+      x: 6,
+      y: 60
+        }];
+
+    var vis = d3.select(element),
+    WIDTH = 1000,
+    HEIGHT = 200,
+    MARGINS = {
+      top: 20,
+      right: 20,
+      bottom: 20,
+      left: 50
+    },
+    xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 4]),
+    yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 100]),
+    formatxAxis = d3.format('.0f');
+    xAxis = d3.svg.axis()
+      .scale(xRange)
+            .tickValues([1,2,3,4])
+            .tickSize(6)
+            .tickFormat(formatxAxis)
+            .tickSubdivide(true);
+
+    yAxis = d3.svg.axis()
+      .scale(yRange)
+            .ticks(4)
+      .tickSize(6)
+      .orient('left')
+      .tickSubdivide(false);
+
+vis.append('svg:g')
+  .attr('class', 'x axis')
+  .attr('transform', 'translate(0,' + (HEIGHT - MARGINS.bottom) + ')')
+  .call(xAxis);
+
+vis.append('svg:g')
+  .attr('class', 'y axis')
+  .attr('transform', 'translate(' + (MARGINS.left) + ',0)')
+  .call(yAxis);
+
+    var lineFunc = d3.svg.line()
+  .x(function(d) {
+    return xRange(d.x);
+  })
+  .y(function(d) {
+    return yRange(d.y);
+  })
+  .interpolate('linear');
+
+    vis.append('svg:path')
+  .attr('d', lineFunc(lineData))
+  .attr('stroke', 'blue')
+  .attr('stroke-width', 2)
+  .attr('fill', 'none');
 }
 
 </script>
