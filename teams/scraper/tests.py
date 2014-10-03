@@ -162,9 +162,9 @@ class ScraperTest(unittest.TestCase):
 
         leagues = get_leagues_from_entrance(html)
         self.assertEquals(len(leagues), 3)
-        self.assertIn(('Inglorious Basterds', '930248', '2013'), leagues)
-        self.assertIn(('Inglorious Basterds', '930248', '2014'), leagues)
-        self.assertIn(('Bizarro League III', '1880759', '2014'), leagues)
+        self.assertIn(('Inglorious Basterds', '930248', '2013', '6'), leagues)
+        self.assertIn(('Inglorious Basterds', '930248', '2014', '6'), leagues)
+        self.assertIn(('Bizarro League III', '1880759', '2014', '9'), leagues)
 
 
     def test_scrape_players_from_lineup(self):

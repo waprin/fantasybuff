@@ -7,7 +7,6 @@ class EspnUser(models.Model):
     password = models.CharField(max_length=200)
 
 class League(models.Model):
-    users = models.ManyToManyField(EspnUser)
     name = models.CharField(max_length=200)
     espn_id = models.CharField(max_length=30)
     year = models.CharField(max_length=5)
@@ -27,6 +26,7 @@ class League(models.Model):
 
 class Team(models.Model):
     league = models.ForeignKey(League)
+    espn_user = models.ForeignKey(EspnUser, null=True)
     espn_id = models.CharField(max_length=5)
     team_name = models.CharField(max_length=100, null=True)
     owner_name = models.CharField(max_length=100, null=True)
@@ -53,8 +53,6 @@ class Player(models.Model):
 
     def __unicode__(self):
         return self.name
-
-
 
 class Scorecard(models.Model):
     team = models.ForeignKey(Team)

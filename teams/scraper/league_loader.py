@@ -37,10 +37,13 @@ def load_leagues_from_entrance(html, espn_user):
             league = League.objects.get(espn_id=league_tuple[1], year=league_tuple[2])
         except League.DoesNotExist:
             league = League.objects.create(espn_id=league_tuple[1], year=league_tuple[2], name=league_tuple[0], loaded=False)
-
-        league.users.add(espn_user)
-        league.save()
         leagues.append(league)
+
+        try:
+            Team.objects.get(league=league, espn_id=league_tuple[3])
+        except Team.DoesNotExist:
+            Team.objects.create(league=league, espn_id=league_tuple[3], espn_user=espn_user)
+
     return leagues
 
 def get_passing_stats(player_score_stats, stats):
@@ -153,12 +156,19 @@ def load_teams_from_standings(html, league):
     for body in bodies:
         fullname = body.td.a['title']
         href = body.td.a['href']
-        info = re.search("teamId=(\d+)", href)
+        team_id_match = re.search("teamId=(\d+)", href)
+        espn_id = team_id_match.group(1)
         matched_name = re.search("(.*)\s*\((.*)\)", fullname)
         team_name = matched_name.group(1)
         owner_name = matched_name.group(2)
-        team, created = Team.objects.get_or_create(team_name=team_name.strip(), espn_id = info.group(1), owner_name=owner_name, league=league)
 
+        try:
+            team = Team.objects.get(league=league, espn_id=espn_id)
+        except Team.DoesNotExist:
+            team = Team.objects.create(team_name=team_name.strip(), espn_id = espn_id, owner_name=owner_name, league=league)
+        team.owner_name = owner_name
+        team.team_name = team_name.strip()
+        team.save()
 
 def __get_players_from_lineup(html):
     pool = BeautifulSoup(html)

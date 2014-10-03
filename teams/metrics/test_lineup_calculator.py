@@ -1,10 +1,11 @@
 from functools import partial
+from django.contrib.auth.models import User
 
 __author__ = 'bprin'
 
 from django.utils import unittest
 
-from teams.models import League, Team, Scorecard, ScorecardEntry, Player
+from teams.models import League, Team, Scorecard, ScorecardEntry, Player, EspnUser
 from lineup_calculator import  calculate_optimal_lineup, get_lineup_score, can_fill_slot
 from teams.utils.db_utils import clearDb
 
@@ -12,21 +13,20 @@ class LineupCalculatorTest(unittest.TestCase):
 
     def setUp(self):
         clearDb()
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com')
+        espn_user = EspnUser.objects.create(user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(name="test league", espn_id='12345', year=2013)
+        rogues_team = Team.objects.create(league=league, espn_user=espn_user, espn_id='3', team_name='Gotham City Rogues', owner_name='Bill Prin')
+        self.scorecard = Scorecard.objects.create(team=rogues_team, week=1, actual=True)
 
     def test_can_fill_slot(self):
-        league = League.objects.create(name="test league", espn_id='12345', year=2013)
-        rogues_team = Team.objects.create(league=league, espn_id='3', team_name='Gotham City Rogues', owner_name='Bill Prin')
-        scorecard = Scorecard.objects.create(team=rogues_team, week=1, actual=True)
-
         qb_player = Player.objects.create(name='a', position='QB', espn_id='1')
         rb_player1 = Player.objects.create(name='b', position='RB', espn_id='2')
         wr_player1 = Player.objects.create(name='f', position='WR', espn_id='6')
 
-
-
-        qb_entry = ScorecardEntry.objects.create(scorecard=scorecard, player=qb_player, slot='QB', points=5.0)
-        rb_entry = ScorecardEntry.objects.create(scorecard=scorecard, player=rb_player1, slot='Flex', points=0.0)
-        wr_entry = ScorecardEntry.objects.create(scorecard=scorecard, player=wr_player1, slot='RB', points=5.0)
+        qb_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=qb_player, slot='QB', points=5.0)
+        rb_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player1, slot='Flex', points=0.0)
+        wr_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player1, slot='RB', points=5.0)
 
         entries = [qb_entry, rb_entry, wr_entry]
         flex_slot = partial(can_fill_slot, 'FLEX')
@@ -35,10 +35,6 @@ class LineupCalculatorTest(unittest.TestCase):
         self.assertEquals(len(available_players), 2)
 
     def test_calculate_lineup(self):
-        league = League.objects.create(name="test league", espn_id='12345', year=2013)
-        rogues_team = Team.objects.create(league=league, espn_id='3', team_name='Gotham City Rogues', owner_name='Bill Prin')
-        scorecard = Scorecard.objects.create(team=rogues_team, week=1, actual=True)
-
         qb_player = Player.objects.create(name='a', position='QB', espn_id='1')
         rb_player1 = Player.objects.create(name='b', position='RB', espn_id='2')
         rb_player2 = Player.objects.create(name='c', position='RB', espn_id='3')
@@ -50,21 +46,21 @@ class LineupCalculatorTest(unittest.TestCase):
         wr_player3 = Player.objects.create(name='h', position='WR', espn_id='8')
 
         entries = []
-        qb_entry = ScorecardEntry.objects.create(scorecard=scorecard, player=qb_player, slot='QB', points=5)
+        qb_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=qb_player, slot='QB', points=5)
         entries.append(qb_entry)
-        flex_entry = ScorecardEntry.objects.create(scorecard=scorecard, player=rb_player1, slot='FLEX', points=0)
+        flex_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player1, slot='FLEX', points=0)
         entries.append(flex_entry)
-        rb_entry1 = ScorecardEntry.objects.create(scorecard=scorecard, player=rb_player2, slot='RB', points=2)
+        rb_entry1 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player2, slot='RB', points=2)
         entries.append(rb_entry1)
-        rb_entry2 = ScorecardEntry.objects.create(scorecard=scorecard, player=rb_player3, slot='RB', points=5)
+        rb_entry2 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player3, slot='RB', points=5)
         entries.append(rb_entry2)
-        wr_entry1 = ScorecardEntry.objects.create(scorecard=scorecard, player=wr_player1, slot='WR', points=2)
+        wr_entry1 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player1, slot='WR', points=2)
         entries.append(wr_entry1)
-        wr_entry2 = ScorecardEntry.objects.create(scorecard=scorecard, player=wr_player2, slot='WR', points=9)
+        wr_entry2 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player2, slot='WR', points=9)
         entries.append(wr_entry2)
-        bench_entry1 = ScorecardEntry.objects.create(scorecard=scorecard, player=rb_player4, slot='Bench', points=10)
+        bench_entry1 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player4, slot='Bench', points=10)
         entries.append(bench_entry1)
-        bench_entry2 = ScorecardEntry.objects.create(scorecard=scorecard, player=wr_player3, slot='Bench', points=7)
+        bench_entry2 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player3, slot='Bench', points=7)
         entries.append(bench_entry2)
 
         self.assertEquals(int(get_lineup_score(entries)), 5 + 2 + 5 + 2 + 9)

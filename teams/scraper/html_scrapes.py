@@ -12,10 +12,11 @@ def get_leagues_from_entrance(html):
     leagues = []
     for element in league_elements:
         name = element.string
-        m = re.search(r'leagueId=(\d*)&teamId=\d*&seasonId=(\d*)', element['href'])
+        m = re.search(r'leagueId=(\d*)&teamId=(\d*)&seasonId=(\d*)', element['href'])
         espn_id = m.group(1)
-        year = m.group(2)
-        leagues.append((name, espn_id, year))
+        team_id = m.group(2)
+        year = m.group(3)
+        leagues.append((name, espn_id, year, team_id))
     logger.debug("get_leagues_from_entrance returning " + str(leagues))
     return leagues
 

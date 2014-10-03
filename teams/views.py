@@ -178,6 +178,10 @@ def show_league(request, espn_id, year):
     return HttpResponse(template.render(context))
 
 @login_required()
+def show_league_report_card_json():
+    pass
+
+@login_required()
 def get_all_leagues_json(request):
     store = SqlStore()
     espn_users = EspnUser.objects.filter(user=request.user)
@@ -229,9 +233,12 @@ def espn_create(request):
     return redirect(show_all_leagues)
 
 
-def backbone(request):
+def backbone(request, espn_id, year):
+    league = League.objects.get(espn_id=espn_id, year=year)
+    teams = Team.objects.filter(league=league)
     template = loader.get_template('teams/backbone.html')
     context = RequestContext(request, {
-        'navigation': ['Leagues']
+        'navigation': ['Leagues'],
+        'teams': teams
     })
     return HttpResponse(template.render(context))
