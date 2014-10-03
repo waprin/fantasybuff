@@ -10,6 +10,7 @@ __author__ = 'bprin'
 import logging
 logger = logging.getLogger(__name__)
 
+@unittest.skip("too long")
 class DeferJobsTest(unittest.TestCase):
 
     def test_defer_scrape_espn_user(self):

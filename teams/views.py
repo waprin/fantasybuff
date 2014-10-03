@@ -11,7 +11,6 @@ import json
 from django.contrib.auth.models import User
 from django.template import RequestContext, loader
 from teams.scraper.SqlStore import SqlStore
-from teams.scraper.scraper import is_scraped, is_loaded
 import django_rq
 from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
@@ -185,22 +184,16 @@ def show_league_report_card_json():
 def get_all_leagues_json(request):
     store = SqlStore()
     espn_users = EspnUser.objects.filter(user=request.user)
-    scraped = False
-    loaded = False
     all_accounts = []
     for espn_user in espn_users:
-        scraped = is_scraped(espn_user, store)
-        if scraped:
-            loaded = is_loaded(espn_user, store)
-        leagues = League.objects.filter(users=espn_user)
+        teams = Team.objects.filter(espn_user=espn_user)
+        leagues = [team.league for team in teams]
         data = serializers.serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded'))
         data = json.loads(data)
         all_accounts.append(data)
 
     response_data = {}
     response_data['accounts'] = all_accounts
-    response_data['scraped'] = scraped
-    response_data['loaded'] = loaded
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
@@ -225,9 +218,6 @@ def espn_create(request):
         espn_user = EspnUser.objects.filter(user=request.user, username=username, password=password)[0]
     except IndexError:
         espn_user = EspnUser.objects.create(user=request.user, username=username, password=password)
-
-
-
 
     django_rq.enqueue(defer_espn_user_scrape, espn_user)
     return redirect(show_all_leagues)

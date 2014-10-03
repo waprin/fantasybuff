@@ -64,6 +64,16 @@ class LeagueCreatorTest(unittest.TestCase):
         self.league_scraper.scrape_espn_user_leagues(espn_user)
         self.assertTrue(self.sqlstore.has_entrance(espn_user))
 
+    def test_load_espn_user_leagues(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        self.assertFalse(self.sqlstore.has_entrance(espn_user))
+        self.league_scraper.scrape_espn_user_leagues(espn_user)
+        self.league_scraper.load_espn_user_leagues(espn_user)
+
+        self.assertGreater(len(Team.objects.filter(espn_user=espn_user)), 0)
+
+
     def test_load_legacy_entire_lineup(self):
         league = League.objects.create(espn_id='930248',year='2013')
         team_id='1'
@@ -100,11 +110,18 @@ class LeagueCreatorTest(unittest.TestCase):
 
     def test_load_teams(self):
         league = League.objects.create(espn_id='930248',year='2014')
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        team = Team.objects.create(league=league, espn_user=espn_user, team_name='Gotham City Rogues', owner_name='William Prin', espn_id='6')
         html = self.browser.get_standings(league)
+
+        logger.debug("test_load_teams(): ")
         load_teams_from_standings(html, league)
 
         teams = Team.objects.filter(league=league)
         self.assertEqual(len(teams), 12)
+        rogues = Team.objects.get(league=league, espn_id='6')
+        self.assertEqual(espn_user, rogues.espn_user)
 
     def test_load_game(self):
         league = League.objects.create(espn_id='930248',year='2014')

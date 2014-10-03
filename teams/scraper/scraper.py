@@ -26,45 +26,6 @@ def get_real_num_weeks(num_weeks, league):
             return i
     return num_weeks
 
-def is_scraped(espn_user, store):
-    return store.has_entrance(espn_user)
-
-def is_loaded(espn_user, store):
-    leagues = get_leagues_from_entrance(store.get_entrance(espn_user))
-    return len(leagues) == len(League.objects.filter(users=espn_user))
-
-def is_league_teams_scraped(league, store):
-    teams = get_teams_from_standings(store.get_standings(league))
-    num_weeks = get_num_weeks_from_matchups(store.get_matchups(league, 1))
-    num_weeks = get_real_num_weeks(num_weeks, league)
-    roster_htmls = []
-    all_player_ids = []
-    for team in teams:
-        for week in range(1, num_weeks + 1):
-            if not store.has_roster(league, team[0], week):
-                logger.info("missing team %s week %d" % (team[0], week))
-            roster_html = store.get_roster(league, team[0], week)
-            player_ids = get_player_ids_from_lineup(roster_html)
-            all_player_ids = all_player_ids + player_ids
-    return True
-
-def is_league_players_scraped(league, store):
-    teams = get_teams_from_standings(store.get_standings(league))
-    num_weeks = get_num_weeks_from_matchups(store.get_matchups(league, 1))
-    num_weeks = get_real_num_weeks(num_weeks, league)
-    all_player_ids = []
-    for team in teams:
-        for week in range(1, num_weeks + 1):
-            player_ids = get_player_ids_from_lineup(store.get_roster(league, team[0], week))
-            all_player_ids = all_player_ids + player_ids
-    all_player_ids = list(set(all_player_ids))
-    for player_id in all_player_ids:
-        if not store.has_player(league, player_id):
-            logger.info("missing player %s" % player_id)
-            return False
-    return True
-
-
 class LeagueScraper(object):
 
     def __init__(self, scraper, store, overwrite=False):
@@ -203,12 +164,11 @@ class LeagueScraper(object):
     def create_leagues(self, espn_user):
         self.scrape_espn_user_leagues(espn_user)
         self.load_espn_user_leagues(espn_user)
+        logger.debug("done loading leagues for espn_user %s got %d teams" % (espn_user.username, len(Team.objects.filter(espn_user=espn_user))))
 
     def load_league(self, league):
         league.loaded = False
         league.save()
-
-        Team.objects.filter(league=league).delete()
 
         self.load_teams(league)
 
@@ -254,6 +214,7 @@ class LeagueScraper(object):
                 load_week_from_lineup(lineup_html, week, team)
 
     def load_games(self, league):
+        Scorecard.objects.filter(team__league__id=league.id).delete()
         if league.year != '2014':
             return False
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))

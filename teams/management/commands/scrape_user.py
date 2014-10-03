@@ -8,6 +8,9 @@ import django_rq
 
 __author__ = 'bprin'
 
+import logging
+logger = logging.getLogger(__name__)
+
 def defer_league_scrape(espn_user, league):
     league.loaded = False
     league.save()
@@ -26,6 +29,7 @@ def defer_espn_user_scrape(espn_user):
 
     teams = Team.objects.filter(espn_user=espn_user)
     for team in teams:
+        logger.debug("scraping league %s" % team.league.name)
         django_rq.enqueue(defer_league_scrape, espn_user, team.league)
 
 

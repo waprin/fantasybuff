@@ -36,7 +36,7 @@ class Team(models.Model):
         unique_together = ('league', 'espn_id',)
 
     def __unicode__(self):
-        return "%s (%s, %s)" % (self.team_name, self.league_espn_id, self.espn_id)
+        return "%s (%s)" % (self.team_name, self.espn_id)
 
 class Player(models.Model):
     POSITIONS = (

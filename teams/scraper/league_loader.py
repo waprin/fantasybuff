@@ -30,6 +30,7 @@ def __get_player_position_from_playerpage(html):
 
 
 def load_leagues_from_entrance(html, espn_user):
+    logger.debug("loading leagues from entrance for user %s" % espn_user.username)
     league_tuples = get_leagues_from_entrance(html)
     leagues = []
     for league_tuple in league_tuples:
@@ -40,9 +41,14 @@ def load_leagues_from_entrance(html, espn_user):
         leagues.append(league)
 
         try:
-            Team.objects.get(league=league, espn_id=league_tuple[3])
+            team = Team.objects.get(league=league, espn_id=league_tuple[3])
+            logger.debug("team already existed")
         except Team.DoesNotExist:
-            Team.objects.create(league=league, espn_id=league_tuple[3], espn_user=espn_user)
+            logger.debug("creating new team")
+            team = Team.objects.create(league=league, espn_id=league_tuple[3])
+        logger.debug("saving user %s to team %s" % (espn_user.username, team.team_name))
+        team.espn_user = espn_user
+        team.save()
 
     return leagues
 
@@ -163,9 +169,12 @@ def load_teams_from_standings(html, league):
         owner_name = matched_name.group(2)
 
         try:
+            logger.debug("load_team_from_standings(): searching for espn_id %s" % espn_id)
             team = Team.objects.get(league=league, espn_id=espn_id)
+            logger.debug("load_teams_from_standings(): team %s already existed, with espn_user=%s" % (team.team_name, team.espn_user))
         except Team.DoesNotExist:
             team = Team.objects.create(team_name=team_name.strip(), espn_id = espn_id, owner_name=owner_name, league=league)
+            logger.debug("load_teams_from_standings(): team %s was newly created" % (team.team_name))
         team.owner_name = owner_name
         team.team_name = team_name.strip()
         team.save()
