@@ -77,7 +77,7 @@ class SqlStore:
         TranslogHtmlScrape.objects.create(league_id=league_id, year=year, team_id=team_id, html=html)
 
     def get_translog(self, league_id, year, team_id):
-        return TranslogHtmlScrape.objects.filter(league_id=league_id, year=year, team_id=team_id)
+        return TranslogHtmlScrape.objects.filter(league_id=league_id, year=year, team_id=team_id)[0].html
 
 ## players
 

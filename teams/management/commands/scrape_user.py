@@ -12,8 +12,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 def defer_league_scrape(espn_user, league):
-    league.loaded = False
-    league.save()
     store = SqlStore()
     scraper = get_scraper(espn_user)
     league_scraper = LeagueScraper(scraper, store)

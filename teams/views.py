@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 from league import settings
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
-from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard
+from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard, DraftClaim
 import json
 from django.contrib.auth.models import User
 from django.template import RequestContext, loader
@@ -249,6 +249,16 @@ def get_team_report_card_json(request, league_id, year, team_id):
     reportcard_struct[0]['team_id'] = team.espn_id
 
     data = json.dumps(reportcard_struct[0])
+    return HttpResponse(data, content_type="application/json")
+
+def get_team_draft(request, league_id, year, team_id):
+    league = League.objects.get(espn_id=league_id, year=year)
+    team = Team.objects.get(league=league, espn_id=team_id)
+
+    drafts = DraftClaim.objects.filter(team=team)
+    drafted_players = [draft.player for draft in drafts]
+    player_data = Serializer().serialize(drafted_players, fields=('name', 'position'))
+    data = json.dumps(player_data)
     return HttpResponse(data, content_type="application/json")
 
 @login_required

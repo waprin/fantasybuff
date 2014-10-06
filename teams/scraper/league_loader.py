@@ -262,25 +262,33 @@ def load_scores_from_game(league, week, html):
         scorecard.save()
 
 
-def load_transactions(html, year, team):
+def load_transactions_from_translog(html, year, team):
     soup = BeautifulSoup(html)
     rows = soup.find_all('table')[0].find_all('tr')[3:]
     rows.reverse()
-    draft_round = 1
+    draft_round = 0
     for row in rows:
-        player_name = row.contents[2].b.string
-        transaction_type = rows[0].contents[1].contents[-1]
-
-        date_str = ' '.join(list(rows[0].contents[0].strings))
-        date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
-        date.replace(year=int(year))
-
-        player_name = str(player_name)
-        if player_name[-1] == '*':
-            player_name = player_name[:-1]
-        player = Player.objects.get(name=player_name)
+        transaction_type = row.contents[1].contents[-1]
 
         if transaction_type == 'Draft':
+            logger.debug("loading player %s" % str(row.contents[2]))
+            draft_round = draft_round + 1
+            try:
+                player_name = row.contents[2].b.string
+            except AttributeError:
+                logger.error("row contents was %s" % str(row.contents[2]))
+            date_str = ' '.join(list(rows[0].contents[0].strings))
+            date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
+            date.replace(year=int(year))
+
+            player_name = str(player_name)
+            if player_name[-1] == '*':
+                player_name = player_name[:-1]
+            try:
+                player = Player.objects.get(name=player_name)
+            except Player.DoesNotExist:
+                logger.error("Unexpected player in draft " % player_name)
+                continue
             draft_entry = DraftClaim(date=date,round=draft_round, player_added=player, team=team)
             draft_round = draft_round + 1
             draft_entry.save()

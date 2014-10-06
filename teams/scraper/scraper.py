@@ -1,11 +1,11 @@
 import datetime
 from decimal import Decimal
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
-from teams.models import League, Team, Scorecard, ScorecardEntry, Player
+from teams.models import League, Team, Scorecard, ScorecardEntry, Player, TransLogEntry, DraftClaim
 from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
     get_leagues_from_entrance, get_teams_from_matchups
 from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet, \
-    load_teams_from_standings, load_week_from_lineup, load_scores_from_game
+    load_teams_from_standings, load_week_from_lineup, load_scores_from_game, load_transactions_from_translog
 
 __author__ = 'bill'
 
@@ -182,6 +182,7 @@ class LeagueScraper(object):
             raise Exception("Invalid year")
 
         self.load_optimal_lineups(league)
+        self.load_transactions(league)
 
         league.league_loaded_finish_time = datetime.datetime.now()
         league.loaded = True
@@ -203,6 +204,14 @@ class LeagueScraper(object):
         logger.debug("loading teams for league %s" % league)
         standings_html = self.store.get_standings(league)
         load_teams_from_standings(standings_html, league)
+
+    def load_transactions(self, league):
+        teams = Team.objects.filter(league=league)
+        for team in teams:
+            logger.debug("loading translog for team %s" % team.espn_id)
+            DraftClaim.objects.filter(team=team).delete()
+            transaction_html = self.store.get_translog(league.espn_id, league.year, team.espn_id)
+            load_transactions_from_translog(transaction_html, team.league.year, team)
 
     def load_lineups(self, league):
         logger.debug("loading linups for league %s" % league)

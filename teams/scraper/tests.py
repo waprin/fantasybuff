@@ -3,7 +3,7 @@ from teams.models import EspnUser, ScoreEntry, PlayerScoreStats, DraftClaim
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from django.utils import unittest
-from teams.scraper.league_loader import load_transactions
+from teams.scraper.league_loader import load_transactions_from_translog
 from teams.utils.db_utils import clearDb
 
 __author__ = 'bill'
@@ -157,9 +157,12 @@ class LeagueCreatorTest(unittest.TestCase):
         team = Team.objects.get(espn_id='6')
 
         html = self.browser.get_translog(league.espn_id, league.year, team.espn_id)
-        load_transactions(html, league.year, team)
-
         self.assertEquals(16, len(DraftClaim.objects.filter(team=team)))
+
+        team2 = Team.objects.get(espn_id='3')
+        claims = DraftClaim.objects.filter(team=team2)
+        self.assertEquals(16, len(DraftClaim.objects.filter(team=team2)))
+
 
 
 

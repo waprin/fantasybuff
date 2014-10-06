@@ -37,6 +37,7 @@ urlpatterns = patterns('',
      url(r'^league2/(\d*)/(\d\d\d\d)/$', 'teams.views.backbone'),
      url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/$', 'teams.views.get_team_report_card_json'),
      url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/lineup/(\d*)', 'teams.views.show_week'),
+     url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/draft/', 'teams.views.get_team_draft'),
      url(r'', include('social_auth.urls')),
      url(r'^api/', include(team_report_card_resource.urls))
 

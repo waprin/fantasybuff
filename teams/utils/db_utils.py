@@ -11,4 +11,5 @@ def clearDb():
     League.objects.all().delete()
     Player.objects.all().delete()
     Team.objects.all().delete()
+    DraftClaim.objects.all().delete()
 
