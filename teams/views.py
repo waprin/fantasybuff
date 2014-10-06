@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 from league import settings
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
-from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser
+from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard
 import json
 from django.contrib.auth.models import User
 from django.template import RequestContext, loader
@@ -196,6 +196,60 @@ def get_all_leagues_json(request):
     response_data['accounts'] = all_accounts
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
+
+
+def _decode_list(data):
+    rv = []
+    for item in data:
+        if isinstance(item, unicode):
+            item = item.encode('utf-8')
+        elif isinstance(item, list):
+            item = _decode_list(item)
+        elif isinstance(item, dict):
+            item = _decode_dict(item)
+        rv.append(item)
+    return rv
+
+def _decode_dict(data):
+    rv = {}
+    for key, value in data.iteritems():
+        if isinstance(key, unicode):
+            key = key.encode('utf-8')
+        if isinstance(value, unicode):
+            value = value.encode('utf-8')
+        elif isinstance(value, list):
+            value = _decode_list(value)
+        elif isinstance(value, dict):
+            value = _decode_dict(value)
+        rv[key] = value
+    return rv
+
+
+
+from django.core.serializers.json import Serializer as Builtin_Serializer
+
+class Serializer(Builtin_Serializer):
+    def get_dump_object(self, obj):
+        return self._current
+
+
+def get_team_report_card_json(request, league_id, year, team_id):
+    league = League.objects.get(espn_id=league_id, year=year)
+    team = Team.objects.get(league=league, espn_id=team_id)
+    report_cards = TeamReportCard.objects.filter(team=team)
+    scorecards = Scorecard.objects.filter(team=team, actual=False)
+
+    report_data = Serializer().serialize(report_cards, fields=('lineup_score'))
+    scorecard_data = Serializer().serialize(scorecards, fields=('week', 'delta'))
+
+    reportcard_struct = json.loads(report_data)
+    scorecard_struct = json.loads(scorecard_data)
+
+    reportcard_struct[0]['scorecards'] = scorecard_struct
+    reportcard_struct[0]['team_id'] = team.espn_id
+
+    data = json.dumps(reportcard_struct[0])
+    return HttpResponse(data, content_type="application/json")
 
 @login_required
 def show_all_leagues(request):

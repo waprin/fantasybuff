@@ -165,7 +165,8 @@ INSTALLED_APPS = (
     'teams', # Uncomment the next line to enable the admin:
      'django.contrib.admin',
     'django_rq',
-    'social_auth'
+    'social_auth',
+    'tastypie'
     # Uncomment the next line to enable admin documentation:
      #'django.contrib.admindocs',
 )

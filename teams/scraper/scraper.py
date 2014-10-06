@@ -172,6 +172,7 @@ class LeagueScraper(object):
 
         self.load_teams(league)
 
+        Scorecard.objects.filter(team__league=league).delete()
         if league.year == '2013':
             self.load_players(league)
             self.load_lineups(league)
@@ -242,6 +243,7 @@ class LeagueScraper(object):
                     entry.save()
 
         for team in teams:
+            logger.debug("calculating deltas for team %s" % team.team_name)
             actual_weeks = list(Scorecard.objects.filter(team=team, actual=True))
             if not actual_weeks:
                 continue
@@ -253,6 +255,9 @@ class LeagueScraper(object):
             for i, week in enumerate(actual_weeks):
                 optimal_points = optimal_weeks[i].points
                 delta = optimal_points - week.points
+                optimal_weeks[i].delta = delta
+                optimal_weeks[i].save()
+                logger.debug("saving deltas for team %s %f" % (team.team_name, optimal_weeks[i].delta))
                 deltas.append(delta)
             average_delta = sum(deltas) / Decimal(len(deltas))
             team.average_delta = average_delta

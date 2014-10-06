@@ -38,6 +38,10 @@ class Team(models.Model):
     def __unicode__(self):
         return "%s (%s)" % (self.team_name, self.espn_id)
 
+class TeamReportCard(models.Model):
+    team = models.OneToOneField(Team)
+    lineup_score = models.DecimalField(decimal_places=4, max_digits=7)
+
 class Player(models.Model):
     POSITIONS = (
         (u'QB', 'Quarterback'),
@@ -59,10 +63,18 @@ class Scorecard(models.Model):
     week = models.IntegerField()
     actual = models.BooleanField(default=False)
     points = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    delta = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
 
     class Meta:
         unique_together = ('team', 'week', 'actual')
 
+"""
+class LeagueReportCard(models.Model):
+    league = models.ForeignKey(League)
+    average_delta = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+
+class LeagueAverageWeek(models.Model):
+"""
 
 class Game(models.Model):
     league = models.ForeignKey(League)

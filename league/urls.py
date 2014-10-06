@@ -6,6 +6,10 @@ import settings
 from django.contrib import admin
 admin.autodiscover()
 
+from teams.api import TeamResource
+
+team_report_card_resource = TeamResource()
+
 from django.shortcuts import redirect
 
 urlpatterns = patterns('',
@@ -31,7 +35,10 @@ urlpatterns = patterns('',
      url(r'^league/(\d*)/(\d\d\d\d)/(\d*)/$', 'teams.views.show_team'),
      url(r'^league/(\d*)/(\d\d\d\d)/(\d*)/(\d*)', 'teams.views.show_week'),
      url(r'^league2/(\d*)/(\d\d\d\d)/$', 'teams.views.backbone'),
+     url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/$', 'teams.views.get_team_report_card_json'),
+     url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/lineup/(\d*)', 'teams.views.show_week'),
      url(r'', include('social_auth.urls')),
+     url(r'^api/', include(team_report_card_resource.urls))
 
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

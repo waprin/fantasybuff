@@ -32,12 +32,13 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Teams<b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         {% for team in teams %}
-                            <li><a href="#">{{ team.team_name }}</a></li>
+                            <li><a href="#/team/{{ team.espn_id }}">{{ team.team_name }}</a></li>
                         {%  endfor %}
                     </ul>
                 <li class="active"><a href="#report-card" data-toggle="tab">Report Card</a></li>
                 <li >
-                  <a href="#analyze" data-toggle="tab">Analyze</a>
+                  <a href="#lineups" data-toggle="tab">Lineups</a>
+
                 </li>
             </ul>
         </div>
@@ -99,26 +100,37 @@
                 </div>
             </div>
         </div>
-        <div class="tab-pane" id="analyze">
+        <div class="tab-pane" id="lineups">
             <div class="title" style="text-align: center"><h1>Week-By-Week Analysis <br /> <span style="font-style: italic">Gotham City Rogues </span></h1></div>
             <div id="lineup-vis-container" style="text-align: center">
                 <h1>Lineup Calculations</h1>
                 <svg id="lineup-vis" width="1000" height="200"></svg>
+                <div id="lineup_table_container">
+                    <script id="lineup-table-template" type="text/template">
+                        <table class="table table-bordered table-striped">
+                            <tbody>
+                            <tr>
+                                <td>Week</td>
+                                <% _.each(scorecards, function(scorecard) { %>
+                                <td><%= scorecard.week %></td>
+                                <% }); %>
+                            </tr>
+                            <tr>
+                                <td>Delta</td>
+                                <% _.each(scorecards, function(scorecard) { %>
+                                <td><a href="<%= team_id %>/lineup/<%= scorecard.week %>" ><%= scorecard.delta %> </a></td>
+                                <% }); %>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </script>
+                </div>
             </div>
-            <div id="waiver-vis-container"style="text-align: center">
-                <h1>Waiver Week-By-Week</h1>
-                <svg id="waiver-vis" width="1000" height="200"></svg>
-            </div>
-            <div id="draft-vis-container"style="text-align: center">
-                <h1>Draft Week-By-Week</h1>
-                <svg id="draft-vis" width="1000" height="200"></svg>
-            </div>
-            <div id="draft-vis-container"style="text-align: center">
-                <h1>Trade Week-By-Week</h1>
-                <svg id="trade-vis" width="1000" height="200"></svg>
             </div>
         </div>
     </div>
+
+
 
 {% endblock %}
 
@@ -126,70 +138,12 @@
     {{ block.super }}
 
     <script src="http://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
-
-    <script type="application/javascript">
-
-    var data = [{"title": "Lineup",  "value": 40}, {"title": "Waiver Wire", "value": 90}, {"title": "Trading", "value": 70}];
-    var width = 420,
-        barHeight = 50;
-
-    var labelWidth=100;
-    var totalWidth = width + labelWidth;
-    var x = d3.scale.linear().domain([0, 100]).range([0, width]);
-
-    var chart = d3.select(".chart").attr("width", totalWidth).attr("height", barHeight * data.length);
-
-
-    var bar = chart.selectAll("g")
-    .data(data)
-    .enter().append("g")
-    .attr("transform", function(d, i) { return "translate(" + labelWidth + "," + i * barHeight + ")"; });
-
-     bar.append("rect")
-             .attr("transform", "translate(" + labelWidth + ", 0)")
-    .attr("width", 0)
-    .attr("height", barHeight - 1)
-             .transition()
-    .attr("width", function(d) { return x(d.value)})
-             .duration(700)
-             .delay(function(d, i) { return i * 1200;})
-             .transition()
-             .duration(500)
-             .style("fill", function(d) {
-                 if (d.value < 50) {
-                     return "#F00";
-                 } else if (d.value < 80) {
-                     return "#EEE34E";
-                 }
-                 else {
-                     return "#0F0";
-                 }
-             }).each("end", function(d) {
-                 $(".words").append('<p>' + d.title + ":" + d.value + "</p>" );
-             });
-
-
-    bar.append("text")
-            .attr("class", "label")
-            .attr("x", 0)
-            .attr("y", barHeight / 2)
-            .attr("dy", ".35em")
-            .text(function(d) { return d.title})
-
-     bar.append("text")
-             .attr("x", function(d) { return x(d.value) - 3; })
-             .attr("y", barHeight / 2)
-             .attr("class", "score")
-             .attr("dy", ".35em")
-             .text(function(d) { return d.value; });
-
-
-    </script>
-
     <script type="text/javascript" src="/static/js/bullets.js"></script>
-<script type="text/javascript">
+
+    <script type="text/javascript">
 
 $(document).ready(function() {
+
     data = [
         {"title": "Lineup", "subtitle": "Points Missed", "ranges": [25, 75, 100], "measures": [90], "markers": [64]},
         {"title": "Waiver", "subtitle": "Value Gained", "ranges": [25, 75, 100], "measures": [35], "markers": [25]},
@@ -197,18 +151,91 @@ $(document).ready(function() {
         {"title": "Trades", "subtitle": "Value Gained", "ranges": [25, 75, 100], "measures": [50], "markers": [74]}
     ];
 
-    buildBullets(data);
-    buildLineCharts("#lineup-vis");
-    buildLineCharts("#draft-vis");
-    buildLineCharts("#trade-vis");
-    buildLineCharts("#waiver-vis");
-    $('[href="#report-card"]').click(function() {
-        buildBullets(freshData);
-        buildBullets(data);
+    var ReportCardModel = Backbone.Model.extend({
+
+       url: function() {
+           return this.get("team_id") + '/';
+       }
     });
+
+    var roguesReportCard = new ReportCardModel({
+        team_id: '6'
+    });
+
+    var ReportCardView = Backbone.View.extend({
+        initialize: function() {
+            this.listenTo(this.model, "change:lineup_score", this.render);
+        },
+
+        render: function() {
+            data[0].measures[0] = this.model.get('lineup_score');
+            console.log("setting bullet chart to ", this.model)
+            if (!this.bulletChart) {
+                this.bulletChart = new BulletChart(data);
+            } else {
+                this.bulletChart.updateBullets(data);
+            }
+        }
+    });
+
+    var LineupGraphView = Backbone.View.extend({
+        'el': $("#lineup-vis"),
+
+        initialize: function() {
+            this.listenTo(this.model, "change:scorecards", this.render);
+        },
+
+        render: function() {
+            buildLineCharts(this.el, this.model.get('scorecards'));
+            return this;
+        }
+    });
+
+    var LineupTableView = Backbone.View.extend({
+        'el': $("#lineup_table_container"),
+
+        'template': _.template($("#lineup-table-template").html()),
+
+        initialize: function() {
+            this.listenTo(this.model, "change:scorecards", this.render);
+        },
+
+        render: function() {
+            this.$el.html(this.template({'team_id': this.model.get('team_id'), 'scorecards': this.model.get('scorecards')}));
+            return this;
+        }
+    });
+
+
+    var reportCardView = new ReportCardView({model: roguesReportCard});
+    var linupeGraphView = new LineupGraphView({model: roguesReportCard});
+    var lineupTableView = new LineupTableView({ model: roguesReportCard});
+    roguesReportCard.fetch();
+
+    var AppRouter = Backbone.Router.extend({
+        routes: {
+            "team/:id": "getTeam",
+            "team/:id/lineups": "loadLineups",
+            "*actions": "defaultRoute" // Backbone will try match the route above first
+        }
+    });
+    // Instantiate the router
+    var app_router = new AppRouter;
+    app_router.on('route:getTeam', function (id) {
+        roguesReportCard.set('team_id', id);
+        roguesReportCard.fetch();
+    });
+    app_router.on('route:loadLineups', function(id) {
+        alert("loading linupes for " + id);
+    });
+    app_router.on('route:defaultRoute', function (actions) {
+        //alert( actions );
+    });
+    // Start Backbone history a necessary step for bookmarkable URL's
+    Backbone.history.start();
 });
 
-function buildBullets(data) {
+function BulletChart(data) {
     var margin = {top: 5, right: 40, bottom: 20, left: 120},
             width = 960 - margin.left - margin.right,
             height = 50 - margin.top - margin.bottom;
@@ -216,6 +243,7 @@ function buildBullets(data) {
     var chart = d3.bullet()
             .width(width)
             .height(height);
+
 
 
     var svg = d3.select("#bullet_row").selectAll("svg")
@@ -245,14 +273,14 @@ function buildBullets(data) {
                 return d.subtitle;
             });
 
-    d3.selectAll("button").on("click", function () {
-        svg.datum(randomize).call(chart.duration(1000)); // TODO automatic transition
-    });
+    this.updateBullets = function (data) {
+        svg.data(data).call(chart); // TODO automatic transition
+    };
 
     function randomize(d) {
         if (!d.randomizer) d.randomizer = randomizer(d);
-        d.ranges = d.ranges.map(d.randomizer);
-        d.markers = d.markers.map(d.randomizer);
+        //d.ranges = d.ranges.map(d.randomizer);
+        //d.markers = d.markers.map(d.randomizer);
         d.measures = d.measures.map(d.randomizer);
         return d;
     }
@@ -265,27 +293,7 @@ function buildBullets(data) {
     }
 }
 
-function buildLineCharts(element) {
-    var lineData = [{
-      x: 1,
-      y: 5
-    }, {
-      x: 2,
-      y: 20
-    }, {
-      x: 3,
-      y: 10
-    }, {
-      x: 4,
-      y: 40
-    }, {
-      x: 5,
-      y: 5
-    }, {
-      x: 6,
-      y: 60
-        }];
-
+function buildLineCharts(element, lineData) {
     var vis = d3.select(element),
     WIDTH = 1000,
     HEIGHT = 200,
@@ -296,7 +304,7 @@ function buildLineCharts(element) {
       left: 50
     },
     xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 4]),
-    yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 100]),
+    yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 50]),
     formatxAxis = d3.format('.0f');
     xAxis = d3.svg.axis()
       .scale(xRange)
@@ -324,10 +332,10 @@ vis.append('svg:g')
 
     var lineFunc = d3.svg.line()
   .x(function(d) {
-    return xRange(d.x);
+    return xRange(d.week);
   })
   .y(function(d) {
-    return yRange(d.y);
+    return yRange(d.delta);
   })
   .interpolate('linear');
 

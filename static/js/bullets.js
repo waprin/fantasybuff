@@ -69,13 +69,13 @@ d3.bullet = function() {
           .attr("height", height / 3)
           .attr("x", reverse ? x0 : 0)
           .attr("y", height / 3)
-        .transition()
+/*        .transition()
           .duration(0)
           .attr("width", w1)
-          .attr("x", reverse ? x1 : 0);
+          .attr("x", reverse ? x1 : 0);*/
 
       measure.transition()
-          .duration(2500)
+          .duration(1000)
           .attr("width", w1)
           .attr("height", height / 3)
           .attr("x", reverse ? x1 : 0)
