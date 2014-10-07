@@ -284,10 +284,11 @@ def load_transactions_from_translog(html, year, team):
             player_name = str(player_name)
             if player_name[-1] == '*':
                 player_name = player_name[:-1]
+            player_name = ' '.join(player_name.split()[:2])
             try:
                 player = Player.objects.get(name=player_name)
             except Player.DoesNotExist:
-                logger.error("Unexpected player in draft " % player_name)
+                logger.error("Unexpected player in draft %s" % player_name)
                 continue
             draft_entry = DraftClaim(date=date,round=draft_round, player_added=player, team=team)
             draft_round = draft_round + 1

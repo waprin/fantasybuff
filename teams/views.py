@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 from league import settings
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
-from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard, DraftClaim
+from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard, DraftClaim, TeamWeekScores
 import json
 from django.contrib.auth.models import User
 from django.template import RequestContext, loader
@@ -134,7 +134,7 @@ def show_week(request, espn_league_id, year, espn_team_id, week):
     league = League.objects.get(espn_id=espn_league_id, year=year)
     team = Team.objects.get(espn_id=espn_team_id, league=league)
 
-    scorecard = Scorecard.objects.get(team=team, week=int(week), actual=True)
+    scorecard = ScorecardEntry.objects.get(team=team, scorecard__week=int(week), actual=True)
     scorecard_entries = list(ScorecardEntry.objects.filter(scorecard=scorecard))
 
     optimal_scorecard = Scorecard.objects.get(team=team, week=int(week), actual=False)
@@ -159,6 +159,38 @@ def show_week(request, espn_league_id, year, espn_team_id, week):
     })
 
     return HttpResponse(template.render(context))
+
+@login_required
+def show_draftscore_week(request, league_id, year, team_id, week):
+    logger.debug("entering show_draftscore %s" % week)
+    league = League.objects.get(espn_id=league_id, year=year)
+    team = Team.objects.get(espn_id=team_id, league=league)
+
+    drafts = DraftClaim.objects.filter(team=team)
+    drafted_players = [draft.player_added for draft in drafts]
+    for i, player in enumerate(drafted_players):
+        scorecard_entry = ScorecardEntry.objects.filter(player=player, scorecard__week=int(week))[0]
+        if scorecard_entry.slot != 'Bench':
+            started = True
+            total_points = scorecard_entry.points * 2
+        else:
+            started = False
+            total_points = scorecard_entry.points
+
+        drafted_players[i] = {'player': player, 'scorecard_entry': scorecard_entry, 'started': started, 'total_points': total_points}
+
+    team_week_scores = TeamWeekScores.objects.get(week=int(week), team=team)
+    logger.debug("rturning drafted player %s" % drafted_players)
+    template = loader.get_template('teams/draftscore.html')
+    context = RequestContext(request, {
+        'total_score': team_week_scores.draft_score,
+        'players': drafted_players,
+        'navigation': make_nav_bar(league, team, int(week))
+    })
+
+    return HttpResponse(template.render(context))
+
+
 
 
 @login_required()
@@ -238,15 +270,19 @@ def get_team_report_card_json(request, league_id, year, team_id):
     team = Team.objects.get(league=league, espn_id=team_id)
     report_cards = TeamReportCard.objects.filter(team=team)
     scorecards = Scorecard.objects.filter(team=team, actual=False)
+    draft_scores = TeamWeekScores.objects.filter(team=team)
 
     report_data = Serializer().serialize(report_cards, fields=('lineup_score'))
     scorecard_data = Serializer().serialize(scorecards, fields=('week', 'delta'))
+    draft_data = Serializer().serialize(draft_scores, fields=('draft_score', 'week'))
 
     reportcard_struct = json.loads(report_data)
     scorecard_struct = json.loads(scorecard_data)
+    draft_struct = json.loads(draft_data)
 
     reportcard_struct[0]['scorecards'] = scorecard_struct
     reportcard_struct[0]['team_id'] = team.espn_id
+    reportcard_struct[0]['draft_scores'] = draft_struct
 
     data = json.dumps(reportcard_struct[0])
     return HttpResponse(data, content_type="application/json")
@@ -256,10 +292,10 @@ def get_team_draft(request, league_id, year, team_id):
     team = Team.objects.get(league=league, espn_id=team_id)
 
     drafts = DraftClaim.objects.filter(team=team)
-    drafted_players = [draft.player for draft in drafts]
+    drafted_players = [draft.player_added for draft in drafts]
     player_data = Serializer().serialize(drafted_players, fields=('name', 'position'))
-    data = json.dumps(player_data)
-    return HttpResponse(data, content_type="application/json")
+#    data = json.dumps(drafted_players)
+    return HttpResponse(player_data, content_type="application/json")
 
 @login_required
 def show_all_leagues(request):

@@ -34,12 +34,9 @@ def defer_espn_user_scrape(espn_user):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        email = args[0]
-        store = SqlStore()
-        user = User.objects.get(username=email)
-        espn_users = EspnUser.objects.filter(user=user)
-        for espn_user in espn_users:
-            scraper = get_scraper(espn_user)
+        espn_user = EspnUser.objects.all()[0]
+        league = League.objects.get(year='2014', espn_id='930248')
+        defer_league_scrape(espn_user, league)
 
 
 

@@ -42,6 +42,15 @@ class TeamReportCard(models.Model):
     team = models.OneToOneField(Team)
     lineup_score = models.DecimalField(decimal_places=4, max_digits=7)
 
+class TeamWeekScores(models.Model):
+    team = models.ForeignKey(Team, null=True)
+    league = models.ForeignKey(League, null=True)
+    draft_score = models.DecimalField(decimal_places=4, max_digits=7)
+    week = models.IntegerField()
+
+
+
+
 class Player(models.Model):
     POSITIONS = (
         (u'QB', 'Quarterback'),

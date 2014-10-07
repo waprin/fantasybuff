@@ -1,7 +1,7 @@
 import datetime
 from decimal import Decimal
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
-from teams.models import League, Team, Scorecard, ScorecardEntry, Player, TransLogEntry, DraftClaim
+from teams.models import League, Team, Scorecard, ScorecardEntry, Player, TransLogEntry, DraftClaim, TeamWeekScores
 from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
     get_leagues_from_entrance, get_teams_from_matchups
 from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet, \
@@ -183,6 +183,7 @@ class LeagueScraper(object):
 
         self.load_optimal_lineups(league)
         self.load_transactions(league)
+        self.load_draft_score(league)
 
         league.league_loaded_finish_time = datetime.datetime.now()
         league.loaded = True
@@ -272,7 +273,29 @@ class LeagueScraper(object):
             team.average_delta = average_delta
             team.save()
 
+    def load_draft_score(self, league):
+        TeamWeekScores.objects.filter(team__league=league).delete()
 
+        teams = Team.objects.filter(league=league)
+        num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
+        num_weeks = get_real_num_weeks(num_weeks, league)
+        for team in teams:
+            #weeks = get_real_num_weeks()
+            drafts = DraftClaim.objects.filter(team=team)
+            drafted_players = [draft.player_added for draft in drafts]
+            for week in range(1, num_weeks+1):
+                total_points = 0
+                for player in drafted_players:
+                    try:
+                        scorecard_entry = ScorecardEntry.objects.filter(player=player, scorecard__week=week)[0]
+                    except IndexError:
+                        logger.debug("load_draft_scores(): Can not find scorecard entry for player %s week %d" % (player.name, week))
+                        continue
+                    total_points += scorecard_entry.points
+                    if scorecard_entry.slot != 'Bench':
+                        total_points += scorecard_entry.points
+                    logger.debug("load_draft_scores(): for team %s week %d player %s points %d" %( team.team_name, week, player.name, total_points))
+                TeamWeekScores.objects.create(team=team, draft_score=total_points, week=week)
 
 
 
