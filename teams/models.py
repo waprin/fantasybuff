@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+import logging
+logger = logging.getLogger(__name__)
+
 class EspnUser(models.Model):
     user = models.ForeignKey(User)
     username = models.CharField(max_length=200, unique=True)
@@ -29,6 +32,7 @@ class Team(models.Model):
     espn_user = models.ForeignKey(EspnUser, null=True)
     espn_id = models.CharField(max_length=5)
     team_name = models.CharField(max_length=100, null=True)
+    abbreviation = models.CharField(max_length=10, null=True)
     owner_name = models.CharField(max_length=100, null=True)
     average_delta = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
 
@@ -225,6 +229,24 @@ class TransLogEntry(models.Model):
 class DraftClaim(TransLogEntry):
     player_added = models.ForeignKey(Player)
     round = models.IntegerField()
+
+class TradeEntryManager(models.Manager):
+
+    def create_if_not_exists(self, date, team, other_team, players_added, players_removed):
+        trade_entry = self.create(team=team, other_team=other_team, date=date)
+        for player in players_added:
+            trade_entry.players_added.add(player)
+        for player in players_removed:
+            trade_entry.players_removed.add(player)
+        trade_entry.save()
+
+
+class TradeEntry(TransLogEntry):
+    other_team = models.ForeignKey(Team, related_name="other_team")
+    players_added = models.ManyToManyField(Player, related_name='trade_added')
+    players_removed = models.ManyToManyField(Player, related_name='trade_dropped')
+    objects = TradeEntryManager()
+
 
 class AddDrop(TransLogEntry):
     player_added = models.ForeignKey(Player, related_name='adddrop_added')

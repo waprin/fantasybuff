@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
-from teams.models import EspnUser, ScoreEntry, PlayerScoreStats, DraftClaim
+from django.db.models import Q
+from teams.models import EspnUser, ScoreEntry, PlayerScoreStats, DraftClaim, TradeEntry
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from django.utils import unittest
@@ -122,6 +123,7 @@ class LeagueCreatorTest(unittest.TestCase):
         self.assertEqual(len(teams), 12)
         rogues = Team.objects.get(league=league, espn_id='6')
         self.assertEqual(espn_user, rogues.espn_user)
+        self.assertEquals(rogues.abbreviation, 'GCR')
 
     def test_load_game(self):
         league = League.objects.create(espn_id='930248',year='2014')
@@ -163,6 +165,11 @@ class LeagueCreatorTest(unittest.TestCase):
         claims = DraftClaim.objects.filter(team=team2)
         self.assertEquals(16, len(DraftClaim.objects.filter(team=team2)))
 
+        team3 = Team.objects.get(espn_id='2')
+        trade_count = TradeEntry.objects.filter(team=team3).count()
+        trade_count_other = TradeEntry.objects.filter(other_team=team3).count()
+        self.assertEquals(1, trade_count)
+        self.assertEquals(1, trade_count_other)
 
 
 

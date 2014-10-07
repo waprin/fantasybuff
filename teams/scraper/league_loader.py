@@ -1,7 +1,8 @@
 from decimal import Decimal
 import datetime
 from django.core.exceptions import ObjectDoesNotExist
-from teams.models import League, Player, ScoreEntry, Team, Scorecard, ScorecardEntry, PlayerScoreStats, DraftClaim
+from teams.models import League, Player, ScoreEntry, Team, Scorecard, ScorecardEntry, PlayerScoreStats, DraftClaim, \
+    TradeEntry
 from teams.scraper.html_scrapes import get_leagues_from_entrance
 
 import re
@@ -154,29 +155,30 @@ def load_scores_from_playersheet(html, player_id, year, overwrite=False):
 
 
 def load_teams_from_standings(html, league):
-    pool = BeautifulSoup(html)
-    header = pool.find('div', 'games-pageheader')
-    standings = header.findNextSibling('table')
-    bodies = standings.find_all('tr', 'tableBody')
+    soup = BeautifulSoup(html)
 
-    for body in bodies:
-        fullname = body.td.a['title']
-        href = body.td.a['href']
-        team_id_match = re.search("teamId=(\d+)", href)
-        espn_id = team_id_match.group(1)
-        matched_name = re.search("(.*)\s*\((.*)\)", fullname)
-        team_name = matched_name.group(1)
-        owner_name = matched_name.group(2)
+    rows = soup.find_all('span', 'alt-info')
+    rows = filter(lambda row: len(row.parent.contents) < 3, rows)
+    rows = map(lambda row: row.parent, rows)
+    extract_fields = lambda row: (row.span.string[1:-1],
+                                  row.contents[0].strip(),
+                                  re.search(r'teamId=(\d*)', row['href']).group(1)
+                                  )
+    rows = map(extract_fields, rows)
+    for row in rows:
+        abbreviation = row[0]
+        team_name = row[1]
+        espn_id = row[2]
 
         try:
             logger.debug("load_team_from_standings(): searching for espn_id %s" % espn_id)
             team = Team.objects.get(league=league, espn_id=espn_id)
             logger.debug("load_teams_from_standings(): team %s already existed, with espn_user=%s" % (team.team_name, team.espn_user))
         except Team.DoesNotExist:
-            team = Team.objects.create(team_name=team_name.strip(), espn_id = espn_id, owner_name=owner_name, league=league)
+            team = Team.objects.create(team_name=team_name, espn_id = espn_id, abbreviation=abbreviation, league=league)
             logger.debug("load_teams_from_standings(): team %s was newly created" % (team.team_name))
-        team.owner_name = owner_name
-        team.team_name = team_name.strip()
+        team.abbreviation = abbreviation
+        team.team_name = team_name
         team.save()
 
 def __get_players_from_lineup(html):
@@ -293,3 +295,46 @@ def load_transactions_from_translog(html, year, team):
             draft_entry = DraftClaim(date=date,round=draft_round, player_added=player, team=team)
             draft_round = draft_round + 1
             draft_entry.save()
+        elif transaction_type == 'Trade Processed':
+            trade_strings = ' '.join(row.contents[2].strings)
+            trades = re.findall(r'(\S+?) traded (.+?) to (\S+?)( |$)', trade_strings)
+            added_players = []
+            removed_players = []
+            other_team = None
+
+            date_str = ' '.join(list(rows[0].contents[0].strings))
+            date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
+            date.replace(year=int(year))
+            logger.debug("load_draft(): date_str is %s " % str(date))
+
+            for trade in trades:
+                from_abbreviation = trade[0]
+                to_abbreviation = trade[2]
+                if to_abbreviation == team.abbreviation:
+                    added = True
+                    other_abbreviation = from_abbreviation
+                else:
+                    added = False
+                    other_abbreviation = to_abbreviation
+
+                if other_team is None:
+                    try:
+                        other_team = Team.objects.filter(abbreviation=other_abbreviation, league=team.league)[0]
+                    except IndexError:
+                        logger.error("cant find other team for abbreviation %s" % other_abbreviation)
+                        continue
+                logger.debug("for abbreviation %s found team %s" % (other_abbreviation, other_team.team_name))
+                player_name = trade[1].split(',')[0].strip()
+
+                try:
+                    player = Player.objects.get(name=player_name)
+                except Player.DoesNotExist:
+                    logger.error("Unexpected player in trade $s " % player_name)
+                    continue
+                if added:
+                    added_players.append(player)
+                else:
+                    removed_players.append(player)
+            TradeEntry.objects.create_if_not_exists(date, team, other_team, added_players, removed_players)
+
+
