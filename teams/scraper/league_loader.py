@@ -336,5 +336,6 @@ def load_transactions_from_translog(html, year, team):
                 else:
                     removed_players.append(player)
             TradeEntry.objects.create_if_not_exists(date, team, other_team, added_players, removed_players)
+        
 
 
