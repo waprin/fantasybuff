@@ -2,7 +2,7 @@ from decimal import Decimal
 import datetime
 from django.core.exceptions import ObjectDoesNotExist
 from teams.models import League, Player, ScoreEntry, Team, Scorecard, ScorecardEntry, PlayerScoreStats, DraftClaim, \
-    TradeEntry
+    TradeEntry, AddDrop
 from teams.scraper.html_scrapes import get_leagues_from_entrance
 
 import re
@@ -271,6 +271,10 @@ def load_transactions_from_translog(html, year, team):
     draft_round = 0
     for row in rows:
         transaction_type = row.contents[1].contents[-1]
+        date_str = ' '.join(list(row.contents[0].strings))
+        date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
+        date.replace(year=int(year))
+        logger.debug("date is %s" % str(date))
 
         if transaction_type == 'Draft':
             logger.debug("loading player %s" % str(row.contents[2]))
@@ -279,9 +283,6 @@ def load_transactions_from_translog(html, year, team):
                 player_name = row.contents[2].b.string
             except AttributeError:
                 logger.error("row contents was %s" % str(row.contents[2]))
-            date_str = ' '.join(list(rows[0].contents[0].strings))
-            date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
-            date.replace(year=int(year))
 
             player_name = str(player_name)
             if player_name[-1] == '*':
@@ -301,11 +302,6 @@ def load_transactions_from_translog(html, year, team):
             added_players = []
             removed_players = []
             other_team = None
-
-            date_str = ' '.join(list(rows[0].contents[0].strings))
-            date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
-            date.replace(year=int(year))
-            logger.debug("load_draft(): date_str is %s " % str(date))
 
             for trade in trades:
                 from_abbreviation = trade[0]
@@ -336,6 +332,36 @@ def load_transactions_from_translog(html, year, team):
                 else:
                     removed_players.append(player)
             TradeEntry.objects.create_if_not_exists(date, team, other_team, added_players, removed_players)
-        
+
+        elif transaction_type == 'Add/Drop':
+            dropped = re.search('dropped', row.contents[2].contents[0].string) is not None
+            if dropped:
+                player_dropped_name = row.contents[2].contents[1].string
+                player_added_name = row.contents[2].contents[5].string
+            else:
+                player_added_name = row.contents[2].contents[1].string
+                player_dropped_name = row.contents[2].contents[5].string
+
+
+            if player_dropped_name[-1] == '*':
+                player_dropped_name = player_dropped_name[:-1]
+            if player_added_name[-1] == '*':
+                player_added_name = player_added_name[:-1]
+
+            try:
+                player_dropped = Player.objects.get(name=player_dropped_name)
+            except Player.DoesNotExist:
+                logger.error("Unexpected player in add/drop %s %s" % (player_dropped_name, team.team_name))
+                continue
+
+            try:
+                player_added = Player.objects.get(name=player_added_name)
+            except Player.DoesNotExist:
+                logger.error("Unexpected player in adddrop %s %s" % (player_added_name, team.team_name))
+                continue
+
+            logger.debug("creating add drop entry %s %s %s" % (team.team_name, player_added_name, player_dropped_name))
+            AddDrop.objects.create(date=date, team=team, player_added=player_added, player_dropped=player_dropped)
+
 
 

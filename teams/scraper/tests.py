@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
-from teams.models import EspnUser, ScoreEntry, PlayerScoreStats, DraftClaim, TradeEntry
+from teams.models import EspnUser, ScoreEntry, PlayerScoreStats, DraftClaim, TradeEntry, AddDrop
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from django.utils import unittest
@@ -170,6 +170,12 @@ class LeagueCreatorTest(unittest.TestCase):
         trade_count_other = TradeEntry.objects.filter(other_team=team3).count()
         self.assertEquals(1, trade_count)
         self.assertEquals(1, trade_count_other)
+
+
+        avery = Player.objects.get(name="Donnie Avery")
+        nicks = Player.objects.get(name="Hakeem Nicks")
+        waiver_add = AddDrop.objects.get(team=team3, player_added=avery)
+        self.assertEquals(waiver_add.player_dropped, nicks)
 
 
 
