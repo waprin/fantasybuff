@@ -6,7 +6,8 @@ from django.shortcuts import redirect
 from league import settings
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
-from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard, DraftClaim, TeamWeekScores
+from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard, DraftClaim, TeamWeekScores, \
+    AddDrop, TradeEntry
 import json
 from django.contrib.auth.models import User
 from django.template import RequestContext, loader
@@ -159,6 +160,84 @@ def show_week(request, espn_league_id, year, espn_team_id, week):
     })
 
     return HttpResponse(template.render(context))
+
+def get_trade_value(players, week):
+    total = 0
+    starters = []
+    for player in players:
+        entries = ScorecardEntry.objects.filter(player=player, scorecard__week=week)
+        if len(entries) > 0:
+            entry = entries[0]
+            if entry.slot != 'Bench':
+                    total += entries[0].points
+                    starters.append(entries[0])
+    return (starters, total)
+
+
+@login_required
+def show_trade_week(request, league_id, year, team_id, week):
+    league = League.objects.get(espn_id=league_id, year=year)
+    team = Team.objects.get(espn_id=team_id, league=league)
+
+    week = int(week)
+    trade_transactions = TradeEntry.objects.get_before_week(team, week)
+
+    all_players_added = []
+    all_players_dropped = []
+    for tt in trade_transactions:
+        all_players_added += list(tt.players_added.all())
+        all_players_dropped += list(tt.players_removed.all())
+        logger.debug("going through trade transactions %s %s " % (str(all_players_added), str(all_players_dropped)))
+
+    (all_players_added_scored, plusTotal) = get_trade_value(all_players_added, week)
+    (all_players_dropped_scored, minusTotal) = get_trade_value(all_players_dropped, week)
+    all_total = plusTotal - minusTotal
+    template = loader.get_template('teams/trade.html')
+    context = RequestContext(request, {
+        'total_score': all_total,
+        'added': all_players_added,
+        'dropped': all_players_dropped,
+        'added_scored': all_players_added_scored,
+        'dropped_scored': all_players_dropped_scored,
+    })
+    return HttpResponse(template.render(context))
+
+
+
+@login_required
+def show_waiver_week(request, league_id, year, team_id, week):
+    logger.debug("entering show waiver week %s" % week)
+    league = League.objects.get(espn_id=league_id, year=year)
+    team = Team.objects.get(espn_id=team_id, league=league)
+
+    week = int(week)
+    add_drop_transactions = AddDrop.objects.get_before_week(team, week)
+
+    total = 0
+    added = []
+    dropped = []
+    for adt in add_drop_transactions:
+        entries = ScorecardEntry.objects.filter(player=adt.player, scorecard__week=week, scorecard__team__league=team.league)
+        if len(entries) > 0:
+            entry = entries[0]
+            if entry.slot != 'Bench':
+                if adt.added:
+                    total += entries[0].points
+                    added.append(entries[0])
+                else:
+                    total -= entries[0].points
+                    dropped.append(entries[0])
+
+    template = loader.get_template('teams/waiver.html')
+    context = RequestContext(request, {
+        'total_score': total,
+        'added': added,
+        'dropped': dropped,
+        'add_drop_transactions' : add_drop_transactions,
+        'team_name': team.team_name
+    })
+    return HttpResponse(template.render(context))
+
 
 @login_required
 def show_draftscore_week(request, league_id, year, team_id, week):

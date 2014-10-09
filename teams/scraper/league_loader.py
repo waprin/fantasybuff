@@ -263,8 +263,21 @@ def load_scores_from_game(league, week, html):
         scorecard.points = total_points
         scorecard.save()
 
+def add_player(player_name, team, added, date):
+    if player_name[-1] == '*':
+        player_name = player_name[:-1]
+
+    try:
+        player = Player.objects.get(name=player_name)
+    except Player.DoesNotExist:
+        logger.error("Unexpected player in add/drop %s %s" % (player_name, team.team_name))
+        return
+
+    logger.debug("creating add drop entry %s %s %s %s" % (team.team_name, team.espn_id, player_name, date))
+    AddDrop.objects.create(date=date, team=team, player=player, added=added)
 
 def load_transactions_from_translog(html, year, team):
+    logger.debug("load_transactions_from_translog %s" % year)
     soup = BeautifulSoup(html)
     rows = soup.find_all('table')[0].find_all('tr')[3:]
     rows.reverse()
@@ -273,7 +286,7 @@ def load_transactions_from_translog(html, year, team):
         transaction_type = row.contents[1].contents[-1]
         date_str = ' '.join(list(row.contents[0].strings))
         date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
-        date.replace(year=int(year))
+        date = date.replace(year=int(year))
         logger.debug("date is %s" % str(date))
 
         if transaction_type == 'Draft':
@@ -335,33 +348,18 @@ def load_transactions_from_translog(html, year, team):
 
         elif transaction_type == 'Add/Drop':
             dropped = re.search('dropped', row.contents[2].contents[0].string) is not None
+            logger.debug("add drop date is %s" % str(date))
             if dropped:
-                player_dropped_name = row.contents[2].contents[1].string
-                player_added_name = row.contents[2].contents[5].string
+                add_player(row.contents[2].contents[1].string, team, False, date)
+                add_player(row.contents[2].contents[5].string, team, True, date)
             else:
-                player_added_name = row.contents[2].contents[1].string
-                player_dropped_name = row.contents[2].contents[5].string
+                add_player(row.contents[2].contents[1].string, team, True, date)
+                add_player(row.contents[2].contents[5].string, team, False, date)
+        elif transaction_type == 'Add':
+            add_player(row.contents[2].contents[1].string, team, True, date)
+        elif transaction_type == 'Drop':
+            add_player(row.contents[2].contents[1].string, team, False, date)
 
-
-            if player_dropped_name[-1] == '*':
-                player_dropped_name = player_dropped_name[:-1]
-            if player_added_name[-1] == '*':
-                player_added_name = player_added_name[:-1]
-
-            try:
-                player_dropped = Player.objects.get(name=player_dropped_name)
-            except Player.DoesNotExist:
-                logger.error("Unexpected player in add/drop %s %s" % (player_dropped_name, team.team_name))
-                continue
-
-            try:
-                player_added = Player.objects.get(name=player_added_name)
-            except Player.DoesNotExist:
-                logger.error("Unexpected player in adddrop %s %s" % (player_added_name, team.team_name))
-                continue
-
-            logger.debug("creating add drop entry %s %s %s" % (team.team_name, player_added_name, player_dropped_name))
-            AddDrop.objects.create(date=date, team=team, player_added=player_added, player_dropped=player_dropped)
 
 
 

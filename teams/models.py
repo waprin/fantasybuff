@@ -1,3 +1,4 @@
+import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -51,6 +52,7 @@ class TeamWeekScores(models.Model):
     league = models.ForeignKey(League, null=True)
     draft_score = models.DecimalField(decimal_places=4, max_digits=7)
     week = models.IntegerField()
+
 
 
 
@@ -230,30 +232,28 @@ class DraftClaim(TransLogEntry):
     player_added = models.ForeignKey(Player)
     round = models.IntegerField()
 
-class TradeEntryManager(models.Manager):
+class TransLogManager(models.Manager):
 
-    def create_if_not_exists(self, date, team, other_team, players_added, players_removed):
-        trade_entry = self.create(team=team, other_team=other_team, date=date)
-        for player in players_added:
-            trade_entry.players_added.add(player)
-        for player in players_removed:
-            trade_entry.players_removed.add(player)
-        trade_entry.save()
-
+    def get_before_week(self, team, week):
+        start = datetime.datetime(year=int(team.league.year), month=9, day=9)
+        week_delta = datetime.timedelta(days=7)
+        week = week - 1
+        start_days = start + (week * week_delta)
+        logger.debug("getting all add/drop entires prior to date %s " % str(start_days))
+        return self.filter(team=team, date__lte=start_days)
 
 class TradeEntry(TransLogEntry):
     other_team = models.ForeignKey(Team, related_name="other_team")
     players_added = models.ManyToManyField(Player, related_name='trade_added')
     players_removed = models.ManyToManyField(Player, related_name='trade_dropped')
-    objects = TradeEntryManager()
-
+    objects = TransLogManager()
 
 class AddDrop(TransLogEntry):
-    player_added = models.ForeignKey(Player, related_name='adddrop_added')
-    player_dropped = models.ForeignKey(Player, related_name='addrop_dropped')
+    player = models.ForeignKey(Player)
+    added = models.BooleanField()
     """waiver - true if picked from the waiver, false if picked from FA"""
     waiver = models.BooleanField(default=True)
-
+    objects = TransLogManager()
 
 # scraper models
 

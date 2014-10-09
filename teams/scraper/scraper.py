@@ -1,9 +1,9 @@
 import datetime
 from decimal import Decimal
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
-from teams.models import League, Team, Scorecard, ScorecardEntry, Player, TransLogEntry, DraftClaim, TeamWeekScores
+from teams.models import Team, Scorecard, ScorecardEntry, Player, DraftClaim, TeamWeekScores
 from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
-    get_leagues_from_entrance, get_teams_from_matchups
+     get_teams_from_matchups
 from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet, \
     load_teams_from_standings, load_week_from_lineup, load_scores_from_game, load_transactions_from_translog
 

@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
-from teams.models import EspnUser, ScoreEntry, PlayerScoreStats, DraftClaim, TradeEntry, AddDrop
+from teams.models import EspnUser, ScoreEntry, PlayerScoreStats, DraftClaim, TradeEntry, AddDrop, League
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from django.utils import unittest
+from teams.scraper.html_scrapes import get_leagues_from_entrance
 from teams.scraper.league_loader import load_transactions_from_translog
 from teams.utils.db_utils import clearDb
 
@@ -174,9 +175,17 @@ class LeagueCreatorTest(unittest.TestCase):
 
         avery = Player.objects.get(name="Donnie Avery")
         nicks = Player.objects.get(name="Hakeem Nicks")
-        waiver_add = AddDrop.objects.get(team=team3, player_added=avery)
-        self.assertEquals(waiver_add.player_dropped, nicks)
+        waiver_add = AddDrop.objects.get(team=team3, player=avery)
+        self.assertEquals(waiver_add.added, True)
 
+        all = AddDrop.objects.filter(team=team3)
+        self.assertGreater(len(all), 0)
+
+        before_week2 = AddDrop.objects.get_before_week(team3, 2)
+        self.assertEquals(len(before_week2), 10)
+
+        before_week3 = AddDrop.objects.get_before_week(team3, 3)
+        self.assertEquals(len(before_week3), 12)
 
 
 class ScraperTest(unittest.TestCase):
