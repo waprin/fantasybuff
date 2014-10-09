@@ -161,17 +161,6 @@ def show_week(request, espn_league_id, year, espn_team_id, week):
 
     return HttpResponse(template.render(context))
 
-def get_trade_value(players, week):
-    total = 0
-    starters = []
-    for player in players:
-        entries = ScorecardEntry.objects.filter(player=player, scorecard__week=week)
-        if len(entries) > 0:
-            entry = entries[0]
-            if entry.slot != 'Bench':
-                    total += entries[0].points
-                    starters.append(entries[0])
-    return (starters, total)
 
 
 @login_required
@@ -189,8 +178,8 @@ def show_trade_week(request, league_id, year, team_id, week):
         all_players_dropped += list(tt.players_removed.all())
         logger.debug("going through trade transactions %s %s " % (str(all_players_added), str(all_players_dropped)))
 
-    (all_players_added_scored, plusTotal) = get_trade_value(all_players_added, week)
-    (all_players_dropped_scored, minusTotal) = get_trade_value(all_players_dropped, week)
+    (all_players_added_scored, plusTotal) = ScorecardEntry.get_trade_value(all_players_added, week)
+    (all_players_dropped_scored, minusTotal) = ScorecardEntry.get_trade_value(all_players_dropped, week)
     all_total = plusTotal - minusTotal
     template = loader.get_template('teams/trade.html')
     context = RequestContext(request, {
@@ -353,7 +342,7 @@ def get_team_report_card_json(request, league_id, year, team_id):
 
     report_data = Serializer().serialize(report_cards, fields=('lineup_score'))
     scorecard_data = Serializer().serialize(scorecards, fields=('week', 'delta'))
-    draft_data = Serializer().serialize(draft_scores, fields=('draft_score', 'week'))
+    draft_data = Serializer().serialize(draft_scores, fields=('draft_score', 'week', 'waiver_score', 'trade_score'))
 
     reportcard_struct = json.loads(report_data)
     scorecard_struct = json.loads(scorecard_data)

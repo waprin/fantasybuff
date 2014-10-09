@@ -1,7 +1,7 @@
 import datetime
 from decimal import Decimal
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
-from teams.models import Team, Scorecard, ScorecardEntry, Player, DraftClaim, TeamWeekScores
+from teams.models import Team, Scorecard, ScorecardEntry, Player, DraftClaim, TeamWeekScores, AddDrop, TradeEntry
 from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
      get_teams_from_matchups
 from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet, \
@@ -211,6 +211,8 @@ class LeagueScraper(object):
         for team in teams:
             logger.debug("loading translog for team %s" % team.espn_id)
             DraftClaim.objects.filter(team=team).delete()
+            AddDrop.objects.filter(team=team).delete()
+            TradeEntry.objects.filter(team=team).delete()
             transaction_html = self.store.get_translog(league.espn_id, league.year, team.espn_id)
             load_transactions_from_translog(transaction_html, team.league.year, team)
 
@@ -273,6 +275,53 @@ class LeagueScraper(object):
             team.average_delta = average_delta
             team.save()
 
+    def get_waiver_points(self, team, week):
+        add_drop_transactions = AddDrop.objects.get_before_week(team, week)
+        logger.debug("in get waiver points %d transactions " % len(add_drop_transactions))
+        total = 0
+        for adt in add_drop_transactions:
+            entries = ScorecardEntry.objects.filter(player=adt.player, scorecard__week=week, scorecard__team__league=team.league)
+            logger.debug("for adt entry got %d entries " % len(entries))
+            if len(entries) > 0:
+                entry = entries[0]
+                if entry.slot != 'Bench':
+                    if adt.added:
+                        total += entries[0].points
+                    else:
+                        total -= entries[0].points
+        return total
+
+    def __get_trade_points(self, team, week):
+        trade_transactions = TradeEntry.objects.get_before_week(team, week)
+        all_players_added = []
+        all_players_dropped = []
+        for tt in trade_transactions:
+            all_players_added += list(tt.players_added.all())
+            all_players_dropped += list(tt.players_removed.all())
+            logger.debug("going through trade transactions %s %s " % (str(all_players_added), str(all_players_dropped)))
+
+        (all_players_added_scored, plusTotal) = ScorecardEntry.get_trade_value(all_players_added, week)
+        (all_players_dropped_scored, minusTotal) = ScorecardEntry.get_trade_value(all_players_dropped, week)
+        all_total = plusTotal - minusTotal
+        return all_total
+
+    def __get_draft_points(self, team, week):
+        drafts = DraftClaim.objects.filter(team=team)
+        drafted_players = [draft.player_added for draft in drafts]
+        total_points = 0
+        for player in drafted_players:
+            try:
+                scorecard_entry = ScorecardEntry.objects.filter(player=player, scorecard__week=week)[0]
+            except IndexError:
+                logger.debug("load_draft_scores(): Can not find scorecard entry for player %s week %d" % (player.name, week))
+                continue
+            total_points += scorecard_entry.points
+            if scorecard_entry.slot != 'Bench':
+                total_points += scorecard_entry.points
+            logger.debug("load_draft_scores(): for team %s week %d player %s points %d" %( team.team_name, week, player.name, total_points))
+        return total_points
+
+
     def load_draft_score(self, league):
         TeamWeekScores.objects.filter(team__league=league).delete()
 
@@ -280,22 +329,11 @@ class LeagueScraper(object):
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
         for team in teams:
-            #weeks = get_real_num_weeks()
-            drafts = DraftClaim.objects.filter(team=team)
-            drafted_players = [draft.player_added for draft in drafts]
             for week in range(1, num_weeks+1):
-                total_points = 0
-                for player in drafted_players:
-                    try:
-                        scorecard_entry = ScorecardEntry.objects.filter(player=player, scorecard__week=week)[0]
-                    except IndexError:
-                        logger.debug("load_draft_scores(): Can not find scorecard entry for player %s week %d" % (player.name, week))
-                        continue
-                    total_points += scorecard_entry.points
-                    if scorecard_entry.slot != 'Bench':
-                        total_points += scorecard_entry.points
-                    logger.debug("load_draft_scores(): for team %s week %d player %s points %d" %( team.team_name, week, player.name, total_points))
-                TeamWeekScores.objects.create(team=team, draft_score=total_points, week=week)
+                draft_points = self.__get_draft_points(team, week)
+                waiver_points = self.get_waiver_points(team, week)
+                trade_points = self.__get_trade_points(team, week)
+                TeamWeekScores.objects.create(team=team, draft_score=draft_points, waiver_score=waiver_points, trade_score=trade_points, week=week)
 
 
 

@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 from scraper import *
 
-@unittest.skip("too long")
 class IntegrationTest(unittest.TestCase):
 
     def setUp(self):
@@ -186,6 +185,12 @@ class LeagueCreatorTest(unittest.TestCase):
 
         before_week3 = AddDrop.objects.get_before_week(team3, 3)
         self.assertEquals(len(before_week3), 12)
+
+        logger.debug("test_translog:  get waiver points")
+        draft_score = self.league_scraper.get_waiver_points(team3, 4)
+        self.assertEquals(draft_score, 3)
+
+
 
 
 class ScraperTest(unittest.TestCase):

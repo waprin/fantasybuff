@@ -51,10 +51,9 @@ class TeamWeekScores(models.Model):
     team = models.ForeignKey(Team, null=True)
     league = models.ForeignKey(League, null=True)
     draft_score = models.DecimalField(decimal_places=4, max_digits=7)
+    waiver_score = models.DecimalField(decimal_places=4, max_digits=7)
+    trade_score = models.DecimalField(decimal_places=4, max_digits=7)
     week = models.IntegerField()
-
-
-
 
 
 class Player(models.Model):
@@ -118,6 +117,20 @@ class ScorecardEntry(models.Model):
     slot = models.CharField(max_length=20, choices=SLOT_TYPES)
     points = models.DecimalField(decimal_places=4, max_digits=7)
     added = models.NullBooleanField()
+
+    @staticmethod
+    def get_trade_value(players, week):
+        total = 0
+        starters = []
+        for player in players:
+            entries = ScorecardEntry.objects.filter(player=player, scorecard__week=week)
+            if len(entries) > 0:
+                entry = entries[0]
+                if entry.slot != 'Bench':
+                        total += entries[0].points
+                        starters.append(entries[0])
+        return (starters, total)
+
 
     def __unicode__(self):
         return "player %s position %s slot %s points %f" % (self.player.name, self.player.position,  self.slot, self.points)
@@ -241,6 +254,14 @@ class TransLogManager(models.Manager):
         start_days = start + (week * week_delta)
         logger.debug("getting all add/drop entires prior to date %s " % str(start_days))
         return self.filter(team=team, date__lte=start_days)
+
+    def create_if_not_exists(self, date, team, other_team, players_added, players_removed):
+        trade_entry = self.create(team=team, other_team=other_team, date=date)
+        for player in players_added:
+            trade_entry.players_added.add(player)
+        for player in players_removed:
+            trade_entry.players_removed.add(player)
+        trade_entry.save()
 
 class TradeEntry(TransLogEntry):
     other_team = models.ForeignKey(Team, related_name="other_team")
