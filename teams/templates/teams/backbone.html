@@ -35,10 +35,9 @@
                             <li><a href="#/team/{{ team.espn_id }}">{{ team.team_name }}</a></li>
                         {%  endfor %}
                     </ul>
-                <li class="active"><a href="#report-card" data-toggle="tab">Report Card</a></li>
-                <li >
-                  <a href="#lineups" data-toggle="tab">Lineups</a>
-
+                <li id='report-card-tab' class="active"><a href="#reportcard">Report Card</a></li>
+                <li id="lineup-tab">
+                  <a href="#lineups"  >Lineups</a>
                 </li>
             </ul>
         </div>
@@ -47,15 +46,16 @@
     <div class="tab-content">
         <div class="tab-pane active" id="report-card">
             <div class="container-fluid">
-                <div class="title" style="text-align: center"><h1>League Report Card <br /> <span style="font-style: italic">Gotham City Rogues </span></h1></div>
-                <div class="container"  style="margin-bottom:30px">
+
+                <div class="container" id="chart_container" style="margin-bottom:30px">
                       <!--<row>
                       <svg class="chart" width="420" height="120">      </svg>
                       </row>-->
                       <!--<row>-->
-                          <div id="bullet_row"></div>
+<!--                              <div class="title" style="text-align: center"><h1>League Report Card <br /> <span style="font-style: italic">Gotham City Rogues </span></h1></div>-->
                       <!--</row>-->
                 </div>
+                <!--
                 <div class="row">
                     <div class="col-lg-3">
                         <div class="panel panel-green">
@@ -97,15 +97,16 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>-->
             </div>
         </div>
-        <div class="tab-pane" id="lineups">
+        <div id="lineups">
             <div class="title" style="text-align: center"><h1>Week-By-Week Analysis <br /> <span style="font-style: italic">Gotham City Rogues </span></h1></div>
             <div id="lineup-vis-container" style="text-align: center">
                 <h1>Lineup Calculations</h1>
-                <svg id="lineup-vis" width="1000" height="200"></svg>
-                <div id="lineup_table_container">
+
+                <!--<svg id="lineup-vis" width="1000" height="200"></svg>-->
+                <!--<div id="lineup_table_container">
                     <script id="lineup-table-template" type="text/template">
                         <table class="table table-bordered table-striped">
                             <tbody>
@@ -125,6 +126,7 @@
                         </table>
                     </script>
                 </div>
+                -->
             </div>
             </div>
         </div>
@@ -140,7 +142,27 @@
     <script src="http://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
     <script type="text/javascript" src="/static/js/bullets.js"></script>
 
+    <script id="lineup-table-template" type="text/template">
+                        <table class="table table-bordered table-striped">
+                            <tbody>
+                            <tr>
+                                <td>Week</td>
+                                <% _.each(scorecards, function(scorecard) { %>
+                                <td><%= scorecard.week %></td>
+                                <% }); %>
+                            </tr>
+                            <tr>
+                                <td>Delta</td>
+                                <% _.each(scorecards, function(scorecard) { %>
+                                <td><a href="<%= team_id %>/lineup/<%= scorecard.week %>" ><%= scorecard.delta %> </a></td>
+                                <% }); %>
+                            </tr>
+                            </tbody>
+                        </table>
+    </script>
+
     <script type="text/javascript">
+
 
 $(document).ready(function() {
 
@@ -162,37 +184,73 @@ $(document).ready(function() {
         team_id: '6'
     });
 
+
+    Backbone.View.prototype.hide = function() {
+        this.$el.hide();
+    };
+
+    Backbone.View.prototype.show = function() {
+        this.$el.show();
+    };
+
+
     var ReportCardView = Backbone.View.extend({
+        className: 'bullet_row_backbone',
+
         initialize: function() {
             this.listenTo(this.model, "change:lineup_score", this.render);
         },
 
         render: function() {
+            this.$el.append($('<div id="bullet_row"> </div>'));
             data[0].measures[0] = this.model.get('lineup_score');
-            console.log("setting bullet chart to ", this.model)
+            $('#chart_container').append(this.el);
             if (!this.bulletChart) {
                 this.bulletChart = new BulletChart(data);
             } else {
                 this.bulletChart.updateBullets(data);
             }
+            return this;
         }
+
     });
 
     var LineupGraphView = Backbone.View.extend({
-        'el': $("#lineup-vis"),
+        className: 'lineup_graph_container',
 
         initialize: function() {
-            this.listenTo(this.model, "change:scorecards", this.render);
+            this.listenTo(this.model, "change:scorecards", this.updateLineChart);
+        },
+
+        updateLineChart: function() {
+            var scorecards = this.model.get('scorecards');
+            scorecards.sort(function(a, b) {
+                return a.week - b.week;
+            });
+              updateLineChart(scorecards);
         },
 
         render: function() {
-            buildLineCharts(this.el, this.model.get('scorecards'));
+            console.log("rendering view: ", this.$el)
+            //this.$el.html('<svg id="lineup-vis" width="1000" height="200"></svg>');
+            console.log("scorecards: ", this.model.get('scorecards'));
+            var scorecards = this.model.get('scorecards');
+            scorecards.sort(function(a, b) {
+                return a.week - b.week;
+            });
+            var lineupGraph = this.$el.html('<div id="lineup_graph_svg_container"></div>');
+            buildLineCharts(this.$el.find('#lineup-vis'), scorecards);
             return this;
+        },
+
+        update: function() {
+            console.log("updating:", $("#lineup-vis"));
+            buildLineCharts(null, this.model.get('scorecards'));
         }
+
     });
 
     var LineupTableView = Backbone.View.extend({
-        'el': $("#lineup_table_container"),
 
         'template': _.template($("#lineup-table-template").html()),
 
@@ -207,15 +265,16 @@ $(document).ready(function() {
     });
 
 
-    var reportCardView = new ReportCardView({model: roguesReportCard});
-    var linupeGraphView = new LineupGraphView({model: roguesReportCard});
-    var lineupTableView = new LineupTableView({ model: roguesReportCard});
+
+
     roguesReportCard.fetch();
 
     var AppRouter = Backbone.Router.extend({
         routes: {
             "team/:id": "getTeam",
-            "team/:id/lineups": "loadLineups",
+            "team/lineups": "loadLineups",
+            "lineups": "loadLineups",
+            "reportcard": "loadReportCard",
             "*actions": "defaultRoute" // Backbone will try match the route above first
         }
     });
@@ -224,13 +283,40 @@ $(document).ready(function() {
     app_router.on('route:getTeam', function (id) {
         roguesReportCard.set('team_id', id);
         roguesReportCard.fetch();
+        //window.reportCardView = new ReportCardView({model: roguesReportCard});
     });
     app_router.on('route:loadLineups', function(id) {
-        alert("loading linupes for " + id);
+        $('#lineup-tab').addClass('active');
+        $('#report-card-tab').removeClass('active');
+        window.reportCardView.remove();
+        window.lineupGraphView = new LineupGraphView({model: roguesReportCard});
+        window.lineupTableView = new LineupTableView({ model: roguesReportCard});
+        $('#lineup-vis-container').append(window.lineupGraphView.render().el);
+        $('#lineup-vis-container').append(window.lineupTableView.render().el);
+        window.lineupGraphView.update();
+
+    });
+    app_router.on('route:loadReportCard', function() {
+        console.log('reporting to duty');
+        $('#lineup-tab').removeClass('active');
+        $('#report-card-tab').addClass('active');
+
+        window.lineupGraphView.remove();
+        window.lineupTableView.remove();
+        $('#lineup-vis-container').empty();
+
+        window.reportCardView = new ReportCardView({model: roguesReportCard});
+        $('#chart_container').append(window.reportCardView.render().el);
     });
     app_router.on('route:defaultRoute', function (actions) {
-        //alert( actions );
+        roguesReportCard.set('team_id', '6');
+        roguesReportCard.fetch();
+        window.reportCardView = new ReportCardView({model: roguesReportCard});
+
     });
+
+
+
     // Start Backbone history a necessary step for bookmarkable URL's
     Backbone.history.start();
 });
@@ -293,9 +379,48 @@ function BulletChart(data) {
     }
 }
 
+function updateLineChart(lineData) {
+    console.log("update line char")
+
+    xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 5]);
+    yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 50]);
+
+
+    var lineFunc = d3.svg.line()
+            .x(function(d) {
+                return xRange(d.week);
+            })
+            .y(function(d) {
+                return yRange(d.delta);
+            })
+            .interpolate('linear');
+
+    var vis = d3.select("#lineup_graph_svg_container")
+            .select('svg')
+            .select('path.teamline')
+            .transition()
+            .duration(2000)
+            //.attr('stroke', 'red');
+            .attr('d', lineFunc(lineData));
+
+    window.lineData = lineData;
+    d3.select("#lineup_graph_svg_container")
+            .select('svg')
+            .selectAll('circle.plotpoints')
+            .data(lineData)
+            .transition()
+            .duration(2000)
+            .attr('cy', function(d) { return yRange(d.delta);} );
+
+
+}
+
 function buildLineCharts(element, lineData) {
-    var vis = d3.select(element),
-    WIDTH = 1000,
+    console.log("build line charts with element ", lineData);
+    var vis = d3.select("#lineup_graph_svg_container").append('svg')
+                    .attr('width', 900)
+                    .attr('height', 200);
+    WIDTH = 900,
     HEIGHT = 200,
     MARGINS = {
       top: 20,
@@ -303,12 +428,12 @@ function buildLineCharts(element, lineData) {
       bottom: 20,
       left: 50
     },
-    xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 4]),
+    xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 5]),
     yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 50]),
     formatxAxis = d3.format('.0f');
     xAxis = d3.svg.axis()
       .scale(xRange)
-            .tickValues([1,2,3,4])
+            .tickValues([1,2,3,4,5])
             .tickSize(6)
             .tickFormat(formatxAxis)
             .tickSubdivide(true);
@@ -319,6 +444,9 @@ function buildLineCharts(element, lineData) {
       .tickSize(6)
       .orient('left')
       .tickSubdivide(false);
+
+
+
 
 vis.append('svg:g')
   .attr('class', 'x axis')
@@ -339,12 +467,24 @@ vis.append('svg:g')
   })
   .interpolate('linear');
 
-    vis.append('svg:path')
+    vis.append('path')
   .attr('d', lineFunc(lineData))
   .attr('stroke', 'blue')
   .attr('stroke-width', 2)
-  .attr('fill', 'none');
+  .attr('fill', 'none')
+            .attr('class', 'teamline');
+
+
+        vis.selectAll('circle').data(lineData).enter().append('svg:circle')
+            .attr('cx', function(d) { return xRange(d.week); } )
+            .attr('cy', function(d) { return yRange(d.delta);} )
+            .attr('fill', 'white')
+                .attr('stroke', 'blue')
+            .attr('r', '8')
+                .attr('class', 'plotpoints');
+
 }
+
 
 </script>
 
