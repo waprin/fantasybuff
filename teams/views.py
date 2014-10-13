@@ -135,7 +135,7 @@ def show_week(request, espn_league_id, year, espn_team_id, week):
     league = League.objects.get(espn_id=espn_league_id, year=year)
     team = Team.objects.get(espn_id=espn_team_id, league=league)
 
-    scorecard = ScorecardEntry.objects.get(team=team, scorecard__week=int(week), actual=True)
+    scorecard = Scorecard.objects.get(team=team, week=int(week), actual=True)
     scorecard_entries = list(ScorecardEntry.objects.filter(scorecard=scorecard))
 
     optimal_scorecard = Scorecard.objects.get(team=team, week=int(week), actual=False)
