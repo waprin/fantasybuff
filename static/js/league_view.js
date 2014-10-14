@@ -56,21 +56,20 @@
             right: 20,
             bottom: 20,
             left: 50
-        },
-        xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 5]),
-        yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 50]);
+        };
 
 
-    function buildLineCharts() {
-        console.log("load build line charts");
-        var vis = d3.select("#lineup_vis_container").select('svg'),
+    function buildLineCharts(element, range) {
+        var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 5]),
+            yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([range[0], range[1]]),
+            vis = d3.select(element).select('svg'),
             formatxAxis = d3.format('.0f'),
             xAxis = d3.svg.axis()
-                .scale(xRange)
-                .tickValues([1, 2, 3, 4, 5])
-                .tickSize(6)
-                .tickFormat(formatxAxis)
-                .tickSubdivide(true),
+                    .scale(xRange)
+                        .tickValues([1, 2, 3, 4, 5])
+                        .tickSize(6)
+                        .tickFormat(formatxAxis)
+                        .tickSubdivide(true),
             yAxis = d3.svg.axis()
                 .scale(yRange)
                 .ticks(4)
@@ -89,25 +88,27 @@
             .call(yAxis);
     }
 
-    function updateLineCharts(lineData) {
+    function updateLineCharts(element, lineData, range) {
         console.log('updating line data', lineData);
-        var lineFunc = d3.svg.line()
+        var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 5]),
+            yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([range[0], range[1]]),
+            lineFunc = d3.svg.line()
                 .x(function (d) {
                     return xRange(d.week);
                 })
                 .y(function (d) {
-                    return yRange(d.delta);
+                    return yRange(d.value);
                 })
                 .interpolate('linear');
 
-        d3.select("#lineup_vis_container")
+        d3.select(element)
                 .select('svg')
                 .select('path.teamline')
                 .transition()
                 .duration(2000)
                 .attr('d', lineFunc(lineData));
 
-        d3.select("#lineup_vis_container")
+        d3.select(element)
             .select('svg')
             .selectAll('circle.plotpoints')
             .data(lineData)
@@ -117,20 +118,20 @@
                 return xRange(d.week);
             })
             .attr('cy', function (d) {
-                return yRange(d.delta);
+                return yRange(d.value);
             })
             .attr('fill', 'red')
             .attr('stroke', 'blue')
             .attr('r', '8')
             .attr('class', 'plotpoints');
 
-        d3.select("#lineup_vis_container")
+        d3.select(element)
             .select('svg')
             .selectAll('circle.plotpoints')
             .transition()
             .duration(2000)
             .attr('cy', function (d) {
-                return yRange(d.delta);
+                return yRange(d.value);
             });
     }
 
@@ -148,14 +149,25 @@
                     return this.get("team_id") + '/';
                 },
 
-                getScorecards: function () {
-                    var scorecards = this.get('scorecards');
+                getWeeklyScores: function (name) {
+                    var scorecards = this.get(name);
                     if (!scorecards) {
                         return null;
                     }
                     scorecards.sort(function (a, b) {
                         return a.week - b.week;
                     });
+                    if (name === 'scorecards') {
+                        console.log("cleaning up lineups");
+                        _.each(scorecards, function (scorecard) {
+                            scorecard.value = scorecard.delta;
+                        });
+                    } else if (name === 'draft_scores') {
+                        console.log("cleaning up draft");
+                        _.each(scorecards, function (scorecard) {
+                            scorecard.value = scorecard.draft_score;
+                        });
+                    }
                     return scorecards;
                 }
             }),
@@ -188,53 +200,128 @@
             LineupTableView = Backbone.View.extend({
                 'template': _.template($("#lineup-table-template").html()),
 
-                initialize: function () {
+                initialize: function (options) {
                     this.listenTo(this.model, "change:scorecards", this.render);
+                    this.fieldName = options.fieldName;
                 },
 
                 render: function () {
-                    this.$el.html(this.template({'team_id': this.model.get('team_id'), 'scorecards': this.model.get('scorecards')}));
+                    var field = this.fieldName;
+                    if (field === 'draft_scores') {
+                        field = 'draft';
+                    }
+                    this.$el.html(this.template({ 'team_id': this.model.get('team_id'),
+                            'scorecards': this.model.getWeeklyScores(this.fieldName),
+                        'field': field
+                        }));
                     return this;
                 }
             }),
 
-            LineupView = Backbone.View.extend({
-                el: $('#lineup_vis_container'),
-
-                initialize: function () {
-                    this.listenTo(this.model, "change:scorecards", this.updateLineChart);
-
+            LineChartView = Backbone.View.extend({
+                initialize: function (options) {
+                    //this.listenTo(this.model, "change:scorecards", this.updateLineChart);
+                    this.listenTo(this.model, options.updateEvent, this.updateLineChart);
+                    this.fieldName = options.fieldName;
+                    this.range = options.range;
                 },
 
                 updateLineChart: function () {
-                    updateLineCharts(this.model.getScorecards());
+                    updateLineCharts(this.el, this.model.getWeeklyScores(this.fieldName), this.range);
                 },
 
                 render: function () {
-                    this.$el.append(new LineupTableView({model: this.model}).render().el);
-                    buildLineCharts();
-                    if (this.model.getScorecards() !== null) {
+                    this.$el.append(new LineupTableView({model: this.model, fieldName: this.fieldName}).render().el);
+                    buildLineCharts(this.el, this.range);
+                    if (this.model.getWeeklyScores(this.fieldName)) {
                         this.updateLineChart();
                     }
                     return this;
                 }
             }),
-            lineupView = new LineupView({model: roguesReportCard}),
+            TabView = Backbone.View.extend({
+                el: $("#league_navigation"),
+
+                initialize: function () {
+                    var _that = this;
+                    /*jslint unparam:true*/
+                    Backbone.history.on('route', function (router, name) {
+                        if (name.substring(0, 4) !== 'load') {
+                            return;
+                        }
+                        name = name.substring(5);
+                        _.each(_that.$el.children(), function (child) {
+                            child = $(child);
+                            if (child.attr('class') === 'dropdown') {
+                                return;
+                            }
+                            console.log("sanity check");
+                            console.log(name);
+                            console.log(child.attr('id'));
+                            if (child.attr('id').split('-')[0] === name) {
+                                child.addClass('active');
+                            } else {
+                                child.removeClass('active');
+                            }
+                        });
+                    });
+                    /*jslint unparam:false*/
+                },
+
+                render: function (tabs) {
+                    var dropdown = this.$('.dropdown'),
+                        first = true,
+                        first_item,
+                        _that = this;
+                    this.$el.empty();
+                    this.$el.append(dropdown);
+
+                    _.each(tabs, function (tab) {
+                        var elm = _that.$el.append('<li id="' + tab.id + '-tab"><a href="#' + tab.id + '" >' + tab.name + '</a></li>');
+                        if (first) {
+                            first_item = elm;
+                            first = false;
+                        }
+                    });
+                    first_item.addClass('active');
+                    return this;
+                }
+            }),
+            lineupView = new LineChartView({
+                model: roguesReportCard,
+                el: $('#lineup_vis_container'),
+                fieldName: 'scorecards',
+                updateEvent: "change:scorecards",
+                range: [0, 50]
+            }),
+            draftView = new LineChartView({
+                model: roguesReportCard,
+                el: $('#draft_vis_container'),
+                fieldName: 'draft_scores',
+                updateEvent: "change:draft_scores",
+                range: [100, 300]
+            }),
             reportCardView = new ReportCardView({model: roguesReportCard}),
             REPORT_CARD = 1,
             LINEUPS = 2,
             AppRouter = Backbone.Router.extend({
                 routes: {
                     "team/:id": "getTeam",
-                    "lineups": "loadLineups",
-                    "lineups/:id": "loadLineups",
-                    "reportcard/:id": "loadReportCard",
+                    "lineups/:id": "load_lineups",
+                    "lineups": "load_lineups",
+                    "reportcard/:id": "load_reportcard",
+                    "reportcard": "load_reportcard",
+                    "draft/:id": "load_draft",
+                    "draft": "load_draft",
                     "*actions": "default" // Backbone will try match the route above first
                 }
             }),
-            app_router = new AppRouter();
+            app_router = new AppRouter(),
+            tabView = new TabView();
 
+        tabView.render([{id: 'reportcard', name: "Report Card"}, {id: 'lineups', name: "Lineups"}, {id: 'draft', name : 'Draft'}]);
         lineupView.render();
+        draftView.render();
         reportCardView.render();
 
         $(lineupView.el).hide();
@@ -253,14 +340,13 @@
             }
         });
 
-        app_router.on('route:loadLineups', function (id) {
-            console.log("load lineups");
+        app_router.on('route:load_lineups', function (id) {
+            console.log('in load lineups');
             window.mode = LINEUPS;
-            $('#lineup-tab').addClass('active');
-            $('#report-card-tab').removeClass('active');
 
             $(reportCardView.el).hide();
             $(lineupView.el).show();
+            $(draftView.el).hide();
 
             if (id) {
                 roguesReportCard.set('team_id', id);
@@ -272,13 +358,10 @@
 
         });
 
-        app_router.on('route:loadReportCard', function (id) {
-            console.log("load report card");
-            $('#lineup-tab').removeClass('active');
-            $('#report-card-tab').addClass('active');
-
+        app_router.on('route:load_reportcard', function (id) {
             $(lineupView.el).hide();
             $(reportCardView.el).show();
+            $(draftView.el).hide();
 
             if (id) {
                 roguesReportCard.set('team_id', id);
@@ -288,11 +371,27 @@
             }
             app_router.navigate('reportcard/' + id, {replace: true});
         });
+        app_router.on('route:load_draft', function (id) {
+            $(lineupView.el).hide();
+            $(reportCardView.el).hide();
+            $(draftView.el).show();
+
+            if (id) {
+                roguesReportCard.set('team_id', id);
+                roguesReportCard.fetch();
+            } else {
+                id = roguesReportCard.get('team_id', id);
+            }
+            app_router.navigate('draft/' + id, {replace: true});
+        });
 
         app_router.on('route:default', function () {
+            console.log("default route!");
             roguesReportCard.set('team_id', 6);
-            roguesReportCard.fetch();
-            app_router.trigger('route:loadReportCard');
+            var initialLoad = roguesReportCard.fetch();
+            initialLoad.done(function () {
+                app_router.navigate('reportcard/6', {replace: true, trigger: true});
+            });
         });
 
         // Start Backbone history a necessary step for bookmarkable URL's
