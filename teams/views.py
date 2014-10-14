@@ -338,19 +338,31 @@ def get_team_report_card_json(request, league_id, year, team_id):
     team = Team.objects.get(league=league, espn_id=team_id)
     report_cards = TeamReportCard.objects.filter(team=team)
     scorecards = Scorecard.objects.filter(team=team, actual=False)
-    draft_scores = TeamWeekScores.objects.filter(team=team)
+    week_scores = TeamWeekScores.objects.filter(team=team)
+
+    draft_scores = []
+    waiver_scores = []
+    trade_scores = []
+
+    for week_score in week_scores:
+        draft_scores.append({'week': week_score.week, 'value': float(week_score.draft_score)})
+        waiver_scores.append({'week': week_score.week, 'value': float(week_score.waiver_score)})
+        trade_scores.append({'week': week_score.week, 'value': float(week_score.trade_score)})
 
     report_data = Serializer().serialize(report_cards, fields=('lineup_score'))
     scorecard_data = Serializer().serialize(scorecards, fields=('week', 'delta'))
-    draft_data = Serializer().serialize(draft_scores, fields=('draft_score', 'week', 'waiver_score', 'trade_score'))
+
+    #draft_data = Serializer().serialize(draft_scores, fields=('draft_score', 'week', 'waiver_score', 'trade_score'))
 
     reportcard_struct = json.loads(report_data)
     scorecard_struct = json.loads(scorecard_data)
-    draft_struct = json.loads(draft_data)
+#    draft_struct = json.loads(draft_data)
 
     reportcard_struct[0]['scorecards'] = scorecard_struct
     reportcard_struct[0]['team_id'] = team.espn_id
-    reportcard_struct[0]['draft_scores'] = draft_struct
+    reportcard_struct[0]['draft_scores'] = draft_scores
+    reportcard_struct[0]['waiver_scores'] = waiver_scores
+    reportcard_struct[0]['trade_scores'] = waiver_scores
 
     data = json.dumps(reportcard_struct[0])
     return HttpResponse(data, content_type="application/json")

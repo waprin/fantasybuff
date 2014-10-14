@@ -60,7 +60,7 @@
 
 
     function buildLineCharts(element, range) {
-        var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 5]),
+        var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 6]),
             yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([range[0], range[1]]),
             vis = d3.select(element).select('svg'),
             formatxAxis = d3.format('.0f'),
@@ -162,11 +162,6 @@
                         _.each(scorecards, function (scorecard) {
                             scorecard.value = scorecard.delta;
                         });
-                    } else if (name === 'draft_scores') {
-                        console.log("cleaning up draft");
-                        _.each(scorecards, function (scorecard) {
-                            scorecard.value = scorecard.draft_score;
-                        });
                     }
                     return scorecards;
                 }
@@ -201,15 +196,13 @@
                 'template': _.template($("#lineup-table-template").html()),
 
                 initialize: function (options) {
-                    this.listenTo(this.model, "change:scorecards", this.render);
+                    this.listenTo(this.model, "change", this.render);
                     this.fieldName = options.fieldName;
                 },
 
                 render: function () {
                     var field = this.fieldName;
-                    if (field === 'draft_scores') {
-                        field = 'draft';
-                    }
+                    field = field.split('_')[0];
                     this.$el.html(this.template({ 'team_id': this.model.get('team_id'),
                             'scorecards': this.model.getWeeklyScores(this.fieldName),
                         'field': field
@@ -301,6 +294,21 @@
                 updateEvent: "change:draft_scores",
                 range: [100, 300]
             }),
+            waiverView = new LineChartView({
+                model: roguesReportCard,
+                el: $('#waiver_vis_container'),
+                fieldName: 'waiver_scores',
+                updateEvent: "change:waiver_scores",
+                range: [-50, 50]
+            }),
+            tradeView = new LineChartView({
+                model: roguesReportCard,
+                el: $('#trade_vis_container'),
+                fieldName: 'trade_scores',
+                updateEvent: "change:trade_scores",
+                range: [-50, 50]
+            }),
+
             reportCardView = new ReportCardView({model: roguesReportCard}),
             REPORT_CARD = 1,
             LINEUPS = 2,
@@ -313,19 +321,34 @@
                     "reportcard": "load_reportcard",
                     "draft/:id": "load_draft",
                     "draft": "load_draft",
+                    "waiver/:id": "load_waiver",
+                    "waiver": "load_waiver",
+                    "trade/:id": "load_trade",
+                    "trade": "load_trade",
                     "*actions": "default" // Backbone will try match the route above first
                 }
             }),
             app_router = new AppRouter(),
             tabView = new TabView();
 
-        tabView.render([{id: 'reportcard', name: "Report Card"}, {id: 'lineups', name: "Lineups"}, {id: 'draft', name : 'Draft'}]);
+        tabView.render([
+            {id: 'reportcard', name: "Report Card"},
+            {id: 'lineups', name: "Lineups"},
+            {id: 'draft', name : 'Draft'},
+            {id: 'waiver', name: 'Waiver'},
+            {id: 'trade', name: 'Trade'}
+        ]);
         lineupView.render();
         draftView.render();
         reportCardView.render();
+        waiverView.render();
+        tradeView.render();
 
         $(lineupView.el).hide();
         $(reportCardView.el).hide();
+        $(draftView.el).hide();
+        $(waiverView.el).hide();
+        $(tradeView.el).hide();
 
         window.mode = REPORT_CARD;
 
@@ -347,6 +370,7 @@
             $(reportCardView.el).hide();
             $(lineupView.el).show();
             $(draftView.el).hide();
+            $(waiverView.el).hide();
 
             if (id) {
                 roguesReportCard.set('team_id', id);
@@ -362,6 +386,8 @@
             $(lineupView.el).hide();
             $(reportCardView.el).show();
             $(draftView.el).hide();
+            $(waiverView.el).hide();
+            $(tradeView.el).hide();
 
             if (id) {
                 roguesReportCard.set('team_id', id);
@@ -375,6 +401,8 @@
             $(lineupView.el).hide();
             $(reportCardView.el).hide();
             $(draftView.el).show();
+            $(waiverView.el).hide();
+            $(tradeView.el).hide();
 
             if (id) {
                 roguesReportCard.set('team_id', id);
@@ -383,6 +411,37 @@
                 id = roguesReportCard.get('team_id', id);
             }
             app_router.navigate('draft/' + id, {replace: true});
+        });
+        app_router.on('route:load_waiver', function (id) {
+            console.log('in load waiver');
+            $(lineupView.el).hide();
+            $(reportCardView.el).hide();
+            $(draftView.el).hide();
+            $(waiverView.el).show();
+            $(tradeView.el).hide();
+
+            if (id) {
+                roguesReportCard.set('team_id', id);
+                roguesReportCard.fetch();
+            } else {
+                id = roguesReportCard.get('team_id', id);
+            }
+            app_router.navigate('waiver/' + id, {replace: true});
+        });
+        app_router.on('route:load_trade', function (id) {
+            $(lineupView.el).hide();
+            $(reportCardView.el).hide();
+            $(draftView.el).hide();
+            $(waiverView.el).hide();
+            $(tradeView.el).show();
+
+            if (id) {
+                roguesReportCard.set('team_id', id);
+                roguesReportCard.fetch();
+            } else {
+                id = roguesReportCard.get('team_id', id);
+            }
+            app_router.navigate('waiver/' + id, {replace: true});
         });
 
         app_router.on('route:default', function () {

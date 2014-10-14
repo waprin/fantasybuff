@@ -41,6 +41,8 @@ url(r'^league2/(\d*)/(\d\d\d\d)/$', 'teams.views.backbone'),
      url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/$', 'teams.views.get_team_report_card_json'),
      url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/lineup/(\d*)', 'teams.views.show_week'),
      url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/draft/(\d*)', 'teams.views.show_draftscore_week'),
+     url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/waiver/(\d*)', 'teams.views.show_waiver_week'),
+     url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/trade/(\d*)', 'teams.views.show_trade_week'),
      url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/draft/$', 'teams.views.get_'
                                                      'team_draft'),
      url(r'', include('social_auth.urls')),
