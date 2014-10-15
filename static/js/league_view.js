@@ -54,14 +54,13 @@
         MARGINS = {
             top: 20,
             right: 20,
-            bottom: 40,
+            bottom: 20,
             left: 50
         };
 
     function buildLineCharts(element, numWeeks, range) {
         var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, numWeeks]),
-            //yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([range[0], range[1]]),
-            yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 50]),
+            yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([range[0], range[1]]),
             vis = d3.select(element).select('svg'),
             formatxAxis = d3.format('.0f'),
             xAxis,
@@ -76,10 +75,9 @@
         console.log('ticklist', tickList);
         xAxis = d3.svg.axis()
             .scale(xRange)
-            .tickValues(tickList);
-        /*    .tickSize(numWeeks.length)
+            .tickValues(tickList)
             .tickFormat(formatxAxis)
-            .tickSubdivide(true);*/
+            .tickSubdivide(true);
         yAxis = d3.svg.axis()
             .orient('left')
             .scale(yRange)
@@ -171,7 +169,7 @@
                         return [this.get('trade_min'), this.get('trade_max')];
                     }
                     if (fieldName === 'scorecards') {
-                        return [0, 100];
+                        return [0, 50];
                     }
                     throw "Can't find fieldName " + fieldName;
                 },
@@ -251,7 +249,7 @@
                     var scores = this.model.getWeeklyScores(this.fieldName),
                         ranges = this.model.getRanges(this.fieldName);
                     buildLineCharts(this.el, scores.length, ranges);
-                    //updateLineCharts(this.el, scores, this.range);
+                    updateLineCharts(this.el, scores, ranges);
                 },
 
                 render: function () {
@@ -275,9 +273,6 @@
                             if (child.attr('class') === 'dropdown') {
                                 return;
                             }
-                            console.log("sanity check");
-                            console.log(name);
-                            console.log(child.attr('id'));
                             if (child.attr('id').split('-')[0] === name) {
                                 child.addClass('active');
                             } else {
