@@ -7,7 +7,7 @@ from league import settings
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
 from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard, DraftClaim, TeamWeekScores, \
-    AddDrop, TradeEntry
+    AddDrop, TradeEntry, LeagueReportCard
 import json
 from django.contrib.auth.models import User
 from django.template import RequestContext, loader
@@ -358,11 +358,19 @@ def get_team_report_card_json(request, league_id, year, team_id):
     scorecard_struct = json.loads(scorecard_data)
 #    draft_struct = json.loads(draft_data)
 
+    league_report_card = LeagueReportCard.objects.get(league=league)
+
     reportcard_struct[0]['scorecards'] = scorecard_struct
     reportcard_struct[0]['team_id'] = team.espn_id
     reportcard_struct[0]['draft_scores'] = draft_scores
     reportcard_struct[0]['waiver_scores'] = waiver_scores
     reportcard_struct[0]['trade_scores'] = waiver_scores
+    reportcard_struct[0]['trade_max'] = float(league_report_card.trade_maxmin.max_value)
+    reportcard_struct[0]['trade_min'] = float(league_report_card.trade_maxmin.min_value)
+    reportcard_struct[0]['waiver_max'] = float(league_report_card.waiver_maxmin.max_value)
+    reportcard_struct[0]['waiver_min'] = float(league_report_card.waiver_maxmin.min_value)
+    reportcard_struct[0]['draft_max'] = float(league_report_card.draft_maxmin.max_value)
+    reportcard_struct[0]['draft_min'] = float(league_report_card.draft_maxmin.min_value)
 
     data = json.dumps(reportcard_struct[0])
     return HttpResponse(data, content_type="application/json")

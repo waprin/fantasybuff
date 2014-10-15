@@ -54,28 +54,38 @@
         MARGINS = {
             top: 20,
             right: 20,
-            bottom: 20,
+            bottom: 40,
             left: 50
         };
 
-
-    function buildLineCharts(element, range) {
-        var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 6]),
-            yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([range[0], range[1]]),
+    function buildLineCharts(element, numWeeks, range) {
+        var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, numWeeks]),
+            //yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([range[0], range[1]]),
+            yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 50]),
             vis = d3.select(element).select('svg'),
             formatxAxis = d3.format('.0f'),
-            xAxis = d3.svg.axis()
-                    .scale(xRange)
-                        .tickValues([1, 2, 3, 4, 5])
-                        .tickSize(6)
-                        .tickFormat(formatxAxis)
-                        .tickSubdivide(true),
-            yAxis = d3.svg.axis()
-                .scale(yRange)
-                .ticks(4)
-                .tickSize(6)
-                .orient('left')
-                .tickSubdivide(false);
+            xAxis,
+            yAxis,
+            tickList = [],
+            i;
+
+        for (i = 1; i <= numWeeks; i = i + 1) {
+            tickList.push(i);
+        }
+
+        console.log('ticklist', tickList);
+        xAxis = d3.svg.axis()
+            .scale(xRange)
+            .tickValues(tickList);
+        /*    .tickSize(numWeeks.length)
+            .tickFormat(formatxAxis)
+            .tickSubdivide(true);*/
+        yAxis = d3.svg.axis()
+            .orient('left')
+            .scale(yRange)
+            .ticks(4)
+            .tickSize(6)
+            .tickSubdivide(false);
 
         vis.append('svg:g')
             .attr('class', 'x axis')
@@ -90,7 +100,8 @@
 
     function updateLineCharts(element, lineData, range) {
         console.log('updating line data', lineData);
-        var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 5]),
+        console.log(lineData.size);
+        var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, lineData.length]),
             yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([range[0], range[1]]),
             lineFunc = d3.svg.line()
                 .x(function (d) {
@@ -147,6 +158,22 @@
             ReportCardModel = Backbone.Model.extend({
                 url: function () {
                     return this.get("team_id") + '/';
+                },
+
+                getRanges: function (fieldName) {
+                    if (fieldName === 'draft_scores') {
+                        return [this.get('draft_min'), this.get('draft_max')];
+                    }
+                    if (fieldName === 'waiver_scores') {
+                        return [this.get('waiver_min'), this.get('waiver_max')];
+                    }
+                    if (fieldName === 'trade_scores') {
+                        return [this.get('trade_min'), this.get('trade_max')];
+                    }
+                    if (fieldName === 'scorecards') {
+                        return [0, 100];
+                    }
+                    throw "Can't find fieldName " + fieldName;
                 },
 
                 getWeeklyScores: function (name) {
@@ -217,18 +244,18 @@
                     this.listenTo(this.model, options.updateEvent, this.updateLineChart);
                     this.fieldName = options.fieldName;
                     this.range = options.range;
+                    this.built = false;
                 },
 
                 updateLineChart: function () {
-                    updateLineCharts(this.el, this.model.getWeeklyScores(this.fieldName), this.range);
+                    var scores = this.model.getWeeklyScores(this.fieldName),
+                        ranges = this.model.getRanges(this.fieldName);
+                    buildLineCharts(this.el, scores.length, ranges);
+                    //updateLineCharts(this.el, scores, this.range);
                 },
 
                 render: function () {
                     this.$el.append(new LineupTableView({model: this.model, fieldName: this.fieldName}).render().el);
-                    buildLineCharts(this.el, this.range);
-                    if (this.model.getWeeklyScores(this.fieldName)) {
-                        this.updateLineChart();
-                    }
                     return this;
                 }
             }),

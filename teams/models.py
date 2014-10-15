@@ -55,6 +55,30 @@ class TeamWeekScores(models.Model):
     trade_score = models.DecimalField(decimal_places=4, max_digits=7)
     week = models.IntegerField()
 
+class MetricMaxAndMin(models.Model):
+    league = models.ForeignKey(League, null=True)
+    max_team = models.ForeignKey(Team, related_name='max_team', null=True)
+    max_value = models.DecimalField(decimal_places=4, max_digits=7, null=True)
+    max_week = models.IntegerField(null=True)
+
+    min_team = models.ForeignKey(Team, related_name='min_team', null=True)
+    min_value = models.DecimalField(decimal_places=4, max_digits=7, null=True)
+    min_week = models.IntegerField(null=True)
+
+class LeagueReportCard(models.Model):
+    league = models.OneToOneField(League, null=True)
+    lineup_maxmin = models.ForeignKey(MetricMaxAndMin, related_name='lineup', null=True)
+    trade_maxmin = models.ForeignKey(MetricMaxAndMin, related_name='trade', null=True)
+    waiver_maxmin = models.ForeignKey(MetricMaxAndMin, related_name='waiver', null=True)
+    draft_maxmin = models.ForeignKey(MetricMaxAndMin, related_name='draft', null=True)
+
+class LeagueWeekScores(models.Model):
+    league = models.ForeignKey(League)
+    week = models.IntegerField()
+    lineup_average = models.DecimalField(decimal_places=4, max_digits=7, null=True)
+    trade_average = models.DecimalField(decimal_places=4, max_digits=7)
+    draft_average = models.DecimalField(decimal_places=4, max_digits=7)
+    waiver_average = models.DecimalField(decimal_places=4, max_digits=7)
 
 class Player(models.Model):
     POSITIONS = (
