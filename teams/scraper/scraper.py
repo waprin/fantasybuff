@@ -307,22 +307,6 @@ class LeagueScraper(object):
         all_total = plusTotal - minusTotal
         return all_total
 
-    def __get_draft_points(self, team, week):
-        drafts = DraftClaim.objects.filter(team=team)
-        drafted_players = [draft.player_added for draft in drafts]
-        total_points = 0
-        for player in drafted_players:
-            try:
-                scorecard_entry = ScorecardEntry.objects.filter(player=player, scorecard__week=week)[0]
-            except IndexError:
-                logger.debug("load_draft_scores(): Can not find scorecard entry for player %s week %d" % (player.name, week))
-                continue
-            total_points += scorecard_entry.points
-            if scorecard_entry.slot != 'Bench':
-                total_points += scorecard_entry.points
-            logger.debug("load_draft_scores(): for team %s week %d player %s points %d" %( team.team_name, week, player.name, total_points))
-        return total_points
-
 
     def load_draft_score(self, league):
         TeamWeekScores.objects.filter(team__league=league).delete()
@@ -362,7 +346,7 @@ class LeagueScraper(object):
             waiver_total = 0
 
             for week in range(1, num_weeks+1):
-                draft_points = self.__get_draft_points(team, week)
+                draft_points = team.get_draft_points(week)
                 draft_total += draft_points
                 if draft_points > draft_max:
                     draft_max = draft_points
@@ -376,8 +360,6 @@ class LeagueScraper(object):
 
                 waiver_points = self.get_waiver_points(team, week)
                 waiver_total += waiver_points
-                waiver_max = waiver_points if waiver_points > waiver_max else waiver_max
-                waiver_min = waiver_points if waiver_points < waiver_min else waiver_min
 
                 if waiver_points > waiver_max:
                     waiver_max = waiver_points
@@ -408,7 +390,7 @@ class LeagueScraper(object):
         logger.debug("creating trade maxmin %f %f " % (trade_max, trade_min) )
         trade_maxmin = MetricMaxAndMin.objects.create(league=league,max_value=trade_max, min_value=trade_min, max_team=trade_max_team, min_team=trade_min_team, max_week=trade_max_week, min_week=trade_min_week)
         waiver_maxmin = MetricMaxAndMin.objects.create(league=league,max_value=waiver_max, min_value=waiver_min, max_team=waiver_max_team, min_team=waiver_min_team, max_week=waiver_max_week, min_week=waiver_min_week)
-        draft_maxmin = MetricMaxAndMin.objects.create(league=league,max_value=draft_max, min_value=draft_min, max_team=draft_max_team, min_team=draft_max_team, max_week=draft_max_week, min_week=draft_min_week)
+        draft_maxmin = MetricMaxAndMin.objects.create(league=league,max_value=draft_max, min_value=draft_min, max_team=draft_max_team, min_team=draft_min_team, max_week=draft_max_week, min_week=draft_min_week)
         LeagueReportCard.objects.create(league=league,trade_maxmin=trade_maxmin, waiver_maxmin=waiver_maxmin, draft_maxmin=draft_maxmin)
 
 

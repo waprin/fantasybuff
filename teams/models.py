@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.db import models
 
 import logging
+from django.db.models import Sum
+
 logger = logging.getLogger(__name__)
 
 class EspnUser(models.Model):
@@ -43,9 +45,24 @@ class Team(models.Model):
     def __unicode__(self):
         return "%s (%s)" % (self.team_name, self.espn_id)
 
+    def get_draft_points(self, week):
+        draft_claims = DraftClaim.objects.filter(team=self)
+        drafted_players = [draft.player_added for draft in draft_claims]
+        scorecard_entries = ScorecardEntry.objects.filter(scorecard__week=week,
+                                                          scorecard__team=self,
+                                                          scorecard__actual=True,
+                                                          player__in=drafted_players)
+        return scorecard_entries.aggregate(Sum('points'))['points__sum']
+
+
+
+
 class TeamReportCard(models.Model):
     team = models.OneToOneField(Team)
-    lineup_score = models.DecimalField(decimal_places=4, max_digits=7)
+    average_lineup_score = models.DecimalField(decimal_places=4, max_digits=7)
+    average_draft_score = models.DecimalField(decimal_places=4, max_digits=7)
+    average_waiver_score = models.DecimalField(decimal_places=4, max_digits=7)
+    average_trade_score = models.DecimalField(decimal_places=4, max_digits=7)
 
 class TeamWeekScores(models.Model):
     team = models.ForeignKey(Team, null=True)
