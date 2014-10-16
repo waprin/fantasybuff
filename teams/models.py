@@ -54,6 +54,20 @@ class Team(models.Model):
                                                           player__in=drafted_players)
         return scorecard_entries.aggregate(Sum('points'))['points__sum']
 
+    def __get_waiver_points(self, week, added):
+        add_drop_transactions = AddDrop.objects.get_before_week(self, week).filter(added=added)
+        adt_players = [adt.player for adt in add_drop_transactions]
+        scorecard_entries = ScorecardEntry.objects.filter(player__in=adt_players,
+                                      scorecard__week=week,
+                                      scorecard__team__league=self.league,
+                                      scorecard__actual=True).exclude(slot='Bench')
+        return scorecard_entries.aggregate(Sum('points'))['points__sum']
+
+    def get_waiver_points(self, week):
+        return self.__get_waiver_points(week, True) - self.__get_waiver_points(week, False)
+
+
+
 
 
 

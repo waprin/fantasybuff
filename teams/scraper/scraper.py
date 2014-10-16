@@ -277,22 +277,6 @@ class LeagueScraper(object):
             team.average_delta = average_delta
             team.save()
 
-    def get_waiver_points(self, team, week):
-        add_drop_transactions = AddDrop.objects.get_before_week(team, week)
-        logger.debug("in get waiver points %d transactions " % len(add_drop_transactions))
-        total = 0
-        for adt in add_drop_transactions:
-            entries = ScorecardEntry.objects.filter(player=adt.player, scorecard__week=week, scorecard__team__league=team.league)
-            logger.debug("for adt entry got %d entries " % len(entries))
-            if len(entries) > 0:
-                entry = entries[0]
-                if entry.slot != 'Bench':
-                    if adt.added:
-                        total += entries[0].points
-                    else:
-                        total -= entries[0].points
-        return total
-
     def __get_trade_points(self, team, week):
         trade_transactions = TradeEntry.objects.get_before_week(team, week)
         all_players_added = []
@@ -358,7 +342,7 @@ class LeagueScraper(object):
                     draft_min_team = team
                     draft_min_week = week
 
-                waiver_points = self.get_waiver_points(team, week)
+                waiver_points = team.get_waiver_points(week)
                 waiver_total += waiver_points
 
                 if waiver_points > waiver_max:
