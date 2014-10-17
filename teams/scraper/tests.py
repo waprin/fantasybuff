@@ -1,11 +1,9 @@
 from django.contrib.auth.models import User
-from django.db.models import Q
 from teams.models import EspnUser, ScoreEntry, PlayerScoreStats, DraftClaim, TradeEntry, AddDrop, League
 from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.SqlStore import SqlStore
 from django.utils import unittest
 from teams.scraper.html_scrapes import get_leagues_from_entrance
-from teams.scraper.league_loader import load_transactions_from_translog
 from teams.utils.db_utils import clearDb
 
 __author__ = 'bill'
@@ -252,6 +250,8 @@ class ScraperTest(unittest.TestCase):
         self.assertEquals(len(matchups), 6)
         for i in range(1, 13):
             self.assertTrue(str(i) in [item for sublist in matchups for item in sublist])
+
+
 
 
 

@@ -147,10 +147,10 @@
 
     $(document).ready(function () {
         var data = [
-                {"title": "Lineup", "subtitle": "Points Missed", "ranges": [25, 75, 100], "measures": [90], "markers": [64]},
-                {"title": "Waiver", "subtitle": "Value Gained", "ranges": [25, 75, 100], "measures": [35], "markers": [25]},
-                {"title": "Draft", "subtitle": "Value Gained", "ranges": [25, 75, 100], "measures": [25], "markers": [25]},
-                {"title": "Trades", "subtitle": "Value Gained", "ranges": [25, 75, 100], "measures": [50], "markers": [74]}
+                {"title": "Lineup", "subtitle": "Points Missed", "ranges": [0, 100], "measures": [90], "markers": []},
+                {"title": "Waiver", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [35], "markers": []},
+                {"title": "Draft", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [25], "markers": []},
+                {"title": "Trades", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [50], "markers": []}
             ],
 
             ReportCardModel = Backbone.Model.extend({
@@ -200,19 +200,38 @@
                 el: $("#reportcard_vis_container"),
 
                 initialize: function () {
-                    this.listenTo(this.model, "change:lineup_score", this.render);
+                    this.listenTo(this.model, "change:average_waiver_score", this.render);
                 },
 
                 render: function () {
                     console.log("rendering report card");
-                    if (this.model.get('lineup_score') !== undefined) {
+                    if (this.model.get('average_waiver_score') !== undefined) {
                         console.log("rendering lineup score", this.model.get('lineup_score'));
-                        data[0].measures[0] = this.model.get('lineup_score');
-                        if (!this.bulletChart) {
-                            this.bulletChart = new BulletChart(data);
-                        } else {
-                            this.bulletChart.updateBullets(data);
-                        }
+                        data[0].ranges[0] = this.model.get('min_average_lineup');
+                        data[0].ranges[1] = this.model.get('max_average_lineup');
+                        data[0].measures[0] = this.model.get('average_lineup_score');
+                        data[0].markers[0] = this.model.get('average_lineup_score');
+
+                        data[1].ranges[0] = this.model.get('min_average_waiver');
+                        data[1].ranges[1] = this.model.get('max_average_waiver');
+                        data[1].measures[0] = this.model.get('average_waiver_score');
+                        data[1].markers[0] = this.model.get('average_waiver_score');
+
+                        data[2].ranges[0] = this.model.get('min_average_draft');
+                        data[2].ranges[1] = this.model.get('max_average_draft');
+                        data[2].measures[0] = this.model.get('average_draft_score');
+                        data[2].markers[0] = this.model.get('average_draft_score');
+
+                        data[3].ranges[0] = this.model.get('min_average_trade');
+                        data[3].ranges[1] = this.model.get('max_average_trade');
+                        data[3].measures[0] = this.model.get('average_trade_score');
+                        data[3].markers[0] = this.model.get('average_trade_score');
+                        console.log("done hacking data", data);
+                    }
+                    if (!this.bulletChart) {
+                        this.bulletChart = new BulletChart(data);
+                    } else {
+                        this.bulletChart.updateBullets(data);
                     }
                     return this;
                 }

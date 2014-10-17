@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.db import models
 
 import logging
-from django.db.models import Sum
+from django.db.models import Sum, Avg
+import itertools
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,8 @@ class League(models.Model):
     def __unicode__(self):
         return "ESPN %s %s" % (self.espn_id, self.year)
 
+
+
 class Team(models.Model):
     league = models.ForeignKey(League)
     espn_user = models.ForeignKey(EspnUser, null=True)
@@ -49,34 +52,85 @@ class Team(models.Model):
         draft_claims = DraftClaim.objects.filter(team=self)
         drafted_players = [draft.player_added for draft in draft_claims]
         scorecard_entries = ScorecardEntry.objects.filter(scorecard__week=week,
-                                                          scorecard__team=self,
                                                           scorecard__actual=True,
                                                           player__in=drafted_players)
-        return scorecard_entries.aggregate(Sum('points'))['points__sum']
+        if scorecard_entries.count() > 0:
+            return scorecard_entries.aggregate(Sum('points'))['points__sum']
+        else:
+            return 0
+
+
 
     def __get_waiver_points(self, week, added):
         add_drop_transactions = AddDrop.objects.get_before_week(self, week).filter(added=added)
         adt_players = [adt.player for adt in add_drop_transactions]
         scorecard_entries = ScorecardEntry.objects.filter(player__in=adt_players,
                                       scorecard__week=week,
-                                      scorecard__team__league=self.league,
                                       scorecard__actual=True).exclude(slot='Bench')
-        return scorecard_entries.aggregate(Sum('points'))['points__sum']
+        if scorecard_entries.count() > 0:
+            return scorecard_entries.aggregate(Sum('points'))['points__sum']
+        else:
+            return 0
 
     def get_waiver_points(self, week):
         return self.__get_waiver_points(week, True) - self.__get_waiver_points(week, False)
 
+    def get_trade_points(self, week):
+        trade_transactions = TradeEntry.objects.get_before_week(self, week)
+        players_added = [tt.players_added.all() for tt in trade_transactions]
+        players_added = [player for sublist in players_added for player in sublist]
+        scorecard_entries_added = ScorecardEntry.objects.filter(player__in=players_added,
+                                                          scorecard__week=week,
+                                                          scorecard__actual=True).exclude(slot='Bench')
+        if scorecard_entries_added.count() > 0:
+            points_for = scorecard_entries_added.aggregate(Sum('points'))['points__sum']
+        else:
+            points_for = 0
 
+        players_dropped = [tt.players_removed.all() for tt in trade_transactions]
+        players_dropped = [player for sublist in players_dropped for player in sublist]
+        scorecard_entries_dropped = ScorecardEntry.objects.filter(player__in=players_dropped,
+                                                          scorecard__week=week,
+                                                          scorecard__actual=True).exclude(slot='Bench')
+        if scorecard_entries_dropped.count() > 0:
+            points_against = scorecard_entries_dropped.aggregate(Sum('points'))['points__sum']
+        else:
+            points_against = 0
+        return points_for - points_against
 
+    def get_lineup_average(self):
+        return TeamWeekScores.objects.filter(team=self).aggregate(Avg('lineup_score'))['lineup_score__avg']
 
+    def get_draft_average(self):
+        return TeamWeekScores.objects.filter(team=self).aggregate(Avg('draft_score'))['draft_score__avg']
+
+    def get_waiver_average(self):
+        return TeamWeekScores.objects.filter(team=self).aggregate(Avg('waiver_score'))['waiver_score__avg']
+
+    def get_trade_average(self):
+        return TeamWeekScores.objects.filter(team=self).aggregate(Avg('trade_score'))['trade_score__avg']
 
 
 class TeamReportCard(models.Model):
     team = models.OneToOneField(Team)
-    average_lineup_score = models.DecimalField(decimal_places=4, max_digits=7)
+    average_lineup_score = models.DecimalField(decimal_places=4, max_digits=7, null=True)
     average_draft_score = models.DecimalField(decimal_places=4, max_digits=7)
     average_waiver_score = models.DecimalField(decimal_places=4, max_digits=7)
     average_trade_score = models.DecimalField(decimal_places=4, max_digits=7)
+
+    @staticmethod
+    def get_max(league, field):
+        return getattr(TeamReportCard.objects.filter(team__league=league).order_by(field).reverse()[0], field)
+
+    @staticmethod
+    def get_min(league, field):
+        return getattr(TeamReportCard.objects.filter(team__league=league).order_by(field)[0], field)
+
+    """
+    def lineup_rank(self):
+        TeamReportCard.objects.filter(team__league=self.team.league, average_lineup_score__lt=self.average_lineup_score)
+    """
+
 
 class TeamWeekScores(models.Model):
     team = models.ForeignKey(Team, null=True)
@@ -84,24 +138,16 @@ class TeamWeekScores(models.Model):
     draft_score = models.DecimalField(decimal_places=4, max_digits=7)
     waiver_score = models.DecimalField(decimal_places=4, max_digits=7)
     trade_score = models.DecimalField(decimal_places=4, max_digits=7)
+    lineup_score = models.DecimalField(decimal_places=4, max_digits=7, null=True)
     week = models.IntegerField()
 
-class MetricMaxAndMin(models.Model):
-    league = models.ForeignKey(League, null=True)
-    max_team = models.ForeignKey(Team, related_name='max_team', null=True)
-    max_value = models.DecimalField(decimal_places=4, max_digits=7, null=True)
-    max_week = models.IntegerField(null=True)
+    @staticmethod
+    def get_max(league, field):
+        return getattr(TeamWeekScores.objects.filter(team__league=league).order_by(field).reverse()[0], field)
 
-    min_team = models.ForeignKey(Team, related_name='min_team', null=True)
-    min_value = models.DecimalField(decimal_places=4, max_digits=7, null=True)
-    min_week = models.IntegerField(null=True)
-
-class LeagueReportCard(models.Model):
-    league = models.OneToOneField(League, null=True)
-    lineup_maxmin = models.ForeignKey(MetricMaxAndMin, related_name='lineup', null=True)
-    trade_maxmin = models.ForeignKey(MetricMaxAndMin, related_name='trade', null=True)
-    waiver_maxmin = models.ForeignKey(MetricMaxAndMin, related_name='waiver', null=True)
-    draft_maxmin = models.ForeignKey(MetricMaxAndMin, related_name='draft', null=True)
+    @staticmethod
+    def get_min(league, field):
+        return getattr(TeamWeekScores.objects.filter(team__league=league).order_by(field)[0], field)
 
 class LeagueWeekScores(models.Model):
     league = models.ForeignKey(League)

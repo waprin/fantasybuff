@@ -7,7 +7,7 @@ from league import settings
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
 from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard, DraftClaim, TeamWeekScores, \
-    AddDrop, TradeEntry, LeagueReportCard
+    AddDrop, TradeEntry
 import json
 from django.contrib.auth.models import User
 from django.template import RequestContext, loader
@@ -349,7 +349,7 @@ def get_team_report_card_json(request, league_id, year, team_id):
         waiver_scores.append({'week': week_score.week, 'value': float(week_score.waiver_score)})
         trade_scores.append({'week': week_score.week, 'value': float(week_score.trade_score)})
 
-    report_data = Serializer().serialize(report_cards, fields=('lineup_score'))
+    report_data = Serializer().serialize(report_cards, fields=('average_lineup_score', 'average_draft_score', 'average_waiver_score', 'average_trade_score'))
     scorecard_data = Serializer().serialize(scorecards, fields=('week', 'delta'))
 
     #draft_data = Serializer().serialize(draft_scores, fields=('draft_score', 'week', 'waiver_score', 'trade_score'))
@@ -358,19 +358,38 @@ def get_team_report_card_json(request, league_id, year, team_id):
     scorecard_struct = json.loads(scorecard_data)
 #    draft_struct = json.loads(draft_data)
 
-    league_report_card = LeagueReportCard.objects.get(league=league)
-
     reportcard_struct[0]['scorecards'] = scorecard_struct
     reportcard_struct[0]['team_id'] = team.espn_id
     reportcard_struct[0]['draft_scores'] = draft_scores
     reportcard_struct[0]['waiver_scores'] = waiver_scores
-    reportcard_struct[0]['trade_scores'] = waiver_scores
-    reportcard_struct[0]['trade_max'] = float(league_report_card.trade_maxmin.max_value)
-    reportcard_struct[0]['trade_min'] = float(league_report_card.trade_maxmin.min_value)
-    reportcard_struct[0]['waiver_max'] = float(league_report_card.waiver_maxmin.max_value)
-    reportcard_struct[0]['waiver_min'] = float(league_report_card.waiver_maxmin.min_value)
-    reportcard_struct[0]['draft_max'] = float(league_report_card.draft_maxmin.max_value)
-    reportcard_struct[0]['draft_min'] = float(league_report_card.draft_maxmin.min_value)
+    reportcard_struct[0]['trade_scores'] = trade_scores
+    reportcard_struct[0]['trade_max'] = str(TeamWeekScores.get_max(league, 'trade_score'))
+    reportcard_struct[0]['trade_min'] = str(TeamWeekScores.get_min(league, 'trade_score'))
+    reportcard_struct[0]['waiver_max'] = str(TeamWeekScores.get_max(league, 'waiver_score'))
+    reportcard_struct[0]['waiver_min'] = str(TeamWeekScores.get_min(league, 'waiver_score'))
+    reportcard_struct[0]['draft_max'] = str(TeamWeekScores.get_max(league, 'draft_score'))
+    reportcard_struct[0]['draft_min'] = str(TeamWeekScores.get_min(league, 'draft_score'))
+    reportcard_struct[0]['num_teams'] = str(Team.objects.filter(league=league).count())
+
+#    reportcard_struct[0]['max_average_lineup'] = str(TeamReportCard.get_max(league, 'average_lineup_score'))
+#    reportcard_struct[0]['min_average_lineup'] = str(TeamReportCard.get_min(league, 'average_lineup_score'))
+
+    reportcard_struct[0]['max_average_lineup'] = '100.0'
+    reportcard_struct[0]['min_average_lineup'] = '0.0'
+
+    reportcard_struct[0]['max_average_draft'] = str(TeamReportCard.get_max(league, 'average_draft_score'))
+    reportcard_struct[0]['min_average_draft'] = str(TeamReportCard.get_min(league, 'average_draft_score'))
+
+    reportcard_struct[0]['max_average_waiver'] = str(TeamReportCard.get_max(league, 'average_waiver_score'))
+    reportcard_struct[0]['min_average_waiver'] = str(TeamReportCard.get_min(league, 'average_waiver_score'))
+
+    reportcard_struct[0]['max_average_trade'] = str(TeamReportCard.get_max(league, 'average_trade_score'))
+    reportcard_struct[0]['min_average_trade'] = str(TeamReportCard.get_min(league, 'average_trade_score'))
+
+    reportcard_struct[0]['average_lineup_score'] = 10;
+
+
+
 
     data = json.dumps(reportcard_struct[0])
     return HttpResponse(data, content_type="application/json")

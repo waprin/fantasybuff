@@ -1,9 +1,8 @@
 import datetime
 from decimal import Decimal
-import sys
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
 from teams.models import Team, Scorecard, ScorecardEntry, Player, DraftClaim, TeamWeekScores, AddDrop, TradeEntry, \
-    MetricMaxAndMin, LeagueReportCard, LeagueWeekScores
+     TeamReportCard
 from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
      get_teams_from_matchups
 from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet, \
@@ -185,7 +184,7 @@ class LeagueScraper(object):
 
         self.load_optimal_lineups(league)
         self.load_transactions(league)
-        self.load_draft_score(league)
+        self.load_team_report_cards(league)
 
         league.league_loaded_finish_time = datetime.datetime.now()
         league.loaded = True
@@ -273,125 +272,30 @@ class LeagueScraper(object):
                 optimal_weeks[i].save()
                 logger.debug("saving deltas for team %s %f" % (team.team_name, optimal_weeks[i].delta))
                 deltas.append(delta)
+
             average_delta = sum(deltas) / Decimal(len(deltas))
             team.average_delta = average_delta
             team.save()
 
-    def __get_trade_points(self, team, week):
-        trade_transactions = TradeEntry.objects.get_before_week(team, week)
-        all_players_added = []
-        all_players_dropped = []
-        for tt in trade_transactions:
-            all_players_added += list(tt.players_added.all())
-            all_players_dropped += list(tt.players_removed.all())
-            logger.debug("going through trade transactions %s %s " % (str(all_players_added), str(all_players_dropped)))
-
-        (all_players_added_scored, plusTotal) = ScorecardEntry.get_trade_value(all_players_added, week)
-        (all_players_dropped_scored, minusTotal) = ScorecardEntry.get_trade_value(all_players_dropped, week)
-        all_total = plusTotal - minusTotal
-        return all_total
-
-
-    def load_draft_score(self, league):
+    def load_team_report_cards(self, league):
         TeamWeekScores.objects.filter(team__league=league).delete()
-        LeagueReportCard.objects.filter(league=league).delete()
+        TeamReportCard.objects.filter(team__league=league).delete()
 
         teams = Team.objects.filter(league=league)
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
 
-        draft_max = -2147483648
-        draft_max_team = None
-        draft_max_week = None
-
-        draft_min = 2147483648
-        draft_min_team = None
-        draft_min_week = None
-
-        trade_max = -2147483648
-        trade_max_team = None
-        trade_max_week = None
-
-        trade_min = 2147483648
-        trade_min_team = None
-        trade_min_week = None
-
-        waiver_max = -2147483648
-        waiver_max_team = None
-        waiver_max_week = None
-
-        waiver_min = 2147483648
-        waiver_min_team = None
-        waiver_min_week = None
-
         for team in teams:
-            draft_total = 0
-            trade_total = 0
-            waiver_total = 0
-
             for week in range(1, num_weeks+1):
-                draft_points = team.get_draft_points(week)
-                draft_total += draft_points
-                if draft_points > draft_max:
-                    draft_max = draft_points
-                    draft_max_team = team
-                    draft_max_week = week
-
-                if draft_points < draft_min:
-                    draft_min = draft_points
-                    draft_min_team = team
-                    draft_min_week = week
-
-                waiver_points = team.get_waiver_points(week)
-                waiver_total += waiver_points
-
-                if waiver_points > waiver_max:
-                    waiver_max = waiver_points
-                    waiver_max_team = team
-                    waiver_max_week = week
-
-                if waiver_points < waiver_min:
-                    waiver_min = waiver_points
-                    waiver_min_team = team
-                    waiver_min_week = week
-
-                trade_points = self.__get_trade_points(team, week)
-                trade_total += trade_points
-
-                if trade_points > trade_max:
-                    trade_max = trade_points
-                    trade_max_team = team
-                    trade_max_week = week
-
-                if trade_points < trade_min:
-                    trade_min = trade_points
-                    trade_min_team = team
-                    trade_min_week = week
-
-                TeamWeekScores.objects.create(team=team, draft_score=draft_points, waiver_score=waiver_points, trade_score=trade_points, week=week)
-            LeagueWeekScores.objects.create(league=league, week=week, draft_average=draft_total/len(teams), waiver_average=waiver_total/len(teams), trade_average=trade_total/len(teams))
-
-        logger.debug("creating trade maxmin %f %f " % (trade_max, trade_min) )
-        trade_maxmin = MetricMaxAndMin.objects.create(league=league,max_value=trade_max, min_value=trade_min, max_team=trade_max_team, min_team=trade_min_team, max_week=trade_max_week, min_week=trade_min_week)
-        waiver_maxmin = MetricMaxAndMin.objects.create(league=league,max_value=waiver_max, min_value=waiver_min, max_team=waiver_max_team, min_team=waiver_min_team, max_week=waiver_max_week, min_week=waiver_min_week)
-        draft_maxmin = MetricMaxAndMin.objects.create(league=league,max_value=draft_max, min_value=draft_min, max_team=draft_max_team, min_team=draft_min_team, max_week=draft_max_week, min_week=draft_min_week)
-        LeagueReportCard.objects.create(league=league,trade_maxmin=trade_maxmin, waiver_maxmin=waiver_maxmin, draft_maxmin=draft_maxmin)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                TeamWeekScores.objects.create(team=team,
+                                              draft_score=team.get_draft_points(week),
+                                              waiver_score=team.get_waiver_points(week),
+                                              trade_score=team.get_trade_points(week),
+                                              week=week)
+            TeamReportCard.objects.create(
+                team=team,
+                average_lineup_score=None,
+                average_draft_score=team.get_draft_average(),
+                average_waiver_score=team.get_waiver_average(),
+                average_trade_score=team.get_trade_average(),
+            )
