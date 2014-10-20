@@ -19,6 +19,7 @@ def get_scraper(espn_user):
             logger.debug("returning file scraper")
             fb =  FileBrowser()
             fb.sleep = 3
+            return fb
         else:
             scraper = EspnScraper()
             scraper.login(espn_user.username, espn_user.password)

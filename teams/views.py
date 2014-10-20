@@ -1,5 +1,6 @@
 from decimal import Decimal
 from django.contrib.auth.decorators import login_required
+from django.core.serializers import serialize
 from django.http import HttpResponse
 import logging
 from django.shortcuts import redirect
@@ -312,19 +313,22 @@ class Serializer(Builtin_Serializer):
 
 @login_required()
 def get_all_leagues_json(request):
-    store = SqlStore()
     espn_users = EspnUser.objects.filter(user=request.user)
     all_accounts = []
     for espn_user in espn_users:
         teams = Team.objects.filter(espn_user=espn_user)
         leagues = [team.league for team in teams]
-        data = Serializer().serialize(leagues, fields=('name','espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
-        data = json.loads(data)
-        all_accounts.append(data)
 
-    response_data = {}
-    response_data['accounts'] = all_accounts
-    return HttpResponse(json.dumps(response_data), content_type="application/json")
+        data = Serializer().serialize(leagues, fields=('id', 'name', 'espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
+
+        #data = serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
+        data = json.loads(data)
+        for i, league in enumerate(data):
+            league['id'] = leagues[i].id
+
+        all_accounts += data
+
+    return HttpResponse(json.dumps(all_accounts), content_type="application/json")
 
 
 

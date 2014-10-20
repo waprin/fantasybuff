@@ -2,10 +2,12 @@
 
 {% block content %}
     <div class="container-fluid">
-    <img  src="/static/ajax-loader.gif" id="league_loading_gif" />
+    <!--<img  src="/static/ajax-loader.gif" id="league_loading_gif" />-->
         <div class="row">
             <h3>Your Leagues</h3>
+          <div id="accounts_app">
             <div id="accounts_list"></div>
+          </div>
         </div>
 
         <div clas="row">
@@ -34,13 +36,19 @@
         <% if (loaded) { %>
            <a href="league2/<%=espn_id %>/<%=year %>/"><li><%=name %> <%=year %></li></a>
         <% } else { %>
-                <li>Loading: <%=name %> <%=year %></li>
+                <li>Loading: <%=name %> <%=year %>  Scraped: <%= pages_scraped %> Total: <%= total_pages %></li>
+                <div class="progress">
+                  <!--<div class="progress-bar" style="width:30%;"> </div>-->
+                  <div class="progress-bar" style="width:<%= percent_done %>%;"> </div>
+                </div>
         <% } %>
     </script>
 
+     <script src="/static/js/home_view.js"></script>
+
     <script type="application/javascript">
         $(document).ready(function () {
-            league_template = _.template($("#league_template").html());
+            /*league_template = _.template($("#league_template").html());
             var getLeagues = function() {
                 $.ajax("json/").done(function (data) {
                     $("#accounts_list").empty();
@@ -67,7 +75,7 @@
                     }
                 });
             };
-            getLeagues();
+            getLeagues();*/
         });
     </script>
 

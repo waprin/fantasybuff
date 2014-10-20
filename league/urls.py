@@ -28,7 +28,7 @@ urlpatterns = patterns('',
      url(r'^logout/$', 'teams.views.logout_user'),
 
      url(r'^$', 'teams.views.show_all_leagues'),
-     url(r'^json/$', 'teams.views.get_all_leagues_json'),
+     url(r'^leagues/$', 'teams.views.get_all_leagues_json'),
      url(r'^espn/$', 'teams.views.espn_create'),
 
      url(r'^league/(\d*)/(\d\d\d\d)/$', 'teams.views.show_league'),

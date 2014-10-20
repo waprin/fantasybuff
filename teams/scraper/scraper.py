@@ -111,14 +111,19 @@ class LeagueScraper(object):
             logger.debug("create weekly matchups(): %s %s %d" % (league, team_id, week))
             self.create_game(league, team_id, week)
 
-    def __get_num_pages_to_scrape(self, num_teams):
-        matchup_pages = num_teams
-        game_pages = (num_teams / 2) * num_teams
+            logger.debug("increasing pages scraped to %d for weekly matchup " % (league.pages_scraped + 1))
+            league.pages_scraped = league.pages_scraped + 1
+            league.save()
+
+    def __get_num_pages_to_scrape(self, num_teams, num_weeks):
+        matchup_pages = num_weeks
+        game_pages = (num_teams / 2) * num_weeks
         translog_pages = num_teams
         return matchup_pages + game_pages + translog_pages
 
     def scrape_core_and_matchups(self, league):
         league.league_scrape_start_time = datetime.datetime.now()
+        league.loaded = False
         league.save()
         self.create_standings_page(league)
         #self.create_settings_page(league)
@@ -128,9 +133,10 @@ class LeagueScraper(object):
         num_weeks = get_real_num_weeks(num_weeks, league)
 
         league.pages_scraped = 0
+        league.loaded = False
         league.save()
         if league.year == '2014':
-            estimate = self.__get_num_pages_to_scrape(len(teams))
+            estimate = self.__get_num_pages_to_scrape(len(teams), num_weeks)
             league.total_pages = estimate
             league.save()
 
@@ -142,13 +148,13 @@ class LeagueScraper(object):
             logger.debug("scrape_core: 2014 logic")
             for week in range(1, num_weeks + 1):
                 self.create_weekly_matchups(league, week)
-                league.pages_scraped = league.pages_scraped + ((len(teams)/2) + 1)
-                league.save()
+
         else:
             raise Exception("Unsupported year %s" % league.year)
         for team in teams:
             self.create_translog(league, team)
             league.pages_scraped = league.pages_scraped + 1
+            logger.debug("increased page scraped to %d for translog " % league.pages_scraped)
             league.save()
 
 
