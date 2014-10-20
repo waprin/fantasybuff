@@ -17,7 +17,8 @@ def get_scraper(espn_user):
     else:
         if settings.DB_SCRAPE:
             logger.debug("returning file scraper")
-            return FileBrowser()
+            fb =  FileBrowser()
+            fb.sleep = 3
         else:
             scraper = EspnScraper()
             scraper.login(espn_user.username, espn_user.password)

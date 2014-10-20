@@ -41,8 +41,6 @@
     <script type="application/javascript">
         $(document).ready(function () {
             league_template = _.template($("#league_template").html());
-            var source = league_template.source
-            console.log(league_template);
             var getLeagues = function() {
                 $.ajax("json/").done(function (data) {
                     $("#accounts_list").empty();
@@ -64,7 +62,6 @@
                         }
                         for (var j = 0; j < leagues.length; j++) {
                             league_html = league_template(leagues[j].fields);
-                            console.log("league html", league_html);
                             $("#accounts_list").append(league_html);
                         }
                     }

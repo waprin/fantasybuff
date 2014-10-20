@@ -276,28 +276,6 @@ def show_league(request, espn_id, year):
     })
     return HttpResponse(template.render(context))
 
-@login_required()
-def show_league_report_card_json():
-    pass
-
-@login_required()
-def get_all_leagues_json(request):
-    store = SqlStore()
-    espn_users = EspnUser.objects.filter(user=request.user)
-    all_accounts = []
-    for espn_user in espn_users:
-        teams = Team.objects.filter(espn_user=espn_user)
-        leagues = [team.league for team in teams]
-        data = serializers.serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded'))
-        data = json.loads(data)
-        all_accounts.append(data)
-
-    response_data = {}
-    response_data['accounts'] = all_accounts
-    return HttpResponse(json.dumps(response_data), content_type="application/json")
-
-
-
 def _decode_list(data):
     rv = []
     for item in data:
@@ -331,6 +309,24 @@ from django.core.serializers.json import Serializer as Builtin_Serializer
 class Serializer(Builtin_Serializer):
     def get_dump_object(self, obj):
         return self._current
+
+@login_required()
+def get_all_leagues_json(request):
+    store = SqlStore()
+    espn_users = EspnUser.objects.filter(user=request.user)
+    all_accounts = []
+    for espn_user in espn_users:
+        teams = Team.objects.filter(espn_user=espn_user)
+        leagues = [team.league for team in teams]
+        data = Serializer().serialize(leagues, fields=('name','espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
+        data = json.loads(data)
+        all_accounts.append(data)
+
+    response_data = {}
+    response_data['accounts'] = all_accounts
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
 
 
 def get_team_report_card_json(request, league_id, year, team_id):

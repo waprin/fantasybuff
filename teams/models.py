@@ -25,6 +25,10 @@ class League(models.Model):
     players_scrape_finish_time = models.DateTimeField(null=True)
     league_loaded_finish_time = models.DateTimeField(null=True)
 
+    pages_scraped = models.IntegerField(null=True)
+    total_pages = models.IntegerField(null=True)
+
+
     class Meta:
         unique_together = ('espn_id', 'year',)
 

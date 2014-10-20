@@ -13,19 +13,21 @@ __author__ = 'bill'
 import logging
 logger = logging.getLogger(__name__)
 
+def __real_num_weeks():
+    start = datetime.datetime(year=2014, month=9, day=9)
+    week = datetime.timedelta(days=7)
+    start_days = [start + (weeknum * week) for weeknum in range(0, 13)]
+    now = datetime.datetime.now()
+    for i in range(0, 17):
+        if now < start_days[i]:
+            return i
+    return 17
+
 
 def get_real_num_weeks(num_weeks, league):
     if int(league.year) < 2014:
         return num_weeks
-    now = datetime.datetime.now()
-
-    start = datetime.datetime(year=2014, month=9, day=9)
-    week = datetime.timedelta(days=7)
-    start_days = [start + (weeknum * week) for weeknum in range(0, 13)]
-    for i in range(0, num_weeks):
-        if now < start_days[i]:
-            return i
-    return num_weeks
+    return __real_num_weeks()
 
 class LeagueScraper(object):
 
@@ -91,6 +93,7 @@ class LeagueScraper(object):
         return True
 
     def create_translog(self, league, team):
+        logger.debug("create translog %s " % team[0])
         if not self.overwrite and self.store.has_translog(league.espn_id, league.year, team[0]):
             return False
         translog_html = self.scraper.get_translog(league.espn_id, league.year, team[0])
@@ -108,6 +111,12 @@ class LeagueScraper(object):
             logger.debug("create weekly matchups(): %s %s %d" % (league, team_id, week))
             self.create_game(league, team_id, week)
 
+    def __get_num_pages_to_scrape(self, num_teams):
+        matchup_pages = num_teams
+        game_pages = (num_teams / 2) * num_teams
+        translog_pages = num_teams
+        return matchup_pages + game_pages + translog_pages
+
     def scrape_core_and_matchups(self, league):
         league.league_scrape_start_time = datetime.datetime.now()
         league.save()
@@ -117,6 +126,14 @@ class LeagueScraper(object):
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
+
+        league.pages_scraped = 0
+        league.save()
+        if league.year == '2014':
+            estimate = self.__get_num_pages_to_scrape(len(teams))
+            league.total_pages = estimate
+            league.save()
+
         if league.year == '2013':
             for team in teams:
                 for week in range(1, num_weeks + 1):
@@ -125,10 +142,17 @@ class LeagueScraper(object):
             logger.debug("scrape_core: 2014 logic")
             for week in range(1, num_weeks + 1):
                 self.create_weekly_matchups(league, week)
+                league.pages_scraped = league.pages_scraped + ((len(teams)/2) + 1)
+                league.save()
         else:
             raise Exception("Unsupported year %s" % league.year)
         for team in teams:
             self.create_translog(league, team)
+            league.pages_scraped = league.pages_scraped + 1
+            league.save()
+
+
+
         league.lineups_scrape_finish_time = datetime.datetime.now()
         league.save()
 

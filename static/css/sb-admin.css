@@ -24,7 +24,7 @@ html {
 
 #wrapper {
     padding-left: 0;
-    width: 1000px;
+    max-width: 1000px;
     height: 100%;
     margin: auto;
 }
@@ -37,7 +37,7 @@ html {
 }
 
 .container {
-    width: 1000px;
+    max-width: 1000px;
 }
 
 .huge {

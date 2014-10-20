@@ -185,8 +185,8 @@ class LeagueCreatorTest(unittest.TestCase):
         self.assertEquals(len(before_week3), 12)
 
         logger.debug("test_translog:  get waiver points")
-        draft_score = self.league_scraper.get_waiver_points(team3, 4)
-        self.assertEquals(draft_score, 3)
+        waiver_score = team3.get_waiver_points(4)
+        self.assertEquals(waiver_score, 3)
 
 
 

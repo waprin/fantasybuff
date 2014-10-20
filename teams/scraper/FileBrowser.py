@@ -32,6 +32,7 @@ class FileBrowser(object):
         else:
             self.initialized = True
         self.d = os.path.join('leagues', self.d)
+        self.sleep = 0
 
     def reload(self):
         logger.debug("reloading file cached browser")
@@ -44,7 +45,7 @@ class FileBrowser(object):
         return os.path.exists(os.path.join(self.d, 'entrance_%d.html' % espn_user.id))
 
     def get_entrance(self, espn_user):
-        time.sleep(1)
+        time.sleep(self.sleep)
         return open(os.path.join(self.d, 'entrance_1.html')).read()
 
     def write_entrance(self, espn_user, html):
@@ -96,6 +97,7 @@ class FileBrowser(object):
         return os.path.exists(self.matchup_path(league, week))
 
     def get_matchups(self, league, week):
+        time.sleep(self.sleep)
         return open(self.matchup_path(league, week)).read()
 
     def write_matchups(self, league, week, html):
@@ -112,6 +114,7 @@ class FileBrowser(object):
         return os.path.exists(self.roster_path(league, team_id, week))
 
     def get_roster(self, league, team_id, week):
+        time.sleep(self.sleep)
         return open(self.roster_path(league, team_id, week)).read()
 
     def write_roster(self, league, team_id, week, html):
@@ -158,6 +161,7 @@ class FileBrowser(object):
         return os.path.exists(self.game_path(league, team_id, week))
 
     def get_game(self, league, team_id, week):
+        time.sleep(self.sleep)
         return open(self.game_path(league, team_id, week)).read()
 
     def write_game(self, league, team_id, week, html):
