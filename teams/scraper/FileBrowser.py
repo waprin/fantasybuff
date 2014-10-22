@@ -8,11 +8,6 @@ logger = logging.getLogger(__name__)
 
 __author__ = 'bill'
 
-def listdir_nohidden(path):
-    for f in os.listdir(path):
-        if not f.startswith('.'):
-            yield f
-
 def mkdir_p(path):
     try:
         os.makedirs(path)

@@ -28,6 +28,8 @@ class League(models.Model):
     pages_scraped = models.IntegerField(null=True)
     total_pages = models.IntegerField(null=True)
 
+    failed = models.BooleanField(default=False)
+
 
     class Meta:
         unique_together = ('espn_id', 'year',)

@@ -12,9 +12,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 def defer_league_scrape(espn_user, league):
-    if league.year != '2014' or league.espn_id != '930248':
-        logger.debug("skipping load of league %s %s" % (league.year, league.espn_id))
-        return
     store = SqlStore()
     scraper = get_scraper(espn_user)
     league_scraper = LeagueScraper(scraper, store)

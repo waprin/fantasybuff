@@ -12,10 +12,8 @@ from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, Team
 import json
 from django.contrib.auth.models import User
 from django.template import RequestContext, loader
-from teams.scraper.SqlStore import SqlStore
 import django_rq
 from django.contrib.auth import authenticate, login, logout
-from django.core import serializers
 
 logger = logging.getLogger(__name__)
 

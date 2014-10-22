@@ -3,8 +3,8 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  $(function() {
-    var AppView, EspnLeagues, League, LeagueView, Leagues, leagueView;
+  define(['jquery', 'underscore', 'backbone', 'text!js/app/templates/league_template.ejs'], function($, _, Backbone, league_template) {
+    var AppView, EspnLeagues, League, LeagueView, mod;
     League = (function(_super) {
       __extends(League, _super);
 
@@ -33,7 +33,6 @@
       return EspnLeagues;
 
     })(Backbone.Collection);
-    Leagues = new EspnLeagues();
     LeagueView = (function(_super) {
       __extends(LeagueView, _super);
 
@@ -43,7 +42,7 @@
 
       LeagueView.prototype.tagName = 'li';
 
-      LeagueView.prototype.template = _.template($('#league_template').html());
+      LeagueView.prototype.template = _.template(league_template);
 
       LeagueView.prototype.initialize = function() {
         return this.listenTo(this.model, 'change', this.render);
@@ -51,7 +50,6 @@
 
       LeagueView.prototype.render = function() {
         var model;
-        console.log(this.model.toJSON());
         model = this.model.toJSON();
         model.percent_done = (100 * model.pages_scraped) / model.total_pages;
         this.$el.html(this.template(model));
@@ -71,8 +69,17 @@
       AppView.prototype.el = $("#accounts_app");
 
       AppView.prototype.initialize = function() {
-        this.listenTo(Leagues, 'add', this.addOne);
-        return Leagues.fetch();
+        this.listenTo(this.collection, 'add', this.addOne);
+        this.collection.fetch();
+        return this.collection.on('sync', function() {
+          var isLoaded;
+          isLoaded = function(model) {
+            return model.get('loaded');
+          };
+          if (_.some(this.collection.models, isLoaded)) {
+            return setTimeout(this.collection.fetch, 5000);
+          }
+        });
       };
 
       AppView.prototype.addOne = function(league) {
@@ -86,20 +93,13 @@
       return AppView;
 
     })(Backbone.View);
-    leagueView = new AppView;
-    return Leagues.on('sync', function() {
-      var isLoaded;
-      console.log("leagues were synced", Leagues.models);
-      isLoaded = function(model) {
-        return model.get('loaded');
-      };
-      if (_.some(Leagues.models, isLoaded)) {
-        setTimeout(Leagues.fetch, 5000);
-        return console.log('set timeout was set');
-      }
-    });
+    mod = {
+      League: League,
+      EspnLeagues: EspnLeagues,
+      LeagueView: LeagueView,
+      AppView: AppView
+    };
+    return mod;
   });
 
 }).call(this);
-
-//# sourceMappingURL=home_view.js.map
