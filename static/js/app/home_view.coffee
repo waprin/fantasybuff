@@ -13,7 +13,6 @@ define ['jquery', 'underscore', 'backbone', 'text!js/app/templates/league_templa
 
     template: _.template(league_template)
 
-
     initialize: ->
       @listenTo @model, 'change', @render
 
@@ -41,13 +40,12 @@ define ['jquery', 'underscore', 'backbone', 'text!js/app/templates/league_templa
     addOne: (league) ->
       leagueView = new LeagueView { model: league }
       $('#accounts_list').append(leagueView.render().el)
-
-  mod =
-    League: League
-    EspnLeagues: EspnLeagues
-    LeagueView: LeagueView
-    AppView: AppView
-  return mod
+  return {
+  League: League
+  EspnLeagues: EspnLeagues
+  LeagueView: LeagueView
+  AppView: AppView
+  }
 
 
 

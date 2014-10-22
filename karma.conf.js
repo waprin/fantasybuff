@@ -23,7 +23,7 @@ module.exports = function (config) {
             // options passed to the coffee compiler
             options: {
                 bare: true,
-                sourceMap: false,
+                sourceMap: true,
                 // transforming the filenames
                 transformPath: function (path) {
                     return path.replace(/\.coffee$/, '_bare.js');

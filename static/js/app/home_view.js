@@ -4,7 +4,7 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['jquery', 'underscore', 'backbone', 'text!js/app/templates/league_template.ejs'], function($, _, Backbone, league_template) {
-    var AppView, EspnLeagues, League, LeagueView, mod;
+    var AppView, EspnLeagues, League, LeagueView;
     League = (function(_super) {
       __extends(League, _super);
 
@@ -93,13 +93,12 @@
       return AppView;
 
     })(Backbone.View);
-    mod = {
+    return {
       League: League,
       EspnLeagues: EspnLeagues,
       LeagueView: LeagueView,
       AppView: AppView
     };
-    return mod;
   });
 
 }).call(this);

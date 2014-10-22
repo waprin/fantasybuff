@@ -1,7 +1,7 @@
     <% if (loaded) { %>
        <a href="league2/<%=espn_id %>/<%=year %>/"><li><%=name %> <%=year %></li></a>
     <% } else { %>
-            <% if (year === 2014) { %>
+            <% if (year === '2014') { %>
               <li>Loading: <%=name %> <%=year %>  Scraped: <%= pages_scraped %> Total: <%= total_pages %></li>
               <div class="progress">
                 <!--<div class="progress-bar" style="width:30%;"> </div>-->
@@ -9,8 +9,7 @@
               </div>
             <% } else { %>
               <li>Loading: <%=name %> <%=year %></li>
-              <img src="/static/ajax-loader.gif"/>
+              <img class="league_loading_spinner" src="/static/ajax-loader.gif"/>
               Legacy leagues can take 5-10 minutes to load
            <% } %>
     <% } %>
-</div>
