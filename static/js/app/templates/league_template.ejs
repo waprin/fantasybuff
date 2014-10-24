@@ -4,8 +4,7 @@
             <% if (year === '2014') { %>
               <li>Loading: <%=name %> <%=year %>  Scraped: <%= pages_scraped %> Total: <%= total_pages %></li>
               <div class="progress">
-                <!--<div class="progress-bar" style="width:30%;"> </div>-->
-                  <div class="progress-bar" style="width: <%= percent_done %> %;"> </div>
+                  <div class="progress-bar" style="width: <%= percent_done %>%;"> </div>
               </div>
             <% } else { %>
               <li>Loading: <%=name %> <%=year %></li>

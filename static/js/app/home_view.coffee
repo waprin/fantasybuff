@@ -40,12 +40,11 @@ define ['jquery', 'underscore', 'backbone', 'text!js/app/templates/league_templa
     addOne: (league) ->
       leagueView = new LeagueView { model: league }
       $('#accounts_list').append(leagueView.render().el)
-  return {
+
   League: League
   EspnLeagues: EspnLeagues
   LeagueView: LeagueView
   AppView: AppView
-  }
 
 
 
