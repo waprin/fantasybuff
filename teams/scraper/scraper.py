@@ -123,6 +123,7 @@ class LeagueScraper(object):
 
     def scrape_core_and_matchups(self, league):
         league.league_scrape_start_time = datetime.datetime.now()
+        league.loading = True
         league.loaded = False
         league.save()
         self.create_standings_page(league)
@@ -199,6 +200,7 @@ class LeagueScraper(object):
 
     def load_league(self, league):
         league.loaded = False
+        league.loading = True
         league.save()
 
         self.load_teams(league)
@@ -218,6 +220,7 @@ class LeagueScraper(object):
 
         league.league_loaded_finish_time = datetime.datetime.now()
         league.loaded = True
+        league.loading = False
         league.save()
 
     def reload_lineups(self, league):

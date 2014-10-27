@@ -19,6 +19,7 @@ class League(models.Model):
     year = models.CharField(max_length=5)
 
     loaded = models.BooleanField(default=False)
+    loading = models.BooleanField(default=False)
 
     league_scrape_start_time = models.DateTimeField(null=True)
     lineups_scrape_finish_time = models.DateTimeField(null=True)

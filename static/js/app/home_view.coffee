@@ -1,4 +1,4 @@
-define ['jquery', 'underscore', 'backbone', 'text!js/app/templates/league_template.ejs'], ($, _, Backbone, league_template) ->
+define ['jquery', 'underscore', 'backbone', 'lib/text!app/templates/league_template.ejs'], ($, _, Backbone, league_template) ->
   class League extends Backbone.Model
 
   class EspnLeagues extends Backbone.Collection
@@ -30,7 +30,7 @@ define ['jquery', 'underscore', 'backbone', 'text!js/app/templates/league_templa
       @listenTo @collection, 'add', @addOne
       @collection.fetch()
 
-      @collection.on 'sync', ->
+      @collection.on 'sync', =>
         isLoaded = (model) ->
           model.get('loaded')
 

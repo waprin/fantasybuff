@@ -3,7 +3,7 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define(['jquery', 'underscore', 'backbone', 'text!js/app/templates/league_template.ejs'], function($, _, Backbone, league_template) {
+  define(['jquery', 'underscore', 'backbone', 'lib/text!app/templates/league_template.ejs'], function($, _, Backbone, league_template) {
     var AppView, EspnLeagues, League, LeagueView;
     League = (function(_super) {
       __extends(League, _super);
@@ -71,15 +71,17 @@
       AppView.prototype.initialize = function() {
         this.listenTo(this.collection, 'add', this.addOne);
         this.collection.fetch();
-        return this.collection.on('sync', function() {
-          var isLoaded;
-          isLoaded = function(model) {
-            return model.get('loaded');
+        return this.collection.on('sync', (function(_this) {
+          return function() {
+            var isLoaded;
+            isLoaded = function(model) {
+              return model.get('loaded');
+            };
+            if (_.some(_this.collection.models, isLoaded)) {
+              return setTimeout(_this.collection.fetch, 5000);
+            }
           };
-          if (_.some(this.collection.models, isLoaded)) {
-            return setTimeout(this.collection.fetch, 5000);
-          }
-        });
+        })(this));
       };
 
       AppView.prototype.addOne = function(league) {

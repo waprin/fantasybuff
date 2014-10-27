@@ -32,5 +32,6 @@ class Command(BaseCommand):
         scraper.login('gothamcityrogues', 'sincere1')
         file_browser = FileBrowser()
         league_scraper = LeagueScraper(scraper, file_browser)
-        league = League.objects.get(espn_id='930248', year='2014')
-        league_scraper.scrape_league(league)
+        leagues = League.objects.filter(year='2014')
+        for league in leagues:
+            league_scraper.scrape_league(league)

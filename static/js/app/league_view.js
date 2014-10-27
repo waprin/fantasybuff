@@ -1,8 +1,8 @@
-(function () {
+require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], function ($, Backbone, _, d3) {
     'use strict';
     /*jslint todo: true*/
     /*jslint nomen: true*/
-    /*globals d3,console,Backbone,$,_*/
+    /*globals d3,console*/
 
 
     function BulletChart(data) {
@@ -499,4 +499,4 @@
     });
 
 
-}());
+});

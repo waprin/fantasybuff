@@ -6,12 +6,19 @@ requirejs.config({
     paths: {
         'jquery': 'lib/jquery-1.11.0',
         'underscore': 'lib/underscore',
-        'backbone': 'lib/backbone'
+        'backbone': 'lib/backbone',
+        'd3': 'lib/d3',
+        'd3.bullet': 'lib/d3.bullets',
+        'bootstrap': 'lib/bootstrap'
     },
     shim: {
         'underscore': {
             exports: '_'
         },
+        'd3': {
+            exports: 'd3'
+        },
+        'd3.bullet': ['d3'],
         'backbone': {
             //These script dependencies should be loaded before loading
             //backbone.js
@@ -25,4 +32,4 @@ requirejs.config({
 
 // Start loading the main app file. Put all of
 // your application logic in there.
-requirejs(['app/main']);
+requirejs(['app/league_view']);

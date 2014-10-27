@@ -87,8 +87,10 @@
 {% block endscripts %}
     {{ block.super }}
 
-    <script src="http://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
+<!--
+ <script src="http://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
     <script type="text/javascript" src="/static/js/bullets.js"></script>
+    -->
 
     <script id="lineup-table-template" type="text/template">
                         <table class="table table-bordered table-striped">
@@ -108,5 +110,6 @@
                             </tbody>
                         </table>
     </script>
-  <script src="/static/js/league_view.js"></script>
+  <script data-main="/static/js/league_main" src="/static/require.js"></script>
+  <!--<script src="/static/js/league_view.js"></script>-->
 {% endblock %}

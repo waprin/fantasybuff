@@ -317,7 +317,8 @@ def get_all_leagues_json(request):
         teams = Team.objects.filter(espn_user=espn_user)
         leagues = [team.league for team in teams]
 
-        data = Serializer().serialize(leagues, fields=('id', 'name', 'espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
+        data = Serializer().serialize(leagues, fields=('id', 'name', 'espn_id', 'year', 'loaded', 'failed',
+                                                       'loading', 'pages_scraped', 'total_pages'))
 
         #data = serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
         data = json.loads(data)

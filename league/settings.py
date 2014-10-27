@@ -226,9 +226,10 @@ LOGGING = {
 }
 
 LOCAL_REDIS='redis://localhost:6379'
-REDIS = {"default": dj_redis_url.config(env='REDISTOGO_URL', default=LOCAL_REDIS)}
+REDIS = {"default": dj_redis_url.config(env='REDISTOGO_URL', default=LOCAL_REDIS), "low": dj_redis_url.config(env='REDISTOGO_URL', default=LOCAL_REDIS)}
 RQ_QUEUES = REDIS
 REDIS['default']['DEFAULT_TIMEOUT'] = 1800
+REDIS['low']['DEFAULT_TIMEOUT'] = 1800
 
 
 try:
