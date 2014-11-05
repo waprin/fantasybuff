@@ -147,10 +147,10 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
 
     $(document).ready(function () {
         var data = [
-                {"title": "Lineup", "subtitle": "Points Missed", "ranges": [0, 100], "measures": [90], "markers": []},
-                {"title": "Waiver", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [35], "markers": []},
-                {"title": "Draft", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [25], "markers": []},
-                {"title": "Trades", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [50], "markers": []}
+                {"title": "Lineup", "subtitle": "Points Missed", "ranges": [0, 100], "measures": [90], "markers": [0]},
+                {"title": "Waiver", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [35], "markers": [0]},
+                {"title": "Draft", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [25], "markers": [0]},
+                {"title": "Trades", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [50], "markers": [0]}
             ],
 
             ReportCardModel = Backbone.Model.extend({
@@ -227,6 +227,8 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                         data[3].measures[0] = this.model.get('average_trade_score');
                         data[3].markers[0] = this.model.get('average_trade_score');
                         console.log("done hacking data", data);
+                    } else {
+                        return this;
                     }
                     if (!this.bulletChart) {
                         this.bulletChart = new BulletChart(data);

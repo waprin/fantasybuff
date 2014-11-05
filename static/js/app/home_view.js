@@ -77,7 +77,7 @@
             isLoaded = function(model) {
               return model.get('loaded');
             };
-            if (_.some(_this.collection.models, isLoaded)) {
+            if (!_.every(_this.collection.models, isLoaded)) {
               return setTimeout(_this.collection.fetch, 5000);
             }
           };

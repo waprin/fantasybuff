@@ -9,7 +9,7 @@ from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
 from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard, DraftClaim, TeamWeekScores, \
     AddDrop, TradeEntry
-import json
+import simplejson as json
 from django.contrib.auth.models import User
 from django.template import RequestContext, loader
 import django_rq
@@ -362,13 +362,13 @@ def get_team_report_card_json(request, league_id, year, team_id):
     reportcard_struct[0]['draft_scores'] = draft_scores
     reportcard_struct[0]['waiver_scores'] = waiver_scores
     reportcard_struct[0]['trade_scores'] = trade_scores
-    reportcard_struct[0]['trade_max'] = str(TeamWeekScores.get_max(league, 'trade_score'))
-    reportcard_struct[0]['trade_min'] = str(TeamWeekScores.get_min(league, 'trade_score'))
-    reportcard_struct[0]['waiver_max'] = str(TeamWeekScores.get_max(league, 'waiver_score'))
-    reportcard_struct[0]['waiver_min'] = str(TeamWeekScores.get_min(league, 'waiver_score'))
-    reportcard_struct[0]['draft_max'] = str(TeamWeekScores.get_max(league, 'draft_score'))
-    reportcard_struct[0]['draft_min'] = str(TeamWeekScores.get_min(league, 'draft_score'))
-    reportcard_struct[0]['num_teams'] = str(Team.objects.filter(league=league).count())
+    reportcard_struct[0]['trade_max'] = TeamWeekScores.get_max(league, 'trade_score')
+    reportcard_struct[0]['trade_min'] = TeamWeekScores.get_min(league, 'trade_score')
+    reportcard_struct[0]['waiver_max'] = TeamWeekScores.get_max(league, 'waiver_score')
+    reportcard_struct[0]['waiver_min'] = TeamWeekScores.get_min(league, 'waiver_score')
+    reportcard_struct[0]['draft_max'] = TeamWeekScores.get_max(league, 'draft_score')
+    reportcard_struct[0]['draft_min'] = TeamWeekScores.get_min(league, 'draft_score')
+    reportcard_struct[0]['num_teams'] = Team.objects.filter(league=league).count()
 
 #    reportcard_struct[0]['max_average_lineup'] = str(TeamReportCard.get_max(league, 'average_lineup_score'))
 #    reportcard_struct[0]['min_average_lineup'] = str(TeamReportCard.get_min(league, 'average_lineup_score'))
@@ -376,21 +376,21 @@ def get_team_report_card_json(request, league_id, year, team_id):
     reportcard_struct[0]['max_average_lineup'] = '100.0'
     reportcard_struct[0]['min_average_lineup'] = '0.0'
 
-    reportcard_struct[0]['max_average_draft'] = str(TeamReportCard.get_max(league, 'average_draft_score'))
-    reportcard_struct[0]['min_average_draft'] = str(TeamReportCard.get_min(league, 'average_draft_score'))
+    reportcard_struct[0]['max_average_draft'] = TeamReportCard.get_max(league, 'average_draft_score')
+    reportcard_struct[0]['min_average_draft'] = TeamReportCard.get_min(league, 'average_draft_score')
 
-    reportcard_struct[0]['max_average_waiver'] = str(TeamReportCard.get_max(league, 'average_waiver_score'))
-    reportcard_struct[0]['min_average_waiver'] = str(TeamReportCard.get_min(league, 'average_waiver_score'))
+    reportcard_struct[0]['max_average_waiver'] = TeamReportCard.get_max(league, 'average_waiver_score')
+    reportcard_struct[0]['min_average_waiver'] = TeamReportCard.get_min(league, 'average_waiver_score')
 
-    reportcard_struct[0]['max_average_trade'] = str(TeamReportCard.get_max(league, 'average_trade_score'))
-    reportcard_struct[0]['min_average_trade'] = str(TeamReportCard.get_min(league, 'average_trade_score'))
+    reportcard_struct[0]['max_average_trade'] = TeamReportCard.get_max(league, 'average_trade_score')
+    reportcard_struct[0]['min_average_trade'] = TeamReportCard.get_min(league, 'average_trade_score')
 
-    reportcard_struct[0]['average_lineup_score'] = 10;
-
-
+    reportcard_struct[0]['average_lineup_score'] = 10
 
 
-    data = json.dumps(reportcard_struct[0])
+
+
+    data = json.dumps(reportcard_struct[0], use_decimal=True)
     return HttpResponse(data, content_type="application/json")
 
 def get_team_draft(request, league_id, year, team_id):
