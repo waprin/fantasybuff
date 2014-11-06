@@ -166,7 +166,6 @@ INSTALLED_APPS = (
      'django.contrib.admin',
     'django_rq',
     'social_auth',
-    'tastypie'
     # Uncomment the next line to enable admin documentation:
      #'django.contrib.admindocs',
 )
