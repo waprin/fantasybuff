@@ -6,7 +6,8 @@ requirejs.config({
     paths: {
         'jquery': 'lib/jquery-1.11.0',
         'underscore': 'lib/underscore',
-        'backbone': 'lib/backbone'
+        'backbone': 'lib/backbone',
+        'bootstrap': 'lib/bootstrap'
     },
     shim: {
         'underscore': {

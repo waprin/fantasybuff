@@ -6,12 +6,6 @@ import settings
 from django.contrib import admin
 admin.autodiscover()
 
-from teams.api import TeamResource
-
-team_report_card_resource = TeamResource()
-
-from django.shortcuts import redirect
-
 urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'league.views.home', name='home'),
@@ -46,7 +40,6 @@ urlpatterns = patterns('',
      url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/draft/$', 'teams.views.get_'
                                                      'team_draft'),
      url(r'', include('social_auth.urls')),
-     url(r'^api/', include(team_report_card_resource.urls))
 
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
