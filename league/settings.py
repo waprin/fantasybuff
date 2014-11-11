@@ -228,7 +228,7 @@ LOGGING = {
 redis_url = urlparse.urlparse(os.environ.get('REDISTOGO_URL', 'redis://localhost:6379'))
 
 CACHES = {
-    'redis-cache': {
+    'default': {
         'BACKEND': 'redis_cache.RedisCache',
         'LOCATION': '%s:%s' % (redis_url.hostname, redis_url.port),
         'OPTIONS': {
@@ -242,11 +242,11 @@ CACHES = {
 
 RQ_QUEUES = {
     'default': {
-        'USE_REDIS_CACHE': 'redis-cache',
+        'USE_REDIS_CACHE': 'default',
         'DEFAULT_TIMEOUT': 2000,
     },
     'low': {
-        'USE_REDIS_CACHE': 'redis-cache',
+        'USE_REDIS_CACHE': 'default',
         'DEFAULT_TIMEOUT': 2000,
     },
 }
