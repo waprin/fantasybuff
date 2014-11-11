@@ -25,7 +25,8 @@ def defer_league_scrape(espn_user, league):
     scraper = get_scraper(espn_user)
     league_scraper = LeagueScraper(scraper, store)
     try:
-        reset_league(league)
+        league.failed = False
+        league.save()
         league_scraper.scrape_league(league)
         league_scraper.load_league(league)
     except Exception as e:
