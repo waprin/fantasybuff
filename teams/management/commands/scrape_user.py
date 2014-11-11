@@ -45,6 +45,10 @@ def defer_espn_user_scrape(espn_user):
     teams = Team.objects.filter(espn_user=espn_user)
     for team in teams:
         logger.debug("scraping league %s" % team.league.name)
+        team.league.loading = True
+        team.league.loaded = False
+        team.league.failed = False
+        team.league.save()
         if team.league.year == '2014':
             queue = django_rq.get_queue('default')
         else:

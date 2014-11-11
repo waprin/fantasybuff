@@ -123,9 +123,7 @@ class LeagueScraper(object):
 
     def scrape_core_and_matchups(self, league):
         league.league_scrape_start_time = datetime.datetime.now()
-        league.loading = True
-        league.loaded = False
-        league.save()
+
         self.create_standings_page(league)
         #self.create_settings_page(league)
         self.create_matchups_page(league, 1)
