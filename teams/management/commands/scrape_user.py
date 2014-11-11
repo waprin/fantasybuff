@@ -1,3 +1,4 @@
+import traceback
 from django.contrib.auth.models import User
 from django.core.management import BaseCommand
 from teams.management.commands.create_league import get_scraper
@@ -30,7 +31,7 @@ def defer_league_scrape(espn_user, league):
         league_scraper.scrape_league(league)
         league_scraper.load_league(league)
     except Exception as e:
-        logger.error("caught excepting scraping league %s %s, resetting: %s" % (league.espn_id, league.year, str(e)))
+        logger.error("caught excepting scraping league %s %s, resetting: %s" % (league.espn_id, league.year, traceback.format_exc()))
         reset_league(league)
         raise e
 
