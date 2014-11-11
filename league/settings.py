@@ -1,5 +1,6 @@
 # Django settings for league project.
 import os
+import urlparse
 import dj_redis_url
 import django
 
@@ -224,11 +225,36 @@ LOGGING = {
     }
 }
 
-LOCAL_REDIS='redis://localhost:6379'
-REDIS = {"default": dj_redis_url.config(env='REDISTOGO_URL', default=LOCAL_REDIS), "low": dj_redis_url.config(env='REDISTOGO_URL', default=LOCAL_REDIS)}
-RQ_QUEUES = REDIS
-REDIS['default']['DEFAULT_TIMEOUT'] = 1800
-REDIS['low']['DEFAULT_TIMEOUT'] = 1800
+redis_url = urlparse.urlparse(os.environ.get('REDISTOGO_URL', 'redis://localhost:6379'))
+
+CACHES = {
+    'redis-cache': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': '%s:%s' % (redis_url.hostname, redis_url.port),
+        'OPTIONS': {
+            'DB': 0,
+            'PASSWORD': redis_url.password,
+            'IGNORE_EXCEPTIONS': True,
+            'CONNECTION_POOL_KWARGS': {'max_connections': 10}
+        }
+    }
+}
+
+RQ_QUEUES = {
+    'default': {
+        'USE_REDIS_CACHE': 'redis-cache',
+        'DEFAULT_TIMEOUT': 2000,
+    },
+    'low': {
+        'USE_REDIS_CACHE': 'redis-cache',
+        'DEFAULT_TIMEOUT': 2000,
+    },
+}
+
+#REDIS = {"default": dj_redis_url.config(env='REDISTOGO_URL', default=LOCAL_REDIS), "low": dj_redis_url.config(env='REDISTOGO_URL', default=LOCAL_REDIS)}
+#RQ_QUEUES = REDIS
+#REDIS['default']['DEFAULT_TIMEOUT'] = 1800
+#REDIS['low']['DEFAULT_TIMEOUT'] = 1800
 
 
 try:
