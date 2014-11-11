@@ -32,6 +32,7 @@ def defer_league_scrape(espn_user, league):
     except Exception as e:
         logger.error("caught excepting scraping league %s %s, resetting: %s" % (league.espn_id, league.year, str(e)))
         reset_league(league)
+        raise e
 
 def defer_espn_user_scrape(espn_user):
     store = SqlStore()
