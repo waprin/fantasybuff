@@ -338,7 +338,7 @@ def load_transactions_from_translog(html, year, team):
                 try:
                     player = Player.objects.get(name=player_name)
                 except Player.DoesNotExist:
-                    logger.error("Unexpected player in trade $s " % player_name)
+                    logger.error("Unexpected player in trade %s " % player_name)
                     continue
                 if added:
                     added_players.append(player)
