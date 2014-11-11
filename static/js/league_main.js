@@ -26,6 +26,10 @@ requirejs.config({
             //Once loaded, use the global 'Backbone' as the
             //module value.
             exports: 'Backbone'
+        },
+        "bootstrap": {
+            deps: ["jquery"],
+            exports: "$.fn.popover"
         }
     }
 });
