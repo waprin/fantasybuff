@@ -1,4 +1,4 @@
-define ['jquery', 'underscore', 'js/app/home_view'], ($, _, home) ->
+define ['jquery', 'underscore', 'app/home_view'], ($, _, home) ->
   describe 'Queue LeagueView', ->
     it 'will show that the league is queued', ->
       league = new home.League()
@@ -9,8 +9,10 @@ define ['jquery', 'underscore', 'js/app/home_view'], ($, _, home) ->
         total_pages: 100
         loaded: false
         loading: false
+        failed: false
       leagueView = new home.LeagueView({model: league})
       el = leagueView.render().el
+      console.log $(el)
       expect($(el).find('.queued').length).toEqual(1)
 
 
@@ -27,6 +29,7 @@ define ['jquery', 'underscore', 'js/app/home_view'], ($, _, home) ->
         total_pages: 100
         loaded: false
         loading: true
+        failed: false
       leagueView = new home.LeagueView({model: league})
       el = leagueView.render().el
 

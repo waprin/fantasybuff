@@ -2,7 +2,7 @@
 /*globals requirejs */
 
 requirejs.config({
-    baseUrl: '/static/js/',
+    baseUrl: '/static/js',
     paths: {
         'jquery': 'lib/jquery-1.11.0',
         'underscore': 'lib/underscore',
@@ -20,8 +20,13 @@ requirejs.config({
             //Once loaded, use the global 'Backbone' as the
             //module value.
             exports: 'Backbone'
+        },
+        "bootstrap": {
+            deps: ["jquery"],
+            exports: "$.fn.popover"
         }
-    }
+    },
+    enforceDefine: true
 });
 
 // Start loading the main app file. Put all of

@@ -51,6 +51,7 @@
       LeagueView.prototype.render = function() {
         var model;
         model = this.model.toJSON();
+        console.log(model);
         model.percent_done = (100 * model.pages_scraped) / model.total_pages;
         this.$el.html(this.template(model));
         return this;

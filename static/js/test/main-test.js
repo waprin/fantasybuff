@@ -12,9 +12,10 @@ requirejs.config({
     baseUrl: '/base/',
 
     paths: {
-        'jquery': 'js/jquery-1.11.0',
-        'underscore': 'js/underscore',
-        'backbone': 'js/backbone'
+        'jquery': 'lib/jquery-1.11.0',
+        'underscore': 'lib/underscore',
+        'backbone': 'lib/backbone',
+        'bootstrap': 'lib/bootstrap'
     },
 
     shim: {
@@ -28,6 +29,10 @@ requirejs.config({
             //Once loaded, use the global 'Backbone' as the
             //module value.
             exports: 'Backbone'
+        },
+        "bootstrap": {
+            deps: ["jquery"],
+            exports: "$.fn.popover"
         }
     },
 

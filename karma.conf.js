@@ -6,7 +6,7 @@ module.exports = function (config) {
     config.set({
 
         // base path that will be used to resolve all patterns (eg. files, exclude)
-        basePath: 'static/',
+        basePath: 'static/js/',
 
 
         // frameworks to use
@@ -16,7 +16,7 @@ module.exports = function (config) {
 
         // list of files to exclude
         exclude: [
-            'js/app/main.js'
+            'app/main.js'
         ],
 
         coffeePreprocessor: {
@@ -39,13 +39,12 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [
-            {pattern: 'text.js', included: false},
-            {pattern: 'js/jquery-1.11.0.js', included: false},
-            {pattern: 'js/underscore.js', included: false},
-            {pattern: 'js/backbone.js', included: false},
-            {pattern: 'js/app/templates/*.html', included: false},
-            {pattern: 'js/app/*.coffee', included: false},
-            {pattern: 'js/app/*.js', included: false},
+            {pattern: 'lib/text.js', included: false},
+            {pattern: 'lib/jquery-1.11.0.js', included: false},
+            {pattern: 'lib/underscore.js', included: false},
+            {pattern: 'lib/backbone.js', included: false},
+            {pattern: 'app/*.coffee', included: false},
+            {pattern: 'app/*.js', included: false},
             {pattern: 'test/**/*.coffee', included: false},
             {pattern: 'test/**/*Spec.js', included: false},
             {pattern: 'test/**/*Spec.js', included: false},

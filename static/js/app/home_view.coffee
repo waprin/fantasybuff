@@ -18,6 +18,7 @@ define ['jquery', 'underscore', 'backbone', 'lib/text!app/templates/league_templ
 
     render: ->
       model = @model.toJSON()
+      console.log model
       model.percent_done = (100 * model.pages_scraped) / model.total_pages
       @$el.html(@template(model))
       @
