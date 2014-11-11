@@ -18,7 +18,7 @@ def get_scraper(espn_user):
         if settings.DB_SCRAPE:
             logger.debug("returning file scraper")
             fb =  FileBrowser()
-            fb.sleep = 3
+            fb.sleep = 0.1
             return fb
         else:
             scraper = EspnScraper()
