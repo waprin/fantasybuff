@@ -101,7 +101,7 @@ section.about h2 {
     font-size: 25px;
     text-align: center;
     text-transform: uppercase;
-    color: #a5a5a5;
+    color: #4F4746;
     line-height: 1.1;
     margin-bottom: 14px;
     margin-top: 14px;
@@ -114,3 +114,33 @@ section.about h2 {
     width: 17%;
     margin: 0 auto;
 }
+
+footer {
+    background: #30353B;
+    padding: 15px 0 10px;
+
+}
+
+footer h1 {
+    color: white;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 300;
+}
+
+div.about-desc h3 {
+    color: #4F4746;
+    font-weight: 400;
+    text-align: center;
+}
+
+div.about-desc img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.about-desc h4 {
+    color: #4F4746;
+    font-weight: 400;
+    text-align: center;
