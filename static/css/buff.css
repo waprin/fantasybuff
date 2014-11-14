@@ -1,5 +1,5 @@
 html, body {
-    font-family: 'Quicksand';
+    font-family: 'Quicksand',Sans-serif;
     background-color: #f7fafd;
 }
 
@@ -18,7 +18,7 @@ html, body {
 .login-button {
     height: 37px;
     width: 100px;
-    background-color: #F27F45;
+    background-color: #2ba6cb;
     margin: 0 !important;
     padding: 0 !important;
     border: none;
@@ -73,6 +73,7 @@ html, body {
 .report-card > h2 {
     color: white;
     text-transform: uppercase;
+    font-family: 'Quicksand',Sans-serif;
 }
 
 section.report-card  button {
@@ -82,4 +83,27 @@ section.report-card  button {
     background: #2ba6cb;
     text-align: center;
     font-size: 30px;
+}
+
+section.about {
+    padding: 60px 0 60px 0;
+}
+
+section.about h2 {
+    font-weight: 500;
+    font-size: 25px;
+    text-align: center;
+    text-transform: uppercase;
+    color: #a5a5a5;
+    line-height: 1.1;
+margin-bottom: 14px;
+margin-top: 14px;
+    text-rendering: optimizeLegibility;
+}
+
+.line {
+background: #aaa;
+height: 1px;
+width: 17%;
+margin: 0 auto;
 }
