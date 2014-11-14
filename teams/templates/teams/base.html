@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>SB Admin - Bootstrap Admin Template</title>
+    <title>Fantasy Buff</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
@@ -17,8 +17,11 @@
     <!-- Custom CSS -->
     <link href="/static/css/sb-admin.css" rel="stylesheet">
 
+    <link href="/static/css/buff.css" rel="stylesheet">
+
     <!-- Custom Fonts -->
     <link href="/static/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
 
     {% block pagescripts %}
 
@@ -34,23 +37,14 @@
 </head>
 
 <body>
+ <div class="top-bar container">
+      <div class="row">
+        <div class="col-lg-4 logo">
+          <h3>Fantasy Buff</h3>
+        </div>
+{% if user.is_authenticated %}
 
-    <div id="wrapper">
-
-        <!-- Navigation -->
-        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="index.html">FF Buff</a>
-            </div>
-            <!-- Top Menu Items -->
-            <ul class="nav navbar-right top-nav">
+  <ul class="nav navbar-right top-nav">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> Log Out <b class="caret"></b></a>
                     <ul class="dropdown-menu">
@@ -60,43 +54,36 @@
                     </ul>
                 </li>
             </ul>
+{% else %}
 
-        </nav>
-
-        <div id="page-wrapper">
-              <!-- Page Heading -->
-                <div class="row">
-                    <div class="col-lg-12">
-                        <h1 class="page-header">
-                            {% block header %}
-                            {% endblock %}
-                        </h1>
-                        <ol class="breadcrumb">
-                            {% for nav in navigation %}
-                                <li>
-                                    <i class="fa fa-dashboard"></i>  <a href="{{ nav.href }}">{{ nav.value }}</a>
-                                </li>
-                            {% endfor %}
-                        </ol>
-                    </div>
-                </div>
-        {% block content %}
-
-
-            </div>
-            <!-- /.container-fluid -->
-            {% endblock %} <!-- endblock content-->
+        <div class="col-lg-8">
+           <form class="button_to" method="post" action="" role="form">
+            <input class="my-form-control" name="email" placeholder="Email" type="email"/>
+            <input class="my-form-control" name="password" placeholder="Password" type="password"/>
+            {% csrf_token %}
+            <input class="login-button" type="submit" value="Login">
+          </form>
+          <form class="button_to">
+            <input class="login-button" type="submit" value="Register">
+          </form>
         </div>
-        <!-- /#page-wrapper -->
-
+{% endif %}
+      </div>
     </div>
-    <!-- /#wrapper -->
-
-    {% block endscripts %}
-
-    {% endblock %}
 
 
+   <div id="wrapper">
+     <div id="page-wrapper">
+        {% block content %}
+        {% endblock %}
+     </div>
+   <!-- /#page-wrapper -->
+   </div>
+   <!-- /#wrapper -->
+
+   {% block endscripts %}
+
+   {% endblock %}
 </body>
 
 </html>

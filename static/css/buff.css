@@ -1,0 +1,49 @@
+html, body {
+    font-family: 'Quicksand';
+    background-color: #f7fafd;
+}
+
+.top-bar {
+    background: #24292d;
+    height: 37px;
+    margin-bottom: 0px;
+    color: white;
+}
+
+.logo h3 {
+    vertical-align: top;
+    margin-top:0px;
+}
+
+.login-button {
+    height: 37px;
+    width: 100px;
+    background-color: #F27F45;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none;
+    vertical-align: top;
+    color: white;
+    font-family: 'Quicksand';
+    font-weight: 700;
+    font-size: 16px;
+    display: inline-block !important;
+}
+
+.button_to {
+    display: inline;
+}
+
+.my-form-control {
+    width: 30% !important;
+    margin: 0 !important;
+    padding: 0 0 0 15px !important;
+    padding-left: 10px;
+    height: 37px !important;
+    vertical-align: top;
+    display: inline-block !important;
+    border-radius: 0 !important;
+    background-color: #1f2327 !important;
+    border: none !important;
+    color: white !important;
+}

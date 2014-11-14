@@ -25,8 +25,8 @@ requirejs.config({
             deps: ["jquery"],
             exports: "$.fn.popover"
         }
-    },
-    enforceDefine: true
+    }
+   /* enforceDefine: true*/
 });
 
 // Start loading the main app file. Put all of
