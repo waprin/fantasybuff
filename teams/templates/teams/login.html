@@ -6,10 +6,17 @@
 
 {% block content %}
 
-    <div class="container-fluid">
-    <div class="row">
+    <div class="row fill">
       <div class="col-lg-6">Hello</div>
-      <div class="col-lg-6">World</div>
+      <div class="col-lg-6 dark-col" >
+        <section class="report-card">
+          <img class="report-image" src="/static/img/reportcard.png" />
+          <h2>League Report Card</h2>
+          <form action="/league2/930248/2014/#reportcard/6">
+            <button>View Demo League</button>
+          </form>
+        </section>
+      </div>
     </div>
 
 <!--
@@ -64,6 +71,6 @@
 
           </form>-->
                 <!-- /.row -->
-    </div> <!--container-fluid-->
+
 {% endblock %}
 

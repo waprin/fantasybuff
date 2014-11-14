@@ -47,3 +47,39 @@ html, body {
     border: none !important;
     color: white !important;
 }
+
+.dark-col {
+    background: #1f2327;
+    height: 100%;
+}
+
+.fill {
+    height: 100%;
+}
+
+.report-card {
+    display: block;
+    margin-left: 50px;
+    margin-top: 50px;
+}
+
+.report-card > img {
+    height:auto;
+    width:auto;
+    max-width:300px;
+    max-height:300px;
+}
+
+.report-card > h2 {
+    color: white;
+    text-transform: uppercase;
+}
+
+section.report-card  button {
+    color: white;
+    height: 70px;
+    width: 280px;
+    background: #2ba6cb;
+    text-align: center;
+    font-size: 30px;
+}
