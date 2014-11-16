@@ -257,8 +257,10 @@ def show_draftscore_week(request, league_id, year, team_id, week):
 
     return HttpResponse(template.render(context))
 
-
-
+def register(request):
+    template = loader.get_template('teams/register.html')
+    context = RequestContext(request, {})
+    return HttpResponse(template.render(context))
 
 @login_required()
 def show_league(request, espn_id, year):
@@ -428,13 +430,16 @@ def espn_create(request):
     django_rq.enqueue(defer_espn_user_scrape, espn_user)
     return redirect(show_all_leagues)
 
-
-def backbone(request, espn_id, year):
+def backbone(request, espn_id, year, demo=False):
     league = League.objects.get(espn_id=espn_id, year=year)
     teams = Team.objects.filter(league=league)
     template = loader.get_template('teams/backbone.html')
     context = RequestContext(request, {
         'navigation': ['Leagues'],
-        'teams': teams
+        'teams': teams,
+        'demo': request.GET.get('demo', False),
     })
     return HttpResponse(template.render(context))
+
+def demo(request):
+    return redirect('/leagues/espn/930248/2014/?demo=True')

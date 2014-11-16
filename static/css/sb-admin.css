@@ -24,9 +24,8 @@ html {
 
 #wrapper {
     padding-left: 0;
-    max-width: 1000px;
     height: 100%;
-    margin: auto;
+    /*margin: auto;*/
 }
 
 #page-wrapper {
@@ -37,7 +36,7 @@ html {
 }
 
 .container {
-    max-width: 1000px;
+/*    max-width: 1000px;*/
 }
 
 .huge {
@@ -46,13 +45,13 @@ html {
 }
 
 @media(min-width:768px) {
-/*    #wrapper {
+    #wrapper {
         padding-left: 225px;
-    }*/
-
-    #page-wrapper {
-        padding: 10px;
     }
+
+ /*   #page-wrapper {
+        padding: 10px;
+    }*/
 }
 
 /* Top Navigation */

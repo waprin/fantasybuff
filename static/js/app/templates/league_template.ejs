@@ -1,5 +1,5 @@
     <% if (loaded) { %>
-       <a href="league2/<%=espn_id %>/<%=year %>/"><li><%=name %> <%=year %></li></a>
+       <a href="leagues/espn/<%=espn_id %>/<%=year %>/"><li><%=name %> <%=year %></li></a>
     <% } else if (failed) { %>
        <li class="failed">Failed: <%=name %> <%=year %></li>
     <% } else if (!loading) { %>

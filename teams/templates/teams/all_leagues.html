@@ -5,16 +5,18 @@
 {% endblock %}
 
 {% block content %}
+  <div id="page-wrapper">
     <div class="container-fluid">
     <!--<img  src="/static/ajax-loader.gif" id="league_loading_gif" />-->
-        <div class="row">
+        <div class="row leagues-panel">
             <h3>Your Leagues</h3>
           <div id="accounts_app">
             <div id="accounts_list"></div>
           </div>
         </div>
 
-        <div clas="row">
+
+   <div class="row espn-import">
             <h3>Import A New Espn League</h3>
             <div class="col-lg-6">
                 <form method="POST" action="espn/" role="form">
@@ -29,7 +31,11 @@
                 </form>
             </div>
         </div> <!--row-->
-    </div> <!--container-fluid-->
+    </div><!--container-fluid-->
+  </div>
+
+
+
 {% endblock %}
 
 {% block endscripts %}

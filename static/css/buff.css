@@ -3,15 +3,26 @@ html, body {
     background-color: #f7fafd;
 }
 
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
 .top-bar {
     background: #24292d;
-    height: 37px;
+    height: 51px;
     margin-bottom: 0px;
     color: white;
+    width: 100%;
+}
+
+.side-nav {
+    height: 100%;
 }
 
 .logo h3 {
-    vertical-align: top;
+/*    vertical-align: top;*/
     margin-top:0px;
 }
 
@@ -28,6 +39,7 @@ html, body {
     font-weight: 700;
     font-size: 16px;
     display: inline-block !important;
+    box-shadow: 2px 2px 2px #666;
 }
 
 .button_to {
@@ -80,10 +92,23 @@ section.report-card  button {
     color: white;
     height: 50px;
     width: 300px;
-    background: #2ba6cb;
+    background: hsl(193.9, 65%, 48.2%);
     font-size: 22px;
     margin-top: 20px;
 }
+
+div.about-desc  button {
+    color: white;
+    height: 50px;
+    width: 300px;
+    background: hsl(193.9, 65%, 28.2%);
+    font-size: 22px;
+    margin-top: 20px;
+    display:block;
+    margin-left:auto;
+    margin-right:auto;
+}
+
 
 section.report-card div.report-card-desc {
     font-size: 12px;
@@ -93,7 +118,12 @@ section.report-card div.report-card-desc {
 }
 
 section.about {
-    padding: 60px 0 60px 0;
+    padding: 60px;
+    background: white;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    font-size: 16px;
 }
 
 section.about h2 {
@@ -140,7 +170,26 @@ div.about-desc img {
     margin-right: auto;
 }
 
+.about-col {
+    padding: 0px;
+    height: 100%;
+}
+
 .about-desc h4 {
     color: #4F4746;
     font-weight: 400;
     text-align: center;
+}
+
+.leagues-panel {
+    padding-left: 15px;
+}
+
+.espn-import {
+    display: none;
+}
+
+.landing-wrapper {
+    max-width: 1000px;
+    padding-left: 0px !important;
+}

@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.conf.urls.static import static
+from django.shortcuts import redirect
 import settings
 
 # Uncomment the next two lines to enable the admin: 
@@ -18,26 +19,22 @@ urlpatterns = patterns('',
      url(r'^admin/', include(admin.site.urls)),
 
      url(r'^signin/$', 'teams.views.signin'),
-     url(r'^signin/signup/$', 'teams.views.signup'),
      url(r'^logout/$', 'teams.views.logout_user'),
 
      url(r'^$', 'teams.views.show_all_leagues'),
      url(r'^leagues/$', 'teams.views.get_all_leagues_json'),
      url(r'^espn/$', 'teams.views.espn_create'),
+     url(r'^register/$', 'teams.views.register'),
+     url(r'^register/signup/$', 'teams.views.signup'),
 
-     url(r'^league/(\d*)/(\d\d\d\d)/$', 'teams.views.show_league'),
-     url(r'^league/(\d*)/(\d\d\d\d)/(\d*)/$', 'teams.views.show_team'),
-     url(r'^league/(\d*)/(\d\d\d\d)/(\d*)/(\d*)$', 'teams.views.show_week'),
-     url(r'^league/(\d*)/(\d\d\d\d)/(\d*)/draft/(\d*)/', 'teams.views.show_draftscore_week'),
-     url(r'^league/(\d*)/(\d\d\d\d)/(\d*)/waiver/(\d*)/', 'teams.views.show_waiver_week'),
-     url(r'^league/(\d*)/(\d\d\d\d)/(\d*)/trade/(\d*)/', 'teams.views.show_trade_week'),
-     url(r'^league2/(\d*)/(\d\d\d\d)/$', 'teams.views.backbone'),
-     url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/$', 'teams.views.get_team_report_card_json'),
-     url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/lineup/(\d*)', 'teams.views.show_week'),
-     url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/draft/(\d*)', 'teams.views.show_draftscore_week'),
-     url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/waiver/(\d*)', 'teams.views.show_waiver_week'),
-     url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/trade/(\d*)', 'teams.views.show_trade_week'),
-     url(r'^league2/(\d*)/(\d\d\d\d)/(\d*)/draft/$', 'teams.views.get_'
+     url(r'^leagues/espn/(\d*)/(\d\d\d\d)/$', 'teams.views.backbone'),
+     url(r'^demo/$', 'teams.views.demo'),
+     url(r'^leagues/espn/(\d*)/(\d\d\d\d)/(\d*)/$', 'teams.views.get_team_report_card_json'),
+     url(r'^leagues/espn/(\d*)/(\d\d\d\d)/(\d*)/lineup/(\d*)', 'teams.views.show_week'),
+     url(r'^leagues/espn/(\d*)/(\d\d\d\d)/(\d*)/draft/(\d*)', 'teams.views.show_draftscore_week'),
+     url(r'^leagues/espn/(\d*)/(\d\d\d\d)/(\d*)/waiver/(\d*)', 'teams.views.show_waiver_week'),
+     url(r'^leagues/espn/(\d*)/(\d\d\d\d)/(\d*)/trade/(\d*)', 'teams.views.show_trade_week'),
+     url(r'^leagues/espn/(\d*)/(\d\d\d\d)/(\d*)/draft/$', 'teams.views.get_'
                                                      'team_draft'),
      url(r'', include('social_auth.urls')),
 

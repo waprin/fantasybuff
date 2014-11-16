@@ -5,20 +5,22 @@
 {% endblock %}
 
 {% block content %}
-
+  <div id="wrapper" class="landing-wrapper">
     <div class="row fill">
-      <div class="col-lg-6">
+      <div class="col-lg-6 about-col">
         <section class="about">
-          <h2>About</h2>
-          <div class="line"></div>
-
           <div class="about-desc">
-            FantasyBuff gives you in-depth analysis into the performance of your fantasy football teams and leagues. Our league analysis tool provide answers to questions like:
+            <h2>About</h2>
+            <div class="line"></div>
+            <br/>
+            FantasyBuff gives you in-depth analysis into the performance of your fantasy football teams and leagues.
             <ul>
-              <li>Who sets the best lineups, and who leaves the most points on the bench?</li>
-              <li>How has each trade impacted each player through the rest of the season?</li>
-              <li>Who ges the most value off of the waiver wire?</li>
+              <li>Lineup Setting Ranking</li>
+              <li>Trade Evaluations</li>
+              <li>Waiver Score</li>
+              <li>And More</li>
             </ul>
+          Feedback? Ideas? fantasybuffapp@gmail.com.
           </div>
           <div class="line"></div>
           <div class="about-desc">
@@ -36,6 +38,9 @@
 
               <div class="col-lg-3"></div>
             </div>
+          <form action="/register">
+            <button>Join Now!</button>
+          </form>
           </div>
 
       </section>
@@ -47,12 +52,13 @@
           <div class="report-card-desc">
             Discover in-depth metrics on your fantasy lineups, trades, and drafts with our league analysis tool.
           </div>
-          <form action="/league2/930248/2014/#reportcard/6">
+          <form action="/demo">
             <button>View Demo League</button>
           </form>
         </section>
       </div>
     </div>
+  </div>
 
 <!--
       <div class="row">
@@ -92,20 +98,7 @@
           </div>
       </div>
       -->
-  <!--
-          <form method="POST" role="form" action="signup/">
-              <div class="form-group">
-                  {% csrf_token %}
-                  <label>Email</label>
-                  <input name="email" class="form-control">
-                  <label>Password</label>
-                  <input name="password" type="password" class="form-control">
-              </div>
 
-              <button type="submit" class="btn btn-default">Create New Account</button>
-
-          </form>-->
-                <!-- /.row -->
 
 {% endblock %}
 

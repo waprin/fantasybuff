@@ -54,8 +54,30 @@
                     </ul>
                 </li>
             </ul>
+    <div class="collapse navbar-collapse navbar-ex1-collapse">
+      <ul class="nav navbar-nav side-nav">
+        <li class="active">
+          <a href="/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+        </li>
+      </ul>
+    </div>
+{% elif demo %}
+  <div class="col-lg-8">
+           <form class="button_to" method="post" action="/signin/" role="form">
+            <input class="my-form-control" name="email" placeholder="Email" type="email"/>
+            <input class="my-form-control" name="password" placeholder="Password" type="password"/>
+            {% csrf_token %}
+            <input class="login-button" type="submit" value="Login">
+          </form>
+      <div class="collapse navbar-collapse navbar-ex1-collapse">
+      <ul class="nav navbar-nav side-nav">
+        <li class="active">
+          <a href="/"><i class="fa fa-fw fa-dashboard"></i> Leave Demo</a>
+        </li>
+      </ul>
+    </div>
+  </div>
 {% else %}
-
         <div class="col-lg-8">
            <form class="button_to" method="post" action="" role="form">
             <input class="my-form-control" name="email" placeholder="Email" type="email"/>
@@ -73,11 +95,8 @@
 
 
    <div id="wrapper">
-     <div id="page-wrapper">
         {% block content %}
         {% endblock %}
-     </div>
-   <!-- /#page-wrapper -->
    </div>
    <!-- /#wrapper -->
 
