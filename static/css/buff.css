@@ -17,6 +17,10 @@ html {
     width: 100%;
 }
 
+button {
+    box-shadow: 1px 1px 1px #666;
+}
+
 .side-nav {
     height: 100%;
 }
@@ -39,7 +43,7 @@ html {
     font-weight: 700;
     font-size: 16px;
     display: inline-block !important;
-    box-shadow: 2px 2px 2px #666;
+
 }
 
 .button_to {
@@ -92,7 +96,8 @@ section.report-card  button {
     color: white;
     height: 50px;
     width: 300px;
-    background: hsl(193.9, 65%, 48.2%);
+    background: hsl(193.9, 65%, 28.2%);
+    /*background: hsl(193.9, 65%, 48.2%);*/
     font-size: 22px;
     margin-top: 20px;
 }
