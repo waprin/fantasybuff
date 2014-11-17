@@ -3,10 +3,6 @@
     min-height: 700px;
 }
 
-#main {
-    height: 100%;
-}
-
 .container {
     max-width: 1000px;
     margin: auto;

@@ -11,16 +11,20 @@
 {% block content %}
     <div class="row landing-row">
       <div class="col-lg-6 about-col landing-col">
+
         <section class="about">
           <div class="about-desc">
+        <form action="/register">
+          <button id="join_now">Join Now!</button>
+        </form>
             <h2>About</h2>
             <div class="line"></div>
             <br/>
             FantasyBuff gives you in-depth analysis into the performance of your fantasy football teams and leagues.
             <ul>
-              <li>Lineup Setting Ranking</li>
+              <li>Lineup Setting Rankings</li>
               <li>Trade Evaluations</li>
-              <li>Waiver Score</li>
+              <li>Points-Off-Waiver Rankings</li>
               <li>And More</li>
             </ul>
           Feedback? Ideas? fantasybuffapp@gmail.com.
@@ -29,21 +33,19 @@
           <div class="about-desc">
             <h3>Import Your Teams From</h3>
             <div class="row">
-              <div class="col-lg-3"></div>
-              <div class="col-lg-3">
+              <div class="col-sm-3"></div>
+              <div class="col-sm-3">
                 <img  src="/static/img/espn_logo.png" width="85" height="69"/>
                 <h4>ESPN</h4>
               </div>
-              <div class="col-lg-3">
-                <img src="/static/img/yahoo_fantasy.png" width="107" height="34"/>
+              <div class="col-sm-3">
+                <img src="/static/img/yahoo_fantasy.png" width="85" height="34"/>
                 <h4>Yahoo <br /> (Coming Soon!)</h4>
               </div>
 
-              <div class="col-lg-3"></div>
+              <div class="col-sm-3"></div>
             </div>
-            <form action="/register">
-              <button>Join Now!</button>
-            </form>
+
           </div>
 
 

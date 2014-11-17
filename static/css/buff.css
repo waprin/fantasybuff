@@ -4,11 +4,12 @@ html, body {
     height: 100%;
     margin: 0px;
     padding: 0px;
+    overflow-x: hidden;
 }
 
 body > .container {
     margin-top: 51px;
-/*    min-height: 1000px;*/
+    min-height: 700px;
     height: 100%;
 }
 
@@ -30,6 +31,11 @@ html {  box-sizing: border-box;
     color: white;
     width: 100%;
     height: 51px;
+}
+
+#top-bar {
+    position: fixed;
+    z-index: 99999;
 }
 /*
 .login-nav {
@@ -86,14 +92,15 @@ button {
 }
 
 #join_now {
-    height: 35px;
+    height: 60px;
     width: 300px;
     background: hsl(193.9, 85%, 28.2%);
-    margin: 5px 0 0 0;
+    margin: auto;
     border: 1px solid #111222;
     color: white;
     font-weight: 700;
-    font-size: 16px;
+    font-size: 32px;
+    text-shadow: 2px 2px #000000;
     text-align: center;
 }
 
@@ -188,7 +195,7 @@ section.about h2 {
     color: #4F4746;
     line-height: 1.1;
     margin-bottom: 14px;
-    margin-top: 14px;
+    margin-top: 20px;
     text-rendering: optimizeLegibility;
 }
 
@@ -253,7 +260,8 @@ div.about-desc img {
 
 .about-desc h4 {
     color: #4F4746;
-    font-weight: 400;
+    font-weight: bold;
+    font-size: 16px;
     text-align: center;
 }
 
@@ -276,7 +284,9 @@ div.about-desc img {
 }
 
 #main {
-    height: 100%;
+    min-height: 100%;
+    overflow-x: auto;
+    margin-top: 51px;
 }
 
 .login-container {

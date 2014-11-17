@@ -40,7 +40,7 @@
 
 
 
-  <nav class="nav top-row top-bar">
+  <nav id="top-bar" class="nav top-row">
     <div class="navbar-header">
       <div class="logo">
         <a href="/">Fantasy Buff</a>
@@ -65,9 +65,9 @@
             {% csrf_token %}
             <input class="login-button" type="submit" value="Login">
     </form>
-    <ul class="nav navbar-nav navbar-left">
+    <!--<ul class="nav navbar-nav navbar-left">
         <li><button  onclick="window.location='/register/';" id="join_now">Join Now</button></li>
-    </ul>
+    </ul>-->
 {% endif %}
 
   </nav>
