@@ -4,10 +4,13 @@
 {% block header %}
 {% endblock %}
 
+{% block pagescripts %}
+  <link href="/static/css/landing.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-  <div id="wrapper" class="landing-wrapper">
-    <div class="row fill">
-      <div class="col-lg-6 about-col">
+    <div class="row landing-row">
+      <div class="col-lg-6 about-col landing-col">
         <section class="about">
           <div class="about-desc">
             <h2>About</h2>
@@ -46,12 +49,12 @@
 
       </section>
       </div>
-      <div class="col-lg-6 dark-col" >
+      <div class="col-lg-6 dark-col landing-col" >
         <section class="report-card">
           <img class="report-image" src="/static/img/reportcard.png" />
           <h2>League Report Card</h2>
           <div class="report-card-desc">
-            Discover in-depth metrics on your fantasy lineups, trades, and drafts with our league analysis tool.
+            Discover ihn-depth metrics on your fantasy lineups, trades, and drafts with our league analysis tool.
           </div>
           <form action="/demo">
             <button>View Demo League</button>
@@ -59,7 +62,6 @@
         </section>
       </div>
     </div>
-  </div>
 
 <!--
       <div class="row">

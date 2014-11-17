@@ -37,23 +37,43 @@
 </head>
 
 <body>
- <div class="top-bar container">
-      <div class="row">
-        <div class="col-lg-4 logo">
-          <h3><a href="/">Fantasy Buff</a></h3>
-        </div>
-{% if user.is_authenticated %}
 
-  <ul class="nav navbar-right top-nav">
+
+
+  <nav class="nav top-row top-bar">
+    <div class="navbar-header">
+      <div class="logo">
+        <a href="/">Fantasy Buff</a>
+      </div>
+    </div>
+{% if user.is_authenticated %}
+          <ul class="navbar-right logoutbar">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> Log Out <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li>
                             <a href="/logout/"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
                         </li>
+
                     </ul>
                 </li>
             </ul>
+{% else %}
+    <form class="nav navbar-right navbar-form" method="post" action="/signin/" role="form">
+            <input class="my-form-control" name="email" placeholder="Email" type="email"/>
+            <input class="my-form-control" name="password" placeholder="Password" type="password"/>
+            {% csrf_token %}
+            <input class="login-button" type="submit" value="Login">
+    </form>
+    <ul class="nav navbar-nav navbar-left">
+        <li class="join-button"><a  href="#">Join Now</a></li>
+    </ul>
+{% endif %}
+
+  </nav>
+
+{% if user.is_authenticated %}
+</div>
     <div class="collapse navbar-collapse navbar-ex1-collapse">
       <ul class="nav navbar-nav side-nav">
         <li class="active">
@@ -62,14 +82,9 @@
       </ul>
     </div>
 {% elif demo %}
-  <div class="col-lg-8">
-           <form class="button_to" method="post" action="/signin/" role="form">
-            <input class="my-form-control" name="email" placeholder="Email" type="email"/>
-            <input class="my-form-control" name="password" placeholder="Password" type="password"/>
-            {% csrf_token %}
-            <input class="login-button" type="submit" value="Login">
-          </form>
-      <div class="collapse navbar-collapse navbar-ex1-collapse">
+  <div class="col-lg-10">
+
+    <div class="collapse navbar-collapse navbar-ex1-collapse">
       <ul class="nav navbar-nav side-nav">
         <li class="active">
           <a href="/"><i class="fa fa-fw fa-dashboard"></i> Leave Demo</a>
@@ -77,35 +92,25 @@
       </ul>
     </div>
   </div>
-{% else %}
-        <div class="col-lg-8">
-           <form class="button_to" method="post" action="" role="form">
-            <input class="my-form-control" name="email" placeholder="Email" type="email"/>
-            <input class="my-form-control" name="password" placeholder="Password" type="password"/>
-            {% csrf_token %}
-            <input class="login-button" type="submit" value="Login">
-          </form>
-          <form class="button_to">
-            <input class="login-button" type="submit" value="Register">
-          </form>
-        </div>
 {% endif %}
-      </div>
-    </div>
 
 
-   <div id="wrapper">
+
+  <div id="wrapper">
+  <div id="main" class="container">
         {% block content %}
         {% endblock %}
-   </div>
-   <!-- /#wrapper -->
 
+   </div>
+ </div>
+     <!-- /#wrapper -->
    {% block endscripts %}
 
    {% endblock %}
-<footer>
-  <h1>Copyright FantasyBuff ©2014</h1>
-</footer>
+
+ <footer>
+   Copyright FantasyBuff ©2014
+ </footer>
 </body>
 
 </html>
