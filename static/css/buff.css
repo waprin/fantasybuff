@@ -37,11 +37,6 @@ html {  box-sizing: border-box;
     position: fixed;
     z-index: 99999;
 }
-/*
-.login-nav {
-    height: 100%;
-}*/
-
 
 button {
     box-shadow: 1px 1px 1px #666;

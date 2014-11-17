@@ -1,0 +1,51 @@
+.register-container {
+    max-width: 500px;
+    margin: auto;
+    background-color: white;
+    min-height: 700px;
+    padding: 20px;
+    text-align: center;
+}
+
+#wrapper {
+    padding-left: 0px;
+    min-height: 700px;
+    background-color: #f7fafd;
+}
+
+
+.form-control {
+    display: block;
+    width: 350px;
+    height: 50px;
+    margin: 10px auto auto auto;
+    padding-left: 10px;
+}
+
+.btn {
+    margin-left: 20px;
+    margin-bottom: 40px;
+}
+
+.espn_entry {
+    background-color: #0DB04A;
+    border: 1px solid #333333;
+    padding: 5px;
+    margin: auto;
+}
+
+.espn_entry input {
+    border: 1px solid #333333;
+}
+
+.line {
+    background: #aaa;
+    height: 1px;
+    width: 17%;
+    margin: 10px auto;
+}
+
+input[type=checkbox] {
+    font-weight: bold;
+}
+

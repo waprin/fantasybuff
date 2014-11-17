@@ -258,6 +258,7 @@ def show_draftscore_week(request, league_id, year, team_id, week):
     return HttpResponse(template.render(context))
 
 def register(request):
+    logger.info("loading register template")
     template = loader.get_template('teams/register.html')
     context = RequestContext(request, {})
     return HttpResponse(template.render(context))
