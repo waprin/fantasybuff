@@ -60,6 +60,9 @@
             </ul>
 {% else %}
     <form class="nav navbar-right navbar-form" method="post" action="/signin/" role="form">
+    {% if login_error %}
+            <span class="error">Invalid Email Or Password</span>
+      {% endif %}
             <input class="my-form-control" name="email" placeholder="Email" type="email"/>
             <input class="my-form-control" name="password" placeholder="Password" type="password"/>
             {% csrf_token %}

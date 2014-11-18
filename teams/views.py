@@ -34,9 +34,18 @@ def signin(request):
             # Redirect to a success page.
         else:
             logger.error("disabled account")
-            # Return a 'disabled account' error message
+            template = loader.get_template('teams/login.html')
+            context = RequestContext(request, {
+                'login_error': True
+            })
+            return HttpResponse(template.render(context))
     else:
         logger.error("invalid login")
+        template = loader.get_template('teams/login.html')
+        context = RequestContext(request, {
+            'login_error': True
+        })
+        return HttpResponse(template.render(context))
         # Return an 'invalid login' error message.
 
 def signup(request):
