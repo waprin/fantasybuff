@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.contrib.auth.decorators import login_required
-from django.core.serializers import serialize
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib import messages
 import logging
 from django.shortcuts import redirect
 from league import settings
@@ -50,10 +50,21 @@ def signin(request):
 
 def signup(request):
     if not settings.ALLOW_SIGNUPS:
-        logger.warn("Sigunp requested but rejected.");
+        logger.warn("Sigunp requested but rejected.")
         return HttpResponse("Sorry! Currently not accepting new signups.")
-    password = request.POST['password']
-    email = request.POST['email']
+    password = request.POST.get('password')
+    email = request.POST.get('email')
+    espn_username = request.POST.get('espn_username')
+    espn_password = request.POST.get('espn_password')
+
+    if not password or not email or not espn_username or not espn_password:
+        messages.add_message(request, messages.INFO, 'Missing Required Fields')
+        return HttpResponseRedirect("/register/")
+
+    if User.objects.filter(email=email).count() > 0:
+        messages.add_message(request, messages.INFO, 'Email Already Registered')
+        return HttpResponseRedirect("/register/")
+
 
     User.objects.create_user(email, email, password)
     user = authenticate(username=email, password=password)
@@ -64,10 +75,19 @@ def signup(request):
             # Redirect to a success page.
         else:
             logger.error("disabled account")
-            # Return a 'disabled account' error message
+            template = loader.get_template('teams/register.html')
+            context = RequestContext(request, {
+            'registration_error': True
+            })
+            return HttpResponse(template.render(context))
     else:
         logger.error("invalid login")
-        # Return an 'invalid login' error message.
+        template = loader.get_template('teams/register.html')
+        context = RequestContext(request, {
+            'registration_error': True
+        })
+        return HttpResponse(template.render(context))
+
 
 def logout_user(request):
     logout(request)
@@ -269,7 +289,7 @@ def show_draftscore_week(request, league_id, year, team_id, week):
 def register(request):
     logger.info("loading register template")
     template = loader.get_template('teams/register.html')
-    context = RequestContext(request, {})
+    context = RequestContext(request)
     return HttpResponse(template.render(context))
 
 @login_required()

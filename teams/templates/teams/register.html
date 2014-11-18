@@ -12,6 +12,21 @@
 
 <div class="register-container">
   <form method="POST" role="form" action="signup/">
+    {% if validation_error %}
+    <span class="error">Missing Required Fields</span>
+    {% endif %}
+    {% if user_exists %}
+    <span class="error">Email Is Already Registered</span>
+    {% endif %}
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <span class="error">{{ message }}</span>
+    {% endfor %}
+</ul>
+{% endif %}
+
+
     <fieldset class="form-group">
       <h2>Fantasy Buff Registration</h2>
       {% csrf_token %}
@@ -23,8 +38,8 @@
         <img  src="/static/img/espn_logo.png" width="85" height="69"/>
         <input name="espn_username" class="form-control" placeholder="ESPN Username">
         <input name="espn_password" type="password" class="form-control" placeholder="ESPN Password">
-        <input type="checkbox"/h>
-        <p>Save My ESPN Password For Automatic Updates</p>x
+        <input type="checkbox" name="save_password" />
+        <p>Save My ESPN Password For Automatic Updates</p>
       </div>
       <br>
     </fieldset>
