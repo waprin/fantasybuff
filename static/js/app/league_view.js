@@ -40,7 +40,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
 
             title = svg.append("g")
                 /*.style("text-anchor", "begin")*/
-                .attr("transform", "translate(-85," + height / 2 + ")");
+                .attr("transform", "translate(-87," + height / 2 + ")");
 
         title.append("text")
             .attr("class", "title")
