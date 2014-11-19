@@ -179,7 +179,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                     if (fieldName === 'trade_scores') {
                         return [this.get('trade_min'), this.get('trade_max')];
                     }
-                    if (fieldName === 'scorecards') {
+                    if (fieldName === 'lineups') {
                         return [0, 50];
                     }
                     throw "Can't find fieldName " + fieldName;
@@ -193,7 +193,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                     scorecards.sort(function (a, b) {
                         return a.week - b.week;
                     });
-                    if (name === 'scorecards') {
+                    if (name === 'lineups') {
                         console.log("cleaning up lineups");
                         _.each(scorecards, function (scorecard) {
                             scorecard.value = scorecard.delta;
@@ -337,8 +337,8 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             lineupView = new LineChartView({
                 model: roguesReportCard,
                 el: $('#lineup_vis_container'),
-                fieldName: 'scorecards',
-                updateEvent: "change:scorecards",
+                fieldName: 'lineups',
+                updateEvent: "change:lineups",
                 range: [0, 50]
             }),
             draftView = new LineChartView({

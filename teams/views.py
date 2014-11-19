@@ -392,7 +392,7 @@ def get_team_report_card_json(request, league_id, year, team_id):
     scorecard_struct = json.loads(scorecard_data)
 #    draft_struct = json.loads(draft_data)
 
-    reportcard_struct[0]['scorecards'] = scorecard_struct
+    reportcard_struct[0]['lineups'] = scorecard_struct
     reportcard_struct[0]['team_id'] = team.espn_id
     reportcard_struct[0]['draft_scores'] = draft_scores
     reportcard_struct[0]['waiver_scores'] = waiver_scores
