@@ -5,12 +5,23 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
     /*globals d3,console*/
 
 
+    var WIDTH = 800,
+        HEIGHT = 50,
+        MARGINS = {
+            top: 20,
+            right: 20,
+            bottom: 20,
+            left: 70
+        };
+
+
     function BulletChart(data) {
         console.log('creating bullet chart', data);
         console.log(data);
-        var margin = {top: 15, right: 40, bottom: 20, left: 120},
-            width = 960 - margin.left - margin.right,
-            height = 50 - margin.top - margin.bottom,
+        var margin = MARGINS;
+        margin.left = margin.left + 20;
+        var width = WIDTH - margin.left - margin.right,
+            height = HEIGHT - margin.top - margin.bottom,
 
             chart = d3.bullet()
                 .width(width)
@@ -28,8 +39,8 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                 .call(chart),
 
             title = svg.append("g")
-                .style("text-anchor", "end")
-                .attr("transform", "translate(-6," + height / 2 + ")");
+                /*.style("text-anchor", "begin")*/
+                .attr("transform", "translate(-85," + height / 2 + ")");
 
         title.append("text")
             .attr("class", "title")
@@ -48,15 +59,6 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             svg.data(data).call(chart); // TODO automatic transition
         };
     }
-
-    var WIDTH = 900,
-        HEIGHT = 200,
-        MARGINS = {
-            top: 20,
-            right: 20,
-            bottom: 20,
-            left: 50
-        };
 
     function buildLineCharts(element, numWeeks, range) {
         var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, numWeeks]),

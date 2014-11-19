@@ -422,9 +422,6 @@ def get_team_report_card_json(request, league_id, year, team_id):
 
     reportcard_struct[0]['average_lineup_score'] = 10
 
-
-
-
     data = json.dumps(reportcard_struct[0], use_decimal=True)
     return HttpResponse(data, content_type="application/json")
 
@@ -441,7 +438,10 @@ def get_team_draft(request, league_id, year, team_id):
 @login_required
 def show_all_leagues(request):
     template = loader.get_template('teams/all_leagues.html')
-    espn_user = EspnUser.objects.filter(user=request.user)[0]
+
+    espn_users = EspnUser.objects.filter(user=request.user)
+    if len(espn_users) > 0:
+        espn_user = espn_users[0]
 
     context = RequestContext(request, {
         'navigation': ['Leagues'],

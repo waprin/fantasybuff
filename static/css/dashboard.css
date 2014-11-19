@@ -8,7 +8,7 @@
 .bullet .measure.s1 { fill: steelblue; }
 .bullet .title { font-size: 14px; font-weight: bold; }
 .bullet .subtitle { fill: #999; }
-
+.bullet {z-index: 20}
 
 .domain {
   fill: none;
@@ -17,9 +17,25 @@
 }
 
 #reportcard_vis_container {
-  margin: 10px;
+  margin: 0px;
 }
 
 #main {
     margin-left: 20px;
+}
+
+.bullet g {
+    margin-left: 0;
+    z-index: 100000;
+}
+
+svg {
+    /*-webkit-transform-origin-x: 0%;
+    -webkit-transform-origin-y: 50%;
+    -webkit-transform-origin-z: initial;*/
+    display: block;
+}
+
+svg g {
+    display: block;
 }
