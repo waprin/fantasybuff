@@ -6,7 +6,13 @@ import django
 
 PROJECT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 
-DEBUG = True
+try:
+    os.environ['FBUFF_DEBUG']
+    DEBUG = True
+except KeyError:
+    DEBUG = False
+
+
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -155,6 +161,9 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
 )
+
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
 
 INSTALLED_APPS = (
     'django.contrib.auth',
