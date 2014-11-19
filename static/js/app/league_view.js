@@ -60,9 +60,18 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
         };
     }
 
+    var LINE_WIDTH = 900,
+        LINE_HEIGHT = 200,
+        LINE_MARGINS = {
+            top: 20,
+            right: 20,
+            bottom: 20,
+            left: 50
+        };
+
     function buildLineCharts(element, numWeeks, range) {
-        var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, numWeeks]),
-            yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([range[0], range[1]]),
+        var xRange = d3.scale.linear().range([LINE_MARGINS.left, LINE_WIDTH - LINE_MARGINS.right]).domain([1, numWeeks]),
+            yRange = d3.scale.linear().range([LINE_HEIGHT - LINE_MARGINS.top, LINE_MARGINS.bottom]).domain([range[0], range[1]]),
             vis = d3.select(element).select('svg'),
             formatxAxis = d3.format('.0f'),
             xAxis,
@@ -89,20 +98,20 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
 
         vis.append('svg:g')
             .attr('class', 'x axis')
-            .attr('transform', 'translate(0,' + (HEIGHT - MARGINS.bottom) + ')')
+            .attr('transform', 'translate(0,' + (LINE_HEIGHT - LINE_MARGINS.bottom) + ')')
             .call(xAxis);
 
         vis.append('svg:g')
             .attr('class', 'y axis')
-            .attr('transform', 'translate(' + (MARGINS.left) + ',0)')
+            .attr('transform', 'translate(' + (LINE_MARGINS.left) + ',0)')
             .call(yAxis);
     }
 
     function updateLineCharts(element, lineData, range) {
         console.log('updating line data', lineData);
         console.log(lineData.size);
-        var xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, lineData.length]),
-            yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([range[0], range[1]]),
+        var xRange = d3.scale.linear().range([LINE_MARGINS.left, LINE_WIDTH - LINE_MARGINS.right]).domain([1, lineData.length]),
+            yRange = d3.scale.linear().range([LINE_HEIGHT - LINE_MARGINS.top, LINE_MARGINS.bottom]).domain([range[0], range[1]]),
             lineFunc = d3.svg.line()
                 .x(function (d) {
                     return xRange(d.week);
