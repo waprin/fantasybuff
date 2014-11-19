@@ -475,10 +475,20 @@ def backbone(request, espn_id, year, demo=False):
     league = League.objects.get(espn_id=espn_id, year=year)
     teams = Team.objects.filter(league=league)
     template = loader.get_template('teams/backbone.html')
+    espn_user = EspnUser.objects.filter(user=request.user)[0]
+
+    current_team = None
+    for team in teams:
+        if team.espn_user == espn_user:
+            current_team = team
+
     context = RequestContext(request, {
         'navigation': ['Leagues'],
         'teams': teams,
         'demo': request.GET.get('demo', False),
+        'league': league,
+        'espn_user': espn_user,
+        'current_team': current_team
     })
     return HttpResponse(template.render(context))
 
