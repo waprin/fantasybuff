@@ -475,7 +475,16 @@ def backbone(request, espn_id, year, demo=False):
     league = League.objects.get(espn_id=espn_id, year=year)
     teams = Team.objects.filter(league=league)
     template = loader.get_template('teams/backbone.html')
-    espn_user = EspnUser.objects.filter(user=request.user)[0]
+    demo = request.GET.get('demo', False)
+    logger.info("demo is: %s" % str(demo))
+    if demo:
+        logger.info('using default user for demo')
+        user = User.objects.get(username='waprin@gmail.com')
+    else:
+        user = request.user
+
+    logger.info("getting espn user for user %s" % str(user))
+    espn_user = EspnUser.objects.filter(user=user)[0]
 
     current_team = None
     for team in teams:
