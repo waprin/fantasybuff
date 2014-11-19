@@ -54,15 +54,21 @@ def defer_espn_user_scrape(espn_user):
         else:
             queue = django_rq.get_queue('low')
         queue.enqueue(defer_league_scrape, espn_user, team.league)
-
+    espn_user.loaded = True
+    espn_user.save()
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        espn_id = args[0]
+        year = args[1]
+
+        if not espn_id or not year:
+            logger.error("must specify espn id and year")
+            return
+        league = League.objects.get(year=year, espn_id=espn_id)
         espn_user = EspnUser.objects.all()[0]
-        leagues = League.objects.filter(year='2014', espn_id='930248')
-        for league in leagues:
-            defer_league_scrape(espn_user, league)
+        defer_league_scrape(espn_user, league)
 
 
 

@@ -7,6 +7,11 @@
 {% block content %}
   <div id="page-wrapper">
     <div class="container-fluid">
+
+      <div class="user_panel">
+        <h3>Your Users</h3>
+        {{ espn_user.username }} {{ espn_user.loaded }} {{ espn_user.failed }}
+      </div>
     <!--<img  src="/static/ajax-loader.gif" id="league_loading_gif" />-->
         <div class="row leagues-panel">
             <h3>Your Leagues</h3>

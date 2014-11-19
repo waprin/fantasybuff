@@ -12,6 +12,8 @@ class EspnUser(models.Model):
     user = models.ForeignKey(User)
     username = models.CharField(max_length=200, unique=True)
     password = models.CharField(max_length=200)
+    loaded = models.BooleanField(default=False)
+    failed = models.BooleanField(default=False)
 
 class League(models.Model):
     name = models.CharField(max_length=200)
@@ -47,7 +49,7 @@ class Team(models.Model):
     team_name = models.CharField(max_length=100, null=True)
     abbreviation = models.CharField(max_length=10, null=True)
     owner_name = models.CharField(max_length=100, null=True)
-    average_delta = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    average_delta = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
     class Meta:
         unique_together = ('league', 'espn_id',)
@@ -120,10 +122,10 @@ class Team(models.Model):
 
 class TeamReportCard(models.Model):
     team = models.OneToOneField(Team)
-    average_lineup_score = models.DecimalField(decimal_places=4, max_digits=7, null=True)
-    average_draft_score = models.DecimalField(decimal_places=4, max_digits=7)
-    average_waiver_score = models.DecimalField(decimal_places=4, max_digits=7)
-    average_trade_score = models.DecimalField(decimal_places=4, max_digits=7)
+    average_lineup_score = models.DecimalField(decimal_places=4, max_digits=10, null=True)
+    average_draft_score = models.DecimalField(decimal_places=4, max_digits=10)
+    average_waiver_score = models.DecimalField(decimal_places=4, max_digits=10)
+    average_trade_score = models.DecimalField(decimal_places=4, max_digits=10)
 
     @staticmethod
     def get_max(league, field):
@@ -142,10 +144,10 @@ class TeamReportCard(models.Model):
 class TeamWeekScores(models.Model):
     team = models.ForeignKey(Team, null=True)
     league = models.ForeignKey(League, null=True)
-    draft_score = models.DecimalField(decimal_places=4, max_digits=7)
-    waiver_score = models.DecimalField(decimal_places=4, max_digits=7)
-    trade_score = models.DecimalField(decimal_places=4, max_digits=7)
-    lineup_score = models.DecimalField(decimal_places=4, max_digits=7, null=True)
+    draft_score = models.DecimalField(decimal_places=4, max_digits=10)
+    waiver_score = models.DecimalField(decimal_places=4, max_digits=10)
+    trade_score = models.DecimalField(decimal_places=4, max_digits=10)
+    lineup_score = models.DecimalField(decimal_places=4, max_digits=10, null=True)
     week = models.IntegerField()
 
     @staticmethod
@@ -159,10 +161,10 @@ class TeamWeekScores(models.Model):
 class LeagueWeekScores(models.Model):
     league = models.ForeignKey(League)
     week = models.IntegerField()
-    lineup_average = models.DecimalField(decimal_places=4, max_digits=7, null=True)
-    trade_average = models.DecimalField(decimal_places=4, max_digits=7)
-    draft_average = models.DecimalField(decimal_places=4, max_digits=7)
-    waiver_average = models.DecimalField(decimal_places=4, max_digits=7)
+    lineup_average = models.DecimalField(decimal_places=4, max_digits=10, null=True)
+    trade_average = models.DecimalField(decimal_places=4, max_digits=10)
+    draft_average = models.DecimalField(decimal_places=4, max_digits=10)
+    waiver_average = models.DecimalField(decimal_places=4, max_digits=10)
 
 class Player(models.Model):
     POSITIONS = (
@@ -184,8 +186,8 @@ class Scorecard(models.Model):
     team = models.ForeignKey(Team)
     week = models.IntegerField()
     actual = models.BooleanField(default=False)
-    points = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    delta = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    points = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    delta = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
     class Meta:
         unique_together = ('team', 'week', 'actual')
@@ -193,7 +195,7 @@ class Scorecard(models.Model):
 """
 class LeagueReportCard(models.Model):
     league = models.ForeignKey(League)
-    average_delta = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    average_delta = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
 class LeagueAverageWeek(models.Model):
 """
@@ -223,7 +225,7 @@ class ScorecardEntry(models.Model):
     scorecard = models.ForeignKey(Scorecard)
     player = models.ForeignKey(Player)
     slot = models.CharField(max_length=20, choices=SLOT_TYPES)
-    points = models.DecimalField(decimal_places=4, max_digits=7)
+    points = models.DecimalField(decimal_places=4, max_digits=10)
     added = models.NullBooleanField()
 
     @staticmethod
@@ -278,68 +280,68 @@ class PlayerScoreStats(models.Model):
     int_td = models.IntegerField(null=True)
     fr_td = models.IntegerField(null=True)
 
-    pat_made = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    fg_missed = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    fg_0 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    fg_40 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    fg_50 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    pat_made = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    fg_missed = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    fg_0 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    fg_40 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    fg_50 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
     return_td = models.IntegerField(null=True)
 
-    default_points = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    default_points = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
 class ScoringSystem(models.Model):
 
-    py25 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    int_thrown = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    td_pass = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    twopt_pass = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    py25 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    int_thrown = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    td_pass = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    twopt_pass = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
-    run10 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    td_rush = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    twopt_rush = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    run10 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    td_rush = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    twopt_rush = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
-    rec10 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    rec_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    twopt_rec = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    rec10 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    rec_td = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    twopt_rec = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
-    kr_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    pr_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    fum_lost = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    fum_rec_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    fum_ret_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    kr_td = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    pr_td = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    fum_lost = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    fum_rec_td = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    fum_ret_td = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
-    pat_made = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    fg_missed = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    fg_0 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    fg_40 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    fg_50 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    pat_made = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    fg_missed = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    fg_0 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    fg_40 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    fg_50 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
-    d_sack = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    d_int_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    d_fr_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    d_pr_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    d_blocked_kick = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    d_fr = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    d_kickoff_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    d_blocked_td = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    d_int = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    d_sf = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    d_pa_0 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    d_pa_1 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_pa_7 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_pa_14 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_pa_28 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_pa_35 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_pa_46 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_ya_100 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_ya_199 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_ya_299 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_ya_399 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_ya_449 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_ya_499 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_ya_549 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
-    da_ya_550 = models.DecimalField(decimal_places=4, max_digits=7, default=None, null=True)
+    d_sack = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    d_int_td = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    d_fr_td = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    d_pr_td = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    d_blocked_kick = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    d_fr = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    d_kickoff_td = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    d_blocked_td = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    d_int = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    d_sf = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    d_pa_0 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    d_pa_1 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_pa_7 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_pa_14 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_pa_28 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_pa_35 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_pa_46 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_ya_100 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_ya_199 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_ya_299 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_ya_399 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_ya_449 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_ya_499 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_ya_549 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
+    da_ya_550 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
 
 class TransLogEntry(models.Model):

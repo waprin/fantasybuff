@@ -198,6 +198,7 @@ class LeagueScraper(object):
 
     def load_league(self, league):
         league.loaded = False
+        league.failed = False
         league.loading = True
         league.save()
 

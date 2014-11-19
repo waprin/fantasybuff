@@ -12,18 +12,18 @@ def get_scraper(espn_user):
     if settings.LOCAL != True:
         scraper = EspnScraper()
         scraper.login(espn_user.username, espn_user.password)
-        logger.debug("returning espn scraper")
+        logger.info("returning espn scraper")
         return scraper
     else:
         if settings.DB_SCRAPE:
-            logger.debug("returning file scraper")
+            logger.info("returning file scraper")
             fb =  FileBrowser()
             fb.sleep = 0.1
             return fb
         else:
             scraper = EspnScraper()
             scraper.login(espn_user.username, espn_user.password)
-            logger.debug("returning espn scraper")
+            logger.info("returning espn scraper")
             return scraper
 
 class Command(BaseCommand):

@@ -23,7 +23,6 @@ urlpatterns = patterns('',
 
      url(r'^$', 'teams.views.show_all_leagues'),
      url(r'^leagues/$', 'teams.views.get_all_leagues_json'),
-     url(r'^espn/$', 'teams.views.espn_create'),
      url(r'^register/$', 'teams.views.register'),
      url(r'^register/signup/$', 'teams.views.signup'),
 

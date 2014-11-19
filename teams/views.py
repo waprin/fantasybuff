@@ -65,12 +65,17 @@ def signup(request):
         messages.add_message(request, messages.INFO, 'Email Already Registered')
         return HttpResponseRedirect("/register/")
 
+    if len(EspnUser.objects.filter(user=request.user)) > 0:
+        messages.add_message(request, messages.INFO, 'ESPN Account Already Associated With Another FantasyBuff Account')
+        return HttpResponseRedirect("/register/")
 
     User.objects.create_user(email, email, password)
     user = authenticate(username=email, password=password)
     if user is not None:
         if user.is_active:
             login(request, user)
+            espn_user = EspnUser.objects.create(user=request.user, username=espn_username, password=espn_password, loaded=False)
+            django_rq.enqueue(defer_espn_user_scrape, espn_user)
             return redirect(show_all_leagues)
             # Redirect to a success page.
         else:
@@ -362,8 +367,6 @@ def get_all_leagues_json(request):
     return HttpResponse(json.dumps(all_accounts), content_type="application/json")
 
 
-
-
 def get_team_report_card_json(request, league_id, year, team_id):
     league = League.objects.get(espn_id=league_id, year=year)
     team = Team.objects.get(league=league, espn_id=team_id)
@@ -438,27 +441,35 @@ def get_team_draft(request, league_id, year, team_id):
 @login_required
 def show_all_leagues(request):
     template = loader.get_template('teams/all_leagues.html')
+    espn_user = EspnUser.objects.filter(user=request.user)[0]
+
     context = RequestContext(request, {
-        'navigation': ['Leagues']
+        'navigation': ['Leagues'],
+        'espn_user' : espn_user
     })
     return HttpResponse(template.render(context))
 
 @login_required
-def espn_create(request):
+def espn_refresh(request):
+    """
     try:
         username = request.POST['username']
         password = request.POST['password']
     except KeyError:
         return redirect(show_all_leagues)
+    """
 
     logger.debug("creating espn user %s %s %s" % (request.user.username, username, password))
+    espn_user = EspnUser.objects.filter(user=request.user)[0]
+    """
     try:
         espn_user = EspnUser.objects.filter(user=request.user, username=username, password=password)[0]
     except IndexError:
-        espn_user = EspnUser.objects.create(user=request.user, username=username, password=password)
-
+        espn_user = EspnUser.objects.create(user=request.user, username=espn_username, password=espn_password, loaded=False)
+    """
     django_rq.enqueue(defer_espn_user_scrape, espn_user)
     return redirect(show_all_leagues)
+
 
 def backbone(request, espn_id, year, demo=False):
     league = League.objects.get(espn_id=espn_id, year=year)
