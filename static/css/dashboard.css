@@ -18,11 +18,11 @@
 
 #reportcard_vis_container {
   margin: 0px;
-  height: 500px;
 }
 
 #main {
     margin-left: 20px;
+    padding-bottom: 200px;
 }
 
 .bullet g {
@@ -39,4 +39,8 @@ svg {
 
 svg g {
     display: block;
+}
+
+.lineup-table {
+    margin-top: 15px;
 }

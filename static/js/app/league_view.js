@@ -252,6 +252,8 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             LineupTableView = Backbone.View.extend({
                 'template': _.template($("#lineup-table-template").html()),
 
+                'className': 'lineup-table',
+
                 initialize: function (options) {
                     this.listenTo(this.model, "change", this.render);
                     this.fieldName = options.fieldName;
@@ -366,6 +368,9 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             reportCardView = new ReportCardView({model: roguesReportCard}),
             REPORT_CARD = 1,
             LINEUPS = 2,
+            DRAFT = 3,
+            WAIVER = 4,
+            TRADE = 5,
             AppRouter = Backbone.Router.extend({
                 routes: {
                     "team/:id": "getTeam",
@@ -414,6 +419,14 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                 app_router.navigate('lineups/' + id, {replace: true});
             } else if (window.mode === REPORT_CARD) {
                 app_router.navigate('reportcard/' + id, {replace: true});
+            } else if (window.mode === DRAFT) {
+                app_router.navigate('draft/' + id, {replace: true});
+            }
+            else if (window.mode === WAIVER) {
+                app_router.navigate('waiver/' + id, {replace: true});
+            }
+            else if (window.mode === TRADE) {
+                app_router.navigate('trade/' + id, {replace: true});
             }
         });
 
