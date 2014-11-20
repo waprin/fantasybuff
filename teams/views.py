@@ -56,8 +56,9 @@ def signup(request):
     email = request.POST.get('email')
     espn_username = request.POST.get('espn_username')
     espn_password = request.POST.get('espn_password')
+    allow_save = request.POST.get('save_password')
 
-    if not password or not email or not espn_username or not espn_password:
+    if not password or not email or not espn_username or not espn_password or not allow_save:
         messages.add_message(request, messages.INFO, 'Missing Required Fields')
         return HttpResponseRedirect("/register/")
 
@@ -74,7 +75,7 @@ def signup(request):
     if user is not None:
         if user.is_active:
             login(request, user)
-            espn_user = EspnUser.objects.create(user=request.user, username=espn_username, password=espn_password, loaded=False)
+            espn_user = EspnUser.objects.create(user=request.user, username=espn_username, password=espn_password, loaded=False, allow_save=allow_save)
             django_rq.enqueue(defer_espn_user_scrape, espn_user)
             return redirect(show_all_leagues)
             # Redirect to a success page.

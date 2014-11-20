@@ -59,3 +59,6 @@ input[type="checkbox"] {
     text-shadow: #2c2c2c 1px 1px 1px;
 }
 
+.league-summary {
+    text-align: center;
+}

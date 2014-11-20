@@ -140,9 +140,6 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             .attr('cy', function (d) {
                 return yRange(d.value);
             })
-            .attr('fill', 'red')
-            .attr('stroke', 'blue')
-            .attr('r', '8')
             .attr('class', 'plotpoints');
 
         d3.select(element)

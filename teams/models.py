@@ -14,6 +14,7 @@ class EspnUser(models.Model):
     password = models.CharField(max_length=200)
     loaded = models.BooleanField(default=False)
     failed = models.BooleanField(default=False)
+    allow_save = models.BooleanField(default=False)
 
 class League(models.Model):
     name = models.CharField(max_length=200)

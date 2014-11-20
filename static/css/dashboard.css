@@ -44,3 +44,10 @@ svg g {
 .lineup-table {
     margin-top: 15px;
 }
+
+.plotpoints {
+    /*fill: rgb(66, 139, 202);*/
+    fill: red;
+    stroke: blue;
+    r: 6;
+}

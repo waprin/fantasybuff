@@ -1,5 +1,5 @@
 html, body {
-    font-family: 'Quicksand',Sans-serif;
+    font-family: 'Roboto Condensed';
     background-color: #f7fafd;
     height: 100%;
     margin: 0px;
@@ -173,7 +173,7 @@ div.about-desc  button {
 
 
 section.report-card div.report-card-desc {
-    font-size: 12px;
+    font-size: 18px;
     line-height: 1.5;
     color: white;
     clear: both;
@@ -203,6 +203,13 @@ section.about h2 {
     background: #aaa;
     height: 1px;
     width: 17%;
+    margin: 0 auto;
+}
+
+.full-line {
+    background: #aaa;
+    height: 1px;
+    width: 30%;
     margin: 0 auto;
 }
 
