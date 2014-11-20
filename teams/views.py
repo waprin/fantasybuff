@@ -162,7 +162,6 @@ def order_entries(entries):
             return 500
     return sorted(entries, key=slot_key)
 
-@login_required
 def show_week(request, espn_league_id, year, espn_team_id, week):
     logger.debug("entering show_week")
     league = League.objects.get(espn_id=espn_league_id, year=year)
@@ -196,7 +195,6 @@ def show_week(request, espn_league_id, year, espn_team_id, week):
 
 
 
-@login_required
 def show_trade_week(request, league_id, year, team_id, week):
     league = League.objects.get(espn_id=league_id, year=year)
     team = Team.objects.get(espn_id=team_id, league=league)
@@ -226,7 +224,6 @@ def show_trade_week(request, league_id, year, team_id, week):
 
 
 
-@login_required
 def show_waiver_week(request, league_id, year, team_id, week):
     logger.debug("entering show waiver week %s" % week)
     league = League.objects.get(espn_id=league_id, year=year)
@@ -261,7 +258,6 @@ def show_waiver_week(request, league_id, year, team_id, week):
     return HttpResponse(template.render(context))
 
 
-@login_required
 def show_draftscore_week(request, league_id, year, team_id, week):
     logger.debug("entering show_draftscore %s" % week)
     league = League.objects.get(espn_id=league_id, year=year)
