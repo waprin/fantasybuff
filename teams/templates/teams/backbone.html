@@ -9,7 +9,7 @@
 
 <div class="dashboard-header">
   <h1>{{ league.name }} {{ league.year }}</h1>
-  <h2>Team: {{ current_team.team_name }} </h2>
+  <h2 class="team-link-header">Team: {{ current_team.team_name }} </h2>
   <br/>
 </div>
 <div class="row full-height">
@@ -21,7 +21,7 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Teams<b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         {% for team in teams %}
-                            <li><a href="#/team/{{ team.espn_id }}">{{ team.team_name }}</a></li>
+                            <li><a id="team-link-{{ team.espn_id }}"  href="#/team/{{ team.espn_id }}">{{ team.team_name }}</a></li>
                         {%  endfor %}
                     </ul>
             </ul>

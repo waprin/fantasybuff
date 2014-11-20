@@ -467,13 +467,13 @@ def espn_refresh(request):
     return redirect(show_all_leagues)
 
 
-def backbone(request, espn_id, year, demo=False):
+def backbone(request, espn_id, year):
     league = League.objects.get(espn_id=espn_id, year=year)
     teams = Team.objects.filter(league=league)
     template = loader.get_template('teams/backbone.html')
-    demo = request.GET.get('demo', False)
-    logger.info("demo is: %s" % str(demo))
-    if demo:
+    demo = False
+    if not request.user.is_authenticated():
+        demo = True
         logger.info('using default user for demo')
         user = User.objects.get(username='waprin@gmail.com')
     else:
@@ -490,7 +490,7 @@ def backbone(request, espn_id, year, demo=False):
     context = RequestContext(request, {
         'navigation': ['Leagues'],
         'teams': teams,
-        'demo': request.GET.get('demo', False),
+        'demo': demo,
         'league': league,
         'espn_user': espn_user,
         'current_team': current_team
@@ -498,4 +498,4 @@ def backbone(request, espn_id, year, demo=False):
     return HttpResponse(template.render(context))
 
 def demo(request):
-    return redirect('/leagues/espn/930248/2014/?demo=True')
+    return redirect('/leagues/espn/930248/2014/')

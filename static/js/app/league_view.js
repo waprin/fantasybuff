@@ -415,6 +415,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
         app_router.on('route:getTeam', function (id) {
             roguesReportCard.set('team_id', id);
             roguesReportCard.fetch();
+            $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
             if (window.mode === LINEUPS) {
                 app_router.navigate('lineups/' + id, {replace: true});
             } else if (window.mode === REPORT_CARD) {
