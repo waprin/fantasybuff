@@ -308,7 +308,7 @@ div.about-desc img {
 }
 
 .navsignin {
-    height: 51px;
+    min-height: 70px;
     padding: 0;
     margin: 0;
 }

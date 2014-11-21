@@ -64,10 +64,18 @@
     {% if login_error %}
             <span class="error">Invalid Email Or Password</span>
       {% endif %}
+    <div class="row">
+      <div class="col-md-4">
             <input class="my-form-control" name="email" placeholder="Email" type="email"/>
-            <input class="my-form-control" name="password" placeholder="Password" type="password"/>
+      </div>
+      <div class="col-md-4">
+            <input class="my-form-control col-sm-4" name="password" placeholder="Password" type="password"/>
+      </div>
             {% csrf_token %}
-            <input class="login-button" type="submit" value="Login">
+      <div class="col-md-4">
+            <input class="login-button col-sm-4" type="submit" value="Login">
+      </div>
+    </div>
     </form>
     <!--<ul class="nav navbar-nav navbar-left">
         <li><button  onclick="window.location='/register/';" id="join_now">Join Now</button></li>
