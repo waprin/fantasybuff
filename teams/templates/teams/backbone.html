@@ -16,7 +16,7 @@
         <h3>Best Trade</h3>
       </div>
       <div class="row trade-columns">
-          <div class="players-added col-xs-6 trade-winner">
+          <div class="players-added col-xs-6 {{ left }}">
             <p>
               <h4>
                 {{ trade.team.team_name }} Added
@@ -24,7 +24,7 @@
             </p>
           </div>
 
-        <div class="players-added col-xs-6 trade-loser">
+        <div class="players-added col-xs-6 {{ right }}">
           <h4>
             {{ trade.other_team.team_name }}
             Added
@@ -32,22 +32,22 @@
         </div>
       </div>
       <div class="row trade-columns">
-        <div class="col-xs-6 players-added trade-winner">
+        <div class="col-xs-6 players-added {{ left }}" >
             {% for player in trade.players_removed.all %}
               {{   player.name }}
             {% endfor %}
         </div>
-        <div class="col-xs-6 players-added trade-loser">
+        <div class="col-xs-6 players-added {{ right }}">
         {% for player in trade.players_added.all %}
-                {{ player.name }}
+                {{ player.name }},
               {% endfor %}
         </div>
       </div>
       <div class="row trade-columns">
-         <div class="col-xs-6 trade-winner">
+         <div class="col-xs-6 {{ left }}">
            Points Since Trade {{ trade.get_total_points_for }}
          </div>
-         <div class="col-xs-6 trade-loser">
+         <div class="col-xs-6 {{ right }}">
            Points Since Trade {{ trade.get_total_points_against }}
         </div>
       </div>

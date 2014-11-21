@@ -456,7 +456,7 @@ def espn_refresh(request):
         return redirect(show_all_leagues)
     """
 
-    logger.debug("creating espn user %s %s %s" % (request.user.username, username, password))
+#    logger.debug("creating espn user %s %s %s" % (request.user.username, username, password))
     espn_user = EspnUser.objects.filter(user=request.user)[0]
     """
     try:
@@ -494,10 +494,16 @@ def backbone(request, espn_id, year):
     sorted_trades.sort(key=lambda t: t.get_value_cumulative())
     best_trade = sorted_trades[0]
 
-    if best_trade.get_total_points_for() < best_trade.get_total_points_against():
-        team_swap = best_trade.team
-        best_trade.team = best_trade.other_team
-        best_trade.other_team = team_swap
+    if best_trade.get_total_points_for() > best_trade.get_total_points_against():
+        logger.debug("setting left trade as winner")
+        trade_left = 'trade-winner'
+        trade_right = 'trade-loser'
+    else:
+        logger.debug("setting left trade as loser")
+        trade_left = 'trade-loser'
+        trade_right = 'trade-winner'
+
+
 
     context = RequestContext(request, {
         'navigation': ['Leagues'],
@@ -507,6 +513,8 @@ def backbone(request, espn_id, year):
         'espn_user': espn_user,
         'current_team': current_team,
         'trade': best_trade,
+        'left': trade_left,
+        'right': trade_right
     })
     template = loader.get_template('teams/backbone.html')
     return HttpResponse(template.render(context))
