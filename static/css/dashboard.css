@@ -62,10 +62,10 @@ svg g {
     display: block;
     width: 100%;
 }
-
+/*
 div.best-trade-panel div.row {
     height: 50px;
-}
+}*/
 
 .dark-blue-header {
     /*background-color: #000480;*/
@@ -95,12 +95,37 @@ div.best-trade-panel div.row {
     text-shadow: 2px 2px #000000;
 }
 
+
+@media (max-width: 720) {
+    .trade-columns-header {
+        font-size: 6px;
+    }
+}
+
+
+
 .trade-columns {
     margin: 0px;
+
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    flex:1 0 auto;
+    height: 100%;
+
+    /*font-size: 9px;*/
+
+
 }
 
 .players-added {
-    height: 100%;
+    display: flex;
+    width: 50%;
+    overflow: auto;
+    /*height: 30px;*/
+    white-space:nowrap;
+
+
 }
 
 .players-added  h4 {
