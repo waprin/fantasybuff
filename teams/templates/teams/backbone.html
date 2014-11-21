@@ -32,22 +32,22 @@
         </div>
       </div>
       <div class="row trade-columns">
-        <div class="col-sm-6 players-added trade-winner">
+        <div class="col-xs-6 players-added trade-winner">
             {% for player in trade.players_removed.all %}
               {{   player.name }}
             {% endfor %}
         </div>
-        <div class="col-sm-6 players-added trade-loser">
+        <div class="col-xs-6 players-added trade-loser">
         {% for player in trade.players_added.all %}
                 {{ player.name }}
               {% endfor %}
         </div>
       </div>
       <div class="row trade-columns">
-         <div class="col-sm-6 trade-winner">
+         <div class="col-xs-6 trade-winner">
            Points Since Trade {{ trade.get_total_points_for }}
          </div>
-         <div class="col-sm-6 trade-loser">
+         <div class="col-xs-6 trade-loser">
            Points Since Trade {{ trade.get_total_points_against }}
         </div>
       </div>
