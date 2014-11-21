@@ -7,27 +7,19 @@ from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_f
      get_teams_from_matchups
 from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet, \
     load_teams_from_standings, load_week_from_lineup, load_scores_from_game, load_transactions_from_translog
+from teams.scraper.utils import real_num_weeks
 
 __author__ = 'bill'
 
 import logging
 logger = logging.getLogger(__name__)
 
-def __real_num_weeks():
-    start = datetime.datetime(year=2014, month=9, day=9)
-    week = datetime.timedelta(days=7)
-    start_days = [start + (weeknum * week) for weeknum in range(0, 13)]
-    now = datetime.datetime.now()
-    for i in range(0, 17):
-        if now < start_days[i]:
-            return i
-    return 17
 
 
 def get_real_num_weeks(num_weeks, league):
     if int(league.year) < 2014:
         return num_weeks
-    return __real_num_weeks()
+    return real_num_weeks()
 
 class LeagueScraper(object):
 

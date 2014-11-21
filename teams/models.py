@@ -4,7 +4,7 @@ from django.db import models
 
 import logging
 from django.db.models import Sum, Avg
-import itertools
+from teams.scraper.utils import real_num_weeks
 
 logger = logging.getLogger(__name__)
 
@@ -379,6 +379,30 @@ class TradeEntry(TransLogEntry):
     players_added = models.ManyToManyField(Player, related_name='trade_added')
     players_removed = models.ManyToManyField(Player, related_name='trade_dropped')
     objects = TransLogManager()
+
+
+    def get_value_for_week(self, week):
+        scorecard_entries_added = ScorecardEntry.objects.filter(player__in=self.players_added,
+                                                          scorecard__week=week,
+                                                          scorecard__actual=True).exclude(slot='Bench')
+        if scorecard_entries_added.count() > 0:
+            points_for = scorecard_entries_added.aggregate(Sum('points'))['points__sum']
+        else:
+            points_for = 0
+
+        scorecard_entries_dropped = ScorecardEntry.objects.filter(player__in=self.players_dropped,
+                                                          scorecard__week=week,
+                                                          scorecard__actual=True).exclude(slot='Bench')
+        if scorecard_entries_dropped.count() > 0:
+            points_against = scorecard_entries_dropped.aggregate(Sum('points'))['points__sum']
+        else:
+            points_against = 0
+        return points_for - points_against
+
+
+    def get_value_cumulative(self):
+        week = real_num_weeks();
+        return reduce(lambda w: self.get_value_for_week(week), range(1, week+1), 0)
 
 class AddDrop(TransLogEntry):
     player = models.ForeignKey(Player)

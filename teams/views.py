@@ -471,7 +471,7 @@ def espn_refresh(request):
 def backbone(request, espn_id, year):
     league = League.objects.get(espn_id=espn_id, year=year)
     teams = Team.objects.filter(league=league)
-    template = loader.get_template('teams/backbone.html')
+
     demo = False
     if not request.user.is_authenticated():
         demo = True
@@ -488,14 +488,18 @@ def backbone(request, espn_id, year):
         if team.espn_user == espn_user:
             current_team = team
 
+    best_trade = TradeEntry.objects.filter(team=teams)[0]
+
     context = RequestContext(request, {
         'navigation': ['Leagues'],
         'teams': teams,
         'demo': demo,
         'league': league,
         'espn_user': espn_user,
-        'current_team': current_team
+        'current_team': current_team,
+        'trade': best_trade
     })
+    template = loader.get_template('teams/backbone.html')
     return HttpResponse(template.render(context))
 
 def demo(request):
