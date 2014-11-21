@@ -45,11 +45,11 @@ class League(models.Model):
 
 class Team(models.Model):
     league = models.ForeignKey(League)
-    espn_user = models.ForeignKey(EspnUser, null=True)
+    espn_user = models.ForeignKey(EspnUser, null=True, blank=True)
     espn_id = models.CharField(max_length=5)
     team_name = models.CharField(max_length=100, null=True)
     abbreviation = models.CharField(max_length=10, null=True)
-    owner_name = models.CharField(max_length=100, null=True)
+    owner_name = models.CharField(max_length=100, null=True, blank=True)
     average_delta = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
     class Meta:
