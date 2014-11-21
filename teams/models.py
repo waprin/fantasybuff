@@ -255,6 +255,16 @@ class ScoreEntry(models.Model):
     week = models.IntegerField()
     player = models.ForeignKey(Player)
     year = models.CharField(max_length=5)
+    team = models.ForeignKey(Team)
+    bye = models.BooleanField(default=False)
+
+    SOURCES = (
+        (u'D', 'Draft'),
+        (u'T', 'Trade'),
+        (u'W', 'Waiver')
+    )
+
+    source = models.CharField(max_length=5, choices=SOURCES)
 
     class Meta:
         unique_together = (('week', 'player', 'year'))
