@@ -263,10 +263,14 @@ def load_scores_from_game(league, week, html):
         scorecard.points = total_points
         scorecard.save()
 
-def add_player(player_name, team, added, date):
+def clean_player(player_name):
+    str(player_name)
     if player_name[-1] == '*':
         player_name = player_name[:-1]
+    return ' '.join(player_name.split()[:2])
 
+def add_player(player_name, team, added, date):
+    player_name = clean_player(player_name)
     try:
         player = Player.objects.get(name=player_name)
     except Player.DoesNotExist:
@@ -297,10 +301,7 @@ def load_transactions_from_translog(html, year, team):
             except AttributeError:
                 logger.error("row contents was %s" % str(row.contents[2]))
 
-            player_name = str(player_name)
-            if player_name[-1] == '*':
-                player_name = player_name[:-1]
-            player_name = ' '.join(player_name.split()[:2])
+            player_name = clean_player(player_name)
             try:
                 player = Player.objects.get(name=player_name)
             except Player.DoesNotExist:
@@ -334,6 +335,7 @@ def load_transactions_from_translog(html, year, team):
                         continue
                 logger.debug("for abbreviation %s found team %s" % (other_abbreviation, other_team.team_name))
                 player_name = trade[1].split(',')[0].strip()
+                player_name = clean_player(player_name)
 
                 try:
                     player = Player.objects.get(name=player_name)

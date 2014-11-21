@@ -155,12 +155,9 @@ class LeagueCreatorTest(unittest.TestCase):
         self.league_scraper.scrape_league(league)
         self.league_scraper.load_league(league)
         team = Team.objects.get(espn_id='6')
-
-        html = self.browser.get_translog(league.espn_id, league.year, team.espn_id)
         self.assertEquals(16, len(DraftClaim.objects.filter(team=team)))
 
         team2 = Team.objects.get(espn_id='3')
-        claims = DraftClaim.objects.filter(team=team2)
         self.assertEquals(16, len(DraftClaim.objects.filter(team=team2)))
 
         team3 = Team.objects.get(espn_id='2')
