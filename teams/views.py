@@ -488,7 +488,16 @@ def backbone(request, espn_id, year):
         if team.espn_user == espn_user:
             current_team = team
 
-    best_trade = TradeEntry.objects.filter(team=teams)[0]
+    trades = TradeEntry.objects.filter(team=teams)
+    logger.debug("got trades %s" % str(trades))
+    sorted_trades = list(trades)
+    sorted_trades.sort(key=lambda t: t.get_value_cumulative())
+    best_trade = sorted_trades[0]
+
+    if best_trade.get_total_points_for() < best_trade.get_total_points_against():
+        team_swap = best_trade.team
+        best_trade.team = best_trade.other_team
+        best_trade.other_team = team_swap
 
     context = RequestContext(request, {
         'navigation': ['Leagues'],
@@ -497,7 +506,7 @@ def backbone(request, espn_id, year):
         'league': league,
         'espn_user': espn_user,
         'current_team': current_team,
-        'trade': best_trade
+        'trade': best_trade,
     })
     template = loader.get_template('teams/backbone.html')
     return HttpResponse(template.render(context))

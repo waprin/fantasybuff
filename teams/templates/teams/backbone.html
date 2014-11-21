@@ -15,30 +15,40 @@
       <div class="summary-header dark-blue-header">
         <h3>Best Trade</h3>
       </div>
-      <div class="row">
-          <div class="players-added col-xs-6">
-            <h4>
-              {{ trade.team.team_name }} Added
-            </h4>
+      <div class="row trade-columns">
+          <div class="players-added col-xs-6 trade-winner">
+            <p>
+              <h4>
+                {{ trade.team.team_name }} Added
+              </h4>
+            </p>
           </div>
 
-        <div class="players-added col-xs-6">
+        <div class="players-added col-xs-6 trade-loser">
           <h4>
             {{ trade.other_team.team_name }}
             Added
           </h4>
         </div>
       </div>
-      <div class="row">
-        <div class="col-xs-6 players-added">
+      <div class="row trade-columns">
+        <div class="col-sm-6 players-added trade-winner">
             {% for player in trade.players_removed.all %}
               {{   player.name }}
             {% endfor %}
         </div>
-        <div class="col-xs-6 players-added">
+        <div class="col-sm-6 players-added trade-loser">
         {% for player in trade.players_added.all %}
                 {{ player.name }}
               {% endfor %}
+        </div>
+      </div>
+      <div class="row trade-columns">
+         <div class="col-sm-6 trade-winner">
+           Points Since Trade {{ trade.get_total_points_for }}
+         </div>
+         <div class="col-sm-6 trade-loser">
+           Points Since Trade {{ trade.get_total_points_against }}
         </div>
       </div>
     </div>
@@ -57,7 +67,7 @@
   <br/>
 <div class="row full-height">
 
-  <div class="col-lg-12">
+  <div class="col-lg-12 navigation-column">
     <div class="container">
             <ul id="league_navigation" class="nav nav-tabs">
                 <li class="dropdown">

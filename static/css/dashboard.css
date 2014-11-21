@@ -95,13 +95,27 @@ div.best-trade-panel div.row {
     text-shadow: 2px 2px #000000;
 }
 
-.players-added {
-    padding: 0px;
+.trade-columns {
     margin: 0px;
+}
+
+.players-added {
     height: 50px;
-    padding-left: 15px;
 }
 
 .players-added  h4 {
     text-align: left;
+}
+
+.navigation-colum {
+    padding: 0px;
+}
+
+
+.trade-winner {
+    background-color: hsla(143, 99%, 76%, 1);
+}
+
+.trade-loser {
+   background-color: hsla(360, 100%, 64%, 1);
 }
