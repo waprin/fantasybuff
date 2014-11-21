@@ -119,3 +119,7 @@ div.best-trade-panel div.row {
 .trade-loser {
    background-color: hsla(360, 100%, 64%, 1);
 }
+
+#league_navigation {
+    height: 50px;
+}

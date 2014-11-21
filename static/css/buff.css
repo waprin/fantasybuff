@@ -27,8 +27,11 @@ html {  box-sizing: border-box;
 
 .nav {
     background: #24292d;
-    margin: 0px;
     color: white;
+}
+
+.top-row {
+    margin: 0px;
     width: 100%;
     height: 51px;
 }
