@@ -65,14 +65,14 @@
             <span class="error">Invalid Email Or Password</span>
       {% endif %}
     <div class="row">
-      <div class="col-md-4">
+      <div class="col-sm-4">
             <input class="my-form-control" name="email" placeholder="Email" type="email"/>
       </div>
-      <div class="col-md-4">
+      <div class="col-sm-4">
             <input class="my-form-control" name="password" placeholder="Password" type="password"/>
       </div>
             {% csrf_token %}
-      <div class="col-md-4">
+      <div class="col-sm-4">
             <input class="login-button" type="submit" value="Login">
       </div>
     </div>
@@ -81,6 +81,12 @@
         <li><button  onclick="window.location='/register/';" id="join_now">Join Now</button></li>
     </ul>-->
 {% endif %}
+
+  <div class="visible-xs-block">
+    <form action="/demo">
+      <button class="join-nowtop">Demo</button>
+    </form>
+  </div>
 
   </nav>
 
