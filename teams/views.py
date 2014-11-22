@@ -488,20 +488,20 @@ def backbone(request, espn_id, year):
         if team.espn_user == espn_user:
             current_team = team
 
-    trades = TradeEntry.objects.filter(team=teams)
-    logger.debug("got trades %s" % str(trades))
-    sorted_trades = list(trades)
+
 
     no_trade = True
     best_trade = None
     trade_left = None
     trade_right = None
 
+    trades = TradeEntry.objects.filter(team=teams)
+    logger.debug("got trades %s" % str(trades))
+    sorted_trades = list(trades)
     if len(sorted_trades) > 0:
         no_trade = False
         sorted_trades.sort(key=lambda t: t.get_value_cumulative())
         best_trade = sorted_trades[0]
-        no_trade = True
 
         if best_trade.get_total_points_for() > best_trade.get_total_points_against():
             logger.debug("setting left trade as winner")
