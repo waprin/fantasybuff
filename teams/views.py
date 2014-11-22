@@ -491,18 +491,26 @@ def backbone(request, espn_id, year):
     trades = TradeEntry.objects.filter(team=teams)
     logger.debug("got trades %s" % str(trades))
     sorted_trades = list(trades)
-    sorted_trades.sort(key=lambda t: t.get_value_cumulative())
-    best_trade = sorted_trades[0]
 
-    if best_trade.get_total_points_for() > best_trade.get_total_points_against():
-        logger.debug("setting left trade as winner")
-        trade_left = 'trade-winner'
-        trade_right = 'trade-loser'
-    else:
-        logger.debug("setting left trade as loser")
-        trade_left = 'trade-loser'
-        trade_right = 'trade-winner'
+    no_trade = True
+    best_trade = None
+    trade_left = None
+    trade_right = None
 
+    if len(sorted_trades) > 0:
+        no_trade = False
+        sorted_trades.sort(key=lambda t: t.get_value_cumulative())
+        best_trade = sorted_trades[0]
+        no_trade = True
+
+        if best_trade.get_total_points_for() > best_trade.get_total_points_against():
+            logger.debug("setting left trade as winner")
+            trade_left = 'trade-winner'
+            trade_right = 'trade-loser'
+        else:
+            logger.debug("setting left trade as loser")
+            trade_left = 'trade-loser'
+            trade_right = 'trade-winner'
 
 
     context = RequestContext(request, {
@@ -512,6 +520,7 @@ def backbone(request, espn_id, year):
         'league': league,
         'espn_user': espn_user,
         'current_team': current_team,
+        'no_trade': no_trade,
         'trade': best_trade,
         'left': trade_left,
         'right': trade_right
