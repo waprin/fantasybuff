@@ -1,13 +1,15 @@
-#wrapper {
-    padding-left: 0px;
-    min-height: 700px;
-}
-
 .container {
     max-width: 1000px;
     margin: auto;
+
+}
+
+#main {
+    min-height: 750px;
+    overflow: hidden;
 }
 
 .landing-row {
     height: 100%;
+    min-height: 750px;
 }
