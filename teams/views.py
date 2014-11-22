@@ -66,7 +66,7 @@ def signup(request):
         messages.add_message(request, messages.INFO, 'Email Already Registered')
         return HttpResponseRedirect("/register/")
 
-    if len(EspnUser.objects.filter(user=request.user)) > 0:
+    if len(EspnUser.objects.filter(username=espn_username)) > 0:
         messages.add_message(request, messages.INFO, 'ESPN Account Already Associated With Another FantasyBuff Account')
         return HttpResponseRedirect("/register/")
 
