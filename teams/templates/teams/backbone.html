@@ -58,27 +58,37 @@
       </div>
     {% endif %}
     </div>
-    <div class="col-sm-4 best-waiver">
+    <div class="col-sm-4 best-panel">
       <div class="summary-header dark-blue-header">
         <h3>Best Waiver Wire Pickup</h3>
       </div>
-      <div class="best-waiver-panel trade-winner">
+      <div class="best-panel-wrapper">
         <div>
-          <h4>{{ best_waiver.team.team_name }}</h4>
+          <h3>{{ best_waiver.team.team_name }}</h3>
         </div>
         <div>
           <h4>{{ best_waiver.player }}</h4>
         </div>
         <div>
-          Total Points Started: <span class="strong">{{ best_waiver.points }}</span>
+          Total Points From Starts: <span class="strong">{{ best_waiver.points }}</span>
         </div>
       </div>
     </div>
-    <div class="col-sm-4">
+    <div class="col-sm-4 best-panel">
       <div class="summary-header dark-blue-header">
-        <h3>Most Perfect Lineups</h3></div>
+        <h3>Most Perfect Lineups</h3>
+      </div>
+      <div class="best-panel-wrapper">
+        <div>
+          <h3>{{ most_perfect_lineups.team.team_name }}</h3>
+        </div>
+        <div>
+          <h4>Total Perfect Lineups: {{ most_perfect_lineups.count }}</h4>
+        </div>
+      </div>
       </div>
   </div>
+</div>
   <div class="full-line"></div>
   <h2>Report Cards and Week-By-Week Analysis</h2>
   <h3 class="team-link-header">Team: {{ current_team.team_name }} </h3>

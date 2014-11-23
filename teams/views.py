@@ -511,6 +511,8 @@ def backbone(request, espn_id, year):
             trade_right = 'trade-winner'
 
     best_waiver = league.get_most_waiver_points()
+    most_perfect_lineups = league.get_most_perfect_lineups()
+
     context = RequestContext(request, {
         'navigation': ['Leagues'],
         'teams': teams,
@@ -522,7 +524,8 @@ def backbone(request, espn_id, year):
         'trade': best_trade,
         'left': trade_left,
         'right': trade_right,
-        'best_waiver': best_waiver
+        'best_waiver': best_waiver,
+        'most_perfect_lineups': most_perfect_lineups
     })
     template = loader.get_template('teams/backbone.html')
     return HttpResponse(template.render(context))

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 import logging
-from django.db.models import Sum, Avg
+from django.db.models import Sum, Avg, Count
 from teams.scraper.utils import real_num_weeks
 
 logger = logging.getLogger(__name__)
@@ -47,6 +47,12 @@ class League(models.Model):
         player = Player.objects.get(id=best['player_id'])
         team = Team.objects.get(id=best['team_id'])
         return {'player': player, 'team': team, 'points': best['total_points']}
+
+
+    def get_most_perfect_lineups(self):
+        most_perfect = Scorecard.objects.filter(team__league=self, actual=False, delta=0).values('team', 'team__espn_id').annotate(count=Count('id')).order_by('count').reverse()[0]
+        team = Team.objects.get(id=most_perfect['team'])
+        return {'team': team, 'count' : most_perfect['count'] }
 
 
 
