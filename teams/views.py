@@ -76,7 +76,8 @@ def signup(request):
         if user.is_active:
             login(request, user)
             espn_user = EspnUser.objects.create(user=request.user, username=espn_username, password=espn_password, loaded=False, allow_save=allow_save)
-            django_rq.enqueue(defer_espn_user_scrape, espn_user)
+            queue = django_rq.get_queue('low')
+            queue.enqueue(defer_espn_user_scrape, espn_user)
             return redirect(show_all_leagues)
             # Redirect to a success page.
         else:
