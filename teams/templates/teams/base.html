@@ -82,11 +82,13 @@
     </ul>-->
 {% endif %}
 
+    {% if not user.is_authenticated %}
   <div class="visible-xs-block">
     <form action="/demo">
       <button class="join-nowtop">Demo</button>
     </form>
   </div>
+  {% endif %}
 
   </nav>
 

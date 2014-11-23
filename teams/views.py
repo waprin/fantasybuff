@@ -22,7 +22,7 @@ def signin(request):
         email = request.POST['email']
         password = request.POST['password']
     except KeyError:
-        template = loader.get_template('teams/login.html')
+        template = loader.get_template('teams/landing.html')
         context = RequestContext(request)
         return HttpResponse(template.render(context))
 
@@ -34,14 +34,14 @@ def signin(request):
             # Redirect to a success page.
         else:
             logger.error("disabled account")
-            template = loader.get_template('teams/login.html')
+            template = loader.get_template('teams/landing.html')
             context = RequestContext(request, {
                 'login_error': True
             })
             return HttpResponse(template.render(context))
     else:
         logger.error("invalid login")
-        template = loader.get_template('teams/login.html')
+        template = loader.get_template('teams/landing.html')
         context = RequestContext(request, {
             'login_error': True
         })
@@ -534,7 +534,7 @@ def backbone(request, espn_id, year):
         'best_waiver': best_waiver,
         'most_perfect_lineups': most_perfect_lineups
     })
-    template = loader.get_template('teams/backbone.html')
+    template = loader.get_template('teams/dashboard.html')
     return HttpResponse(template.render(context))
 
 def demo(request):
