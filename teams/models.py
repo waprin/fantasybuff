@@ -34,6 +34,7 @@ class League(models.Model):
 
     failed = models.BooleanField(default=False)
 
+    last_updated = models.DateTimeField(null=True)
 
     class Meta:
         unique_together = ('espn_id', 'year',)

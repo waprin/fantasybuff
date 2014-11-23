@@ -1,16 +1,41 @@
 {% extends "teams/base.html" %}
 
 {% block pagescripts %}
-
+  <link href="/static/css/all_leagues.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
   <div id="page-wrapper">
     <div class="container-fluid">
 
-      <div class="user_panel">
-        <h3>Your Users</h3>
-        {{ espn_user.username }} {{ espn_user.loaded }} {{ espn_user.failed }}
+      <div class="user-panel">
+        <h3>Your Imported Accounts</h3>
+        <table>
+          <tr>
+            <td>
+              <span class="espn">ESPN ID: </span>
+            </td>
+            <td>
+              {{ espn_user.username }}
+            </td>
+          </tr>
+          <!--<tr>
+            <td>
+            Successfully Connected:
+            </td>
+            <td>
+              {{ espn_user.loaded }}
+            </td>
+          </tr>-->
+          <tr>
+            <td>
+                  Password Saved for Automatic Updates:
+              </td>
+            <td>
+              {{ espn_user.allow_save }}
+            </td>
+          </tr>
+        </table>
       </div>
     <!--<img  src="/static/ajax-loader.gif" id="league_loading_gif" />-->
         <div class="row leagues-panel">
@@ -18,11 +43,12 @@
           <div id="accounts_app">
             <div id="accounts_list"></div>
           </div>
+          <br />
+          <p>Note: Historical Leagues (before 2014) are supported but temporarily disabled during this alpha testing period.</p>
         </div>
 
-
-   <div class="row espn-import">
-            <h3>Import A New Espn League</h3>
+      <div class="espn-import">
+            <h3>Update Your ESPN Leagues</h3>
             <div class="col-lg-6">
                 <form method="POST" action="espn/" role="form">
                     <div class="form-group">
@@ -32,6 +58,8 @@
                         <label>Password</label>
                         <input name="password" type="password" class="form-control">
                     </div>
+                  <input type="checkbox" name="save_password" />
+                  <p>Save My ESPN Password For Automatic Updates</p>
                     <button type="submit" class="btn btn-default">Login</button>
                 </form>
             </div>

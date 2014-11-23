@@ -348,7 +348,7 @@ def get_all_leagues_json(request):
     espn_users = EspnUser.objects.filter(user=request.user)
     all_accounts = []
     for espn_user in espn_users:
-        teams = Team.objects.filter(espn_user=espn_user)
+        teams = Team.objects.filter(espn_user=espn_user, league__year='2014')
         leagues = [team.league for team in teams]
 
         data = Serializer().serialize(leagues, fields=('id', 'name', 'espn_id', 'year', 'loaded', 'failed',
@@ -448,22 +448,29 @@ def show_all_leagues(request):
 
 @login_required
 def espn_refresh(request):
-    """
     try:
         username = request.POST['username']
         password = request.POST['password']
     except KeyError:
         return redirect(show_all_leagues)
-    """
 
 #    logger.debug("creating espn user %s %s %s" % (request.user.username, username, password))
-    espn_user = EspnUser.objects.filter(user=request.user)[0]
-    """
+#    espn_user = EspnUser.objects.filter(user=request.user)[0]
+
     try:
-        espn_user = EspnUser.objects.filter(user=request.user, username=username, password=password)[0]
+        espn_user = EspnUser.objects.filter(user=request.user, username=username)[0]
     except IndexError:
-        espn_user = EspnUser.objects.create(user=request.user, username=espn_username, password=espn_password, loaded=False)
-    """
+        espn_user = EspnUser.objects.create(user=request.user, username=username, password=password, loaded=False)
+
+    espn_user.password = password
+    allow_save = request.POST.get('save_password')
+    if not allow_save:
+        allow_save = False
+    espn_user.allow_save = allow_save
+
+    logger.debug("setting allow save to %s" % (espn_user.allow_save))
+    espn_user.save()
+
     django_rq.enqueue(defer_espn_user_scrape, espn_user)
     return redirect(show_all_leagues)
 
