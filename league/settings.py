@@ -9,9 +9,7 @@ PROJECT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 try:
     os.environ['FBUFF_DEBUG']
     DEBUG = True
-    print "DEBUG IS TRUE"
 except KeyError:
-    print "DEBUG IS FALSE"
     DEBUG = False
 
 

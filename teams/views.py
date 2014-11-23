@@ -488,8 +488,6 @@ def backbone(request, espn_id, year):
         if team.espn_user == espn_user:
             current_team = team
 
-
-
     no_trade = True
     best_trade = None
     trade_left = None
@@ -512,7 +510,7 @@ def backbone(request, espn_id, year):
             trade_left = 'trade-loser'
             trade_right = 'trade-winner'
 
-
+    best_waiver = league.get_most_waiver_points()
     context = RequestContext(request, {
         'navigation': ['Leagues'],
         'teams': teams,
@@ -523,7 +521,8 @@ def backbone(request, espn_id, year):
         'no_trade': no_trade,
         'trade': best_trade,
         'left': trade_left,
-        'right': trade_right
+        'right': trade_right,
+        'best_waiver': best_waiver
     })
     template = loader.get_template('teams/backbone.html')
     return HttpResponse(template.render(context))

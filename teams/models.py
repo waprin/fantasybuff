@@ -42,6 +42,13 @@ class League(models.Model):
         return "ESPN %s %s" % (self.espn_id, self.year)
 
 
+    def get_most_waiver_points(self):
+        best = ScorecardEntry.objects.filter(team__league=self, scorecard__actual=True, source='W').exclude(slot='Bench').values('team_id', 'player_id').annotate(total_points=Sum('points')).order_by('total_points').reverse()[0]
+        player = Player.objects.get(id=best['player_id'])
+        team = Team.objects.get(id=best['team_id'])
+        return {'player': player, 'team': team, 'points': best['total_points']}
+
+
 
 class Team(models.Model):
     league = models.ForeignKey(League)
@@ -130,6 +137,11 @@ class Team(models.Model):
         else:
             logger.error("Can't find source for player %s, default to do " % (player.name))
             return 'D'
+
+    def get_player_with_most_waiver_points(self):
+        best = ScorecardEntry.objects.filter(team=self, scorecard__actual=True, source='W').exclude(slot='Bench').values('player_id').annotate(total_points=Sum('points')).order_by('total_points').reverse()[0]
+        return (Player.objects.get(id=best['player_id']), best['total_points'])
+
 
 
 class TeamReportCard(models.Model):

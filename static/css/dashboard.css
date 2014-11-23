@@ -133,3 +133,33 @@ div.best-trade-panel div.row {
 #league_navigation {
     height: 50px;
 }
+
+
+.best-waiver {
+    text-align: center;
+    padding: 0px;
+    height: 100%;
+}
+
+.strong {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.league-summary {
+    height: 170px;
+    margin-bottom: 30px;
+}
+
+.league-summary > .col-sm-4 {
+    height: 100%;
+}
+
+.best-waiver-panel {
+    height: 80%;
+}
+.best-waiver-panel h4 {
+    margin: 0px;
+    padding-top: 10px;
+
+}

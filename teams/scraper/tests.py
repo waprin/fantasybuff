@@ -21,6 +21,7 @@ class IntegrationTest(unittest.TestCase):
         self.sqlstore = SqlStore()
         self.league_scraper = LeagueScraper(self.browser, self.sqlstore)
 
+
     def test_entire_load_league(self):
         league = League.objects.create(espn_id='930248',year='2013')
         self.league_scraper.scrape_league(league)

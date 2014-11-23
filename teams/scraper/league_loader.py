@@ -268,7 +268,7 @@ def load_scores_from_game(league, week, html):
                     logger.debug('creating new player %s' % name)
                     player = Player.objects.create(espn_id=player_id, name=name, position=position)
             source = team.get_source_for_player(player, week)
-            ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source, week=week)
+            ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source, week=week, team=team)
             if slot != 'Bench':
                 total_points += points
         scorecard.points = total_points
