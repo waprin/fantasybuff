@@ -330,6 +330,10 @@ div.about-desc img {
     padding-right: 15px;
 }
 
+.mobile-signup form {
+    display: inline-block;
+}
+
 .join-nowtop {
     background: hsl(193.9, 85%, 28.2%);
     margin: auto;
@@ -341,5 +345,6 @@ div.about-desc img {
     text-align: center;
     width:100px;
     height: 50px;
+    display:inline-block;
 
 }

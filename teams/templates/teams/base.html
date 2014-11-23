@@ -83,9 +83,12 @@
 {% endif %}
 
     {% if not user.is_authenticated %}
-  <div class="visible-xs-block">
+  <div class="visible-xs-block mobile-signup">
     <form action="/demo">
       <button class="join-nowtop">Demo</button>
+    </form>
+    <form action="register/">
+      <button class="join-nowtop">Join Now</button>
     </form>
   </div>
   {% endif %}
