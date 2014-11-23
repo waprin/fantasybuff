@@ -4,8 +4,16 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
     /*jslint nomen: true*/
     /*globals d3,console*/
 
+    var viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    var w;
+    if (viewportWidth > 700) {
+        w = viewportWidth * 0.7;
+    } else {
+        w = viewportWidth * 0.9;
+    }
 
-    var WIDTH = 800,
+
+    var WIDTH =  w,
         HEIGHT = 50,
         MARGINS = {
             top: 20,
