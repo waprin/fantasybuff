@@ -148,7 +148,9 @@ div.best-trade-panel div.row {
 }
 
 .league-summary > .col-sm-4 {
-    min-height: 100%;
+    /*min-height: 100%;*/
+/*    min-height: 200px;*/
+    height: 100%;
 }
 
 .best-panel {
