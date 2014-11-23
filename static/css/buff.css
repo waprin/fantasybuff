@@ -300,6 +300,7 @@ div.about-desc img {
 
 #main {
     min-height: 100%;
+    overflow: hidden;
     overflow-x: auto;
     margin-top: 51px;
 }

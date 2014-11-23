@@ -154,24 +154,25 @@ class LeagueCreatorTest(unittest.TestCase):
         league = League.objects.create(espn_id='930248',year='2014')
         self.league_scraper.scrape_league(league)
         self.league_scraper.load_league(league)
-        team = Team.objects.get(espn_id='6')
+        team = Team.objects.get(espn_id='6', league=league)
         self.assertEquals(16, len(DraftClaim.objects.filter(team=team)))
 
-        team2 = Team.objects.get(espn_id='3')
+        team2 = Team.objects.get(espn_id='3', league=league)
         self.assertEquals(16, len(DraftClaim.objects.filter(team=team2)))
 
-        team3 = Team.objects.get(espn_id='2')
+        team3 = Team.objects.get(espn_id='2', league=league)
         trade_count = TradeEntry.objects.filter(team=team3).count()
         trade_count_other = TradeEntry.objects.filter(other_team=team3).count()
         self.assertEquals(1, trade_count)
         self.assertEquals(1, trade_count_other)
 
 
-        avery = Player.objects.get(name="Donnie Avery")
-        nicks = Player.objects.get(name="Hakeem Nicks")
-        waiver_add = AddDrop.objects.get(team=team3, player=avery)
+        team6 = Team.objects.get(espn_id=6, league=league)
+        hoyer = Player.objects.get(name="Brian Hoyer")
+        waiver_add = AddDrop.objects.get(team=team6, player=hoyer)
         self.assertEquals(waiver_add.added, True)
 
+        """
         all = AddDrop.objects.filter(team=team3)
         self.assertGreater(len(all), 0)
 
@@ -184,9 +185,10 @@ class LeagueCreatorTest(unittest.TestCase):
         logger.debug("test_translog:  get waiver points")
         waiver_score = team3.get_waiver_points(4)
         self.assertEquals(waiver_score, 3)
-
-
-
+        """
+        davis = Player.objects.get(name='Austin Davis')
+        davis_entry = ScorecardEntry.objects.filter(player=davis, week=6)[0]
+        self.assertEquals(davis_entry.source, 'W')
 
 class ScraperTest(unittest.TestCase):
 

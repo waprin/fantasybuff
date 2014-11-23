@@ -88,7 +88,7 @@ class EspnScraper:
     def get_translog(self, league_id, year, team_id):
         time.sleep(1)
         next_year = str(int(year) + 1)
-        r = self.br.open("http://games.espn.go.com/ffl/recentactivity?leagueId=%s&seasonId=%s&activityType=2&startDate=%s0805&endDate=%s0909&teamId=%s&tranType=-1" %
+        r = self.br.open("http://games.espn.go.com/ffl/recentactivity?leagueId=%s&seasonId=%s&activityType=2&startDate=%s0805&endDate=%s1230&teamId=%s&tranType=-1" %
                          (league_id, year, year, next_year, team_id))
         html = r.read()
         return html

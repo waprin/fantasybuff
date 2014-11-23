@@ -120,6 +120,17 @@ class Team(models.Model):
     def get_trade_average(self):
         return TeamWeekScores.objects.filter(team=self).aggregate(Avg('trade_score'))['trade_score__avg']
 
+    def get_source_for_player(self, player, week):
+        if DraftClaim.objects.filter(player_added=player, team=self).count():
+            return 'D'
+        elif AddDrop.objects.filter(player=player, added=True, team=self).count() > 0:
+            return 'W'
+        elif TradeEntry.objects.filter(players_added=player, team=self).count() > 0:
+            return 'T'
+        else:
+            logger.error("Can't find source for player %s, default to do " % (player.name))
+            return 'D'
+
 
 class TeamReportCard(models.Model):
     team = models.OneToOneField(Team)
@@ -177,8 +188,9 @@ class Player(models.Model):
         (u'K', 'Kicker'),
     )
     name = models.CharField(max_length=100)
+    other_name = models.CharField(max_length=100, null=True, default=None)
     position = models.CharField(max_length=20, choices=POSITIONS, null=True)
-    espn_id = models.CharField(max_length=20, unique=True)
+    espn_id = models.CharField(max_length=20, unique=True, null=True)
 
     def __unicode__(self):
         return self.name
@@ -228,6 +240,17 @@ class ScorecardEntry(models.Model):
     slot = models.CharField(max_length=20, choices=SLOT_TYPES)
     points = models.DecimalField(decimal_places=4, max_digits=10)
     added = models.NullBooleanField()
+    week = models.IntegerField()
+
+    team = models.ForeignKey(Team, null=True)
+    SOURCES = (
+        (u'D', 'Draft'),
+        (u'T', 'Trade'),
+        (u'W', 'Waiver')
+    )
+
+    source = models.CharField(max_length=5, choices=SOURCES)
+
 
     @staticmethod
     def get_trade_value(players, week):
@@ -255,16 +278,7 @@ class ScoreEntry(models.Model):
     week = models.IntegerField()
     player = models.ForeignKey(Player)
     year = models.CharField(max_length=5)
-    team = models.ForeignKey(Team)
     bye = models.BooleanField(default=False)
-
-    SOURCES = (
-        (u'D', 'Draft'),
-        (u'T', 'Trade'),
-        (u'W', 'Waiver')
-    )
-
-    source = models.CharField(max_length=5, choices=SOURCES)
 
     class Meta:
         unique_together = (('week', 'player', 'year'))
@@ -373,7 +387,7 @@ class TransLogManager(models.Manager):
         week_delta = datetime.timedelta(days=7)
         week = week - 1
         start_days = start + (week * week_delta)
-        logger.debug("getting all add/drop entires prior to date %s " % str(start_days))
+    #    logger.debug("getting all add/drop entires prior to date %s " % str(start_days))
         return self.filter(team=team, date__lte=start_days)
 
     def create_if_not_exists(self, date, team, other_team, players_added, players_removed):
@@ -422,7 +436,7 @@ class TradeEntry(TransLogEntry):
 
 class AddDrop(TransLogEntry):
     player = models.ForeignKey(Player)
-    added = models.BooleanField()
+    added = models.BooleanField(default=True)
     """waiver - true if picked from the waiver, false if picked from FA"""
     waiver = models.BooleanField(default=True)
     objects = TransLogManager()

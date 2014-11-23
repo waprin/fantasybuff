@@ -124,10 +124,14 @@ def load_scores_from_playersheet(html, player_id, year, overwrite=False):
     new = True
 
     try:
-        player = Player.objects.get(espn_id=player_id)
+        player = Player.objects.get(name=name)
     except Player.DoesNotExist:
         new = False
         player = Player.objects.create(name=name, espn_id=player_id, position=position)
+
+    player.espn_id = player_id
+    player.position = position
+    player.save()
 
     if not new:
         entries = ScoreEntry.objects.filter(player=player, year=year)
@@ -216,7 +220,8 @@ def load_week_from_lineup(html, week, team):
         slot = player_id[0]
         if slot != 'Bench':
             total_points = total_points + points
-        ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
+        source = team.get_source_for_player(player, week)
+        ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source, team=team, week=week)
     scorecard.points = total_points
     scorecard.save()
 
@@ -250,14 +255,20 @@ def load_scores_from_game(league, week, html):
             if points == '--':
                 points = '0'
             points = Decimal(points)
+            name = player_link.string
             try:
-                player = Player.objects.get(espn_id=player_id)
+                player = Player.objects.get(name=name)
             except Player.DoesNotExist:
-                name = player_link.string
-                position = player_link.next_sibling.split()[-1]
-                logger.debug('creating new player %s' % name)
-                player = Player.objects.create(espn_id=player_id, name=name, position=position)
-            ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points)
+                try:
+                    player = Player.objects.get(espn_id= player_id)
+                    player.other_name = name
+                    player.save()
+                except Player.DoesNotExist:
+                    position = player_link.next_sibling.split()[-1]
+                    logger.debug('creating new player %s' % name)
+                    player = Player.objects.create(espn_id=player_id, name=name, position=position)
+            source = team.get_source_for_player(player, week)
+            ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source, week=week)
             if slot != 'Bench':
                 total_points += points
         scorecard.points = total_points
@@ -274,8 +285,7 @@ def add_player(player_name, team, added, date):
     try:
         player = Player.objects.get(name=player_name)
     except Player.DoesNotExist:
-        logger.error("Unexpected player in add/drop %s %s" % (player_name, team.team_name))
-        return
+        player = Player.objects.create(name=player_name)
 
     logger.debug("creating add drop entry %s %s %s %s" % (team.team_name, team.espn_id, player_name, date))
     AddDrop.objects.create(date=date, team=team, player=player, added=added)
@@ -305,8 +315,8 @@ def load_transactions_from_translog(html, year, team):
             try:
                 player = Player.objects.get(name=player_name)
             except Player.DoesNotExist:
-                logger.error("Unexpected player in draft %s" % player_name)
-                continue
+                player = Player.objects.create(name=player_name)
+
             draft_entry = DraftClaim(date=date,round=draft_round, player_added=player, team=team)
             draft_round = draft_round + 1
             draft_entry.save()
@@ -340,8 +350,7 @@ def load_transactions_from_translog(html, year, team):
                 try:
                     player = Player.objects.get(name=player_name)
                 except Player.DoesNotExist:
-                    logger.error("Unexpected player in trade %s " % player_name)
-                    continue
+                    player = Player.objects.create(name=player_name)
                 if added:
                     added_players.append(player)
                 else:

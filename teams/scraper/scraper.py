@@ -86,8 +86,10 @@ class LeagueScraper(object):
 
     def create_translog(self, league, team):
         logger.debug("create translog %s " % team[0])
+        """
         if not self.overwrite and self.store.has_translog(league.espn_id, league.year, team[0]):
             return False
+        """
         translog_html = self.scraper.get_translog(league.espn_id, league.year, team[0])
         self.store.write_translog(league.espn_id, league.year, team[0], translog_html)
         return True
@@ -195,6 +197,7 @@ class LeagueScraper(object):
         league.save()
 
         self.load_teams(league)
+        self.load_transactions(league)
 
         Scorecard.objects.filter(team__league=league).delete()
         if league.year == '2013':
@@ -206,7 +209,7 @@ class LeagueScraper(object):
             raise Exception("Invalid year")
 
         self.load_optimal_lineups(league)
-        self.load_transactions(league)
+
         self.load_team_report_cards(league)
 
         league.league_loaded_finish_time = datetime.datetime.now()
