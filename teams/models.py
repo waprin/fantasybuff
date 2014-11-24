@@ -47,7 +47,11 @@ class League(models.Model):
 
 
     def get_most_waiver_points(self):
-        best = ScorecardEntry.objects.filter(team__league=self, scorecard__actual=True, source='W').exclude(slot='Bench').values('team_id', 'player_id').annotate(total_points=Sum('points')).order_by('total_points').reverse()[0]
+        best = ScorecardEntry.objects.filter(team__league=self, scorecard__actual=True, source='W').exclude(slot='Bench').values('team_id', 'player_id').annotate(total_points=Sum('points')).order_by('total_points').reverse()
+        if len(best) == 0:
+            return None
+        else:
+            best = best[0]
         player = Player.objects.get(id=best['player_id'])
         team = Team.objects.get(id=best['team_id'])
         return {'player': player, 'team': team, 'points': best['total_points']}
