@@ -16,7 +16,7 @@
         <h3>Best Trade</h3>
       </div>
     {% if no_trade %}
-      <div>
+      <div style="text-align: center">
       No trades yet in this league!
       </div>
     {% else %}
@@ -62,7 +62,6 @@
       <div class="summary-header dark-blue-header">
         <h3>Best Waiver Wire Pickup</h3>
       </div>
-      {% if best_waiver %}
       <div class="best-panel-wrapper">
         <div>
           <h3>{{ best_waiver.team.team_name }}</h3>
