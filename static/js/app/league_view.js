@@ -444,6 +444,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             $(lineupView.el).show();
             $(draftView.el).hide();
             $(waiverView.el).hide();
+            $(tradeView.el).hide();
 
             if (id) {
                 roguesReportCard.set('team_id', id);
