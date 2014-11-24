@@ -45,6 +45,9 @@ def defer_espn_user_scrape(espn_user):
     teams = Team.objects.filter(espn_user=espn_user)
     for team in teams:
         logger.debug("scraping league %s" % team.league.name)
+        if team.league.loaded is True:
+            logger.info("league %s already loaded, skipping" % str(league))
+            continue
         team.league.loading = True
         team.league.loaded = False
         team.league.failed = False
