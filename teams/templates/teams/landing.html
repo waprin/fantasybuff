@@ -57,6 +57,17 @@
           <form action="/demo">
             <button>View Demo League</button>
           </form>
+          <div class="mailing-list">
+            <div class="report-card-desc">Sign Up For Our Mailing List For Beta Invites and Feature Announcements</div>
+            <form method="post" action="/mailing_list/">
+              <input class="my-form-control" name="email" placeholder="Email"/>
+              {% csrf_token %}
+              <input class="my-form-control" type="submit" value="Subscribe">
+            </form>
+            {% for message in messages %}
+              <div class="report-card-desc">{{ message }}</span>
+            {% endfor %}
+          </div>
         </section>
       </div>
     </div>

@@ -8,7 +8,7 @@ from league import settings
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
 from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard, DraftClaim, TeamWeekScores, \
-    AddDrop, TradeEntry
+    AddDrop, TradeEntry, MailingList, BetaInvite
 import simplejson as json
 from django.contrib.auth.models import User
 from django.template import RequestContext, loader
@@ -49,9 +49,22 @@ def signin(request):
         # Return an 'invalid login' error message.
 
 def signup(request):
-    if not settings.ALLOW_SIGNUPS:
-        logger.warn("Sigunp requested but rejected.")
-        return HttpResponse("Sorry! Currently not accepting new signups.")
+
+
+    invite_code = request.POST.get('invite_code')
+
+    try:
+        invite = BetaInvite.objects.get(invite = invite_code)
+        if invite.used:
+            messages.add_message(request, messages.INFO, 'Invite Code Already Used')
+            return HttpResponseRedirect("/register/")
+        invite.used = True
+        invite.save()
+    except BetaInvite.DoesNotExist:
+        messages.add_message(request, messages.INFO, 'Invalid Invite Code')
+        return HttpResponseRedirect("/register/")
+
+
     password = request.POST.get('password')
     email = request.POST.get('email')
     espn_username = request.POST.get('espn_username')
@@ -543,3 +556,12 @@ def backbone(request, espn_id, year):
 
 def demo(request):
     return redirect('/leagues/espn/930248/2014/')
+
+def mailing_list(request):
+    email = request.POST.get('email')
+    if email:
+        messages.add_message(request, messages.INFO, 'Successfully Subscribed')
+        MailingList.objects.get_or_create(email=email)
+    return redirect('/')
+
+

@@ -20,6 +20,7 @@ urlpatterns = patterns('',
 
      url(r'^signin/$', 'teams.views.signin'),
      url(r'^logout/$', 'teams.views.logout_user'),
+     url(r'^mailing_list/$','teams.views.mailing_list'),
 
      url(r'^$', 'teams.views.show_all_leagues'),
      url(r'^espn/$', 'teams.views.espn_refresh'),

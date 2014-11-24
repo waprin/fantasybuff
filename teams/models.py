@@ -16,6 +16,9 @@ class EspnUser(models.Model):
     failed = models.BooleanField(default=False)
     allow_save = models.BooleanField(default=False)
 
+    def __unicode__(self):
+        return self.username
+
 class League(models.Model):
     name = models.CharField(max_length=200)
     espn_id = models.CharField(max_length=30)
@@ -507,3 +510,15 @@ class TranslogHtmlScrape(HtmlScrape):
     team_id = models.CharField(max_length=20)
     league_id = models.CharField(max_length=20)
     year = models.CharField(max_length=5)
+
+class MailingList(models.Model):
+    email = models.CharField(max_length=50, primary_key=True)
+
+    def __unicode__(self):
+        return self.email
+
+
+
+class BetaInvite(models.Model):
+    invite = models.CharField(max_length=50)
+    used = models.BooleanField(default=False)
