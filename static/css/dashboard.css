@@ -59,9 +59,7 @@ svg g {
 }
 
 .dashboard-header {
-    padding: 10px;
     width: 95%;
-    margin-left: 10px;
 }
 
 @media screen and (max-width: 760px) {
@@ -109,6 +107,7 @@ div.best-trade-panel div.row {
 
 .trade-columns {
     margin: 0px;
+    padding-left: 10px;
 }
 
 .players-added {
