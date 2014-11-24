@@ -482,9 +482,12 @@ def backbone(request, espn_id, year):
 
     demo = False
     if not request.user.is_authenticated():
-        demo = True
-        logger.info('using default user for demo')
-        user = User.objects.get(username='waprin@gmail.com')
+        if league.espn_id =='930248' and league.year =='2014':
+            demo = True
+            logger.info('using default user for demo')
+            user = User.objects.get(username='waprin@gmail.com')
+        else:
+            return redirect('/signin')
     else:
         user = request.user
 
