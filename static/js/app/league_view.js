@@ -514,7 +514,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             } else {
                 id = roguesReportCard.get('team_id', id);
             }
-            app_router.navigate('waiver/' + id, {replace: true});
+            app_router.navigate('trade/' + id, {replace: true});
         });
 
         app_router.on('route:default', function () {
