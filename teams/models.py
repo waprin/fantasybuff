@@ -51,7 +51,11 @@ class League(models.Model):
 
 
     def get_most_perfect_lineups(self):
-        most_perfect = Scorecard.objects.filter(team__league=self, actual=False, delta=0).values('team', 'team__espn_id').annotate(count=Count('id')).order_by('count').reverse()[0]
+        most_perfect = Scorecard.objects.filter(team__league=self, actual=False, delta=0).values('team', 'team__espn_id').annotate(count=Count('id')).order_by('count').reverse()
+        if len(most_perfect) == 0:
+            return None
+        else:
+            most_perfect = most_perfect[0]
         team = Team.objects.get(id=most_perfect['team'])
         return {'team': team, 'count' : most_perfect['count'] }
 

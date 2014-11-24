@@ -62,6 +62,7 @@
       <div class="summary-header dark-blue-header">
         <h3>Best Waiver Wire Pickup</h3>
       </div>
+      {% if best_waiver %}
       <div class="best-panel-wrapper">
         <div>
           <h3>{{ best_waiver.team.team_name }}</h3>
@@ -73,6 +74,9 @@
           Total Points From Starts: <span class="strong">{{ best_waiver.points }}</span>
         </div>
       </div>
+      {% else %}
+        <div>No Player Set A Perfect Lineup!</div>
+      {% endif %}
     </div>
     <div class="col-md-4 best-panel">
       <div class="summary-header dark-blue-header">
