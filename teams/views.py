@@ -359,6 +359,9 @@ class Serializer(Builtin_Serializer):
 
 @login_required()
 def get_all_leagues_json(request, all=False):
+    if all and (not request.user.is_active or not request.user.is_superuser):
+        return HttpResponseRedirect('/')
+
     if all:
         leagues = League.objects.all()
     else:
@@ -453,6 +456,7 @@ def show_all_leagues(request):
     template = loader.get_template('teams/all_leagues.html')
 
     espn_users = EspnUser.objects.filter(user=request.user)
+    espn_user = None
     if len(espn_users) > 0:
         espn_user = espn_users[0]
 
@@ -469,8 +473,10 @@ def show_global_leagues(request):
     template = loader.get_template('teams/all_leagues.html')
 
     espn_users = EspnUser.objects.filter(user=request.user)
+    espn_user = None
     if len(espn_users) > 0:
         espn_user = espn_users[0]
+
 
     context = RequestContext(request, {
         'navigation': ['Leagues'],

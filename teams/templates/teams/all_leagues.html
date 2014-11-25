@@ -1,10 +1,11 @@
 {% extends "teams/base.html" %}
 
 {% block pagescripts %}
+  {% if global %}
   <script type="text/javascript">
-    console.log("setting global");
     window.global_leagues = true;
   </script>
+  {% endif %}
   <link href="/static/css/all_leagues.css" rel="stylesheet">
 {% endblock %}
 
