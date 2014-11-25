@@ -246,7 +246,8 @@ CACHES = {
             'PASSWORD': redis_url.password,
             'IGNORE_EXCEPTIONS': True,
             'CONNECTION_POOL_KWARGS': {'max_connections': 10}
-        }
+        },
+        'KEY_PREFIX' : 'FBUFF_'
     }
 }
 
