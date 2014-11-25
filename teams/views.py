@@ -532,7 +532,11 @@ def backbone(request, espn_id, year):
         user = request.user
 
     logger.info("getting espn user for user %s" % str(user))
-    espn_user = EspnUser.objects.filter(user=user)[0]
+
+    espn_users = EspnUser.objects.filter(user=user)
+    espn_user = None
+    if len(espn_users) > 0:
+        espn_user = espn_users[0]
 
     current_team = None
     for team in teams:
