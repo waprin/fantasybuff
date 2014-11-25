@@ -23,7 +23,7 @@ urlpatterns = patterns('',
      url(r'^mailing_list/$','teams.views.mailing_list'),
 
      url(r'^$', 'teams.views.show_all_leagues'),
-     url(r'^admin_leagues/', 'teams.views.show_global_leagues'),
+     url(r'^public/', 'teams.views.show_global_leagues'),
      url(r'^espn/$', 'teams.views.espn_refresh'),
      url(r'^leagues/$', 'teams.views.get_all_leagues_json'),
      url(r'^global_leagues/$', 'teams.views.get_all_leagues_json', {"all": True}),

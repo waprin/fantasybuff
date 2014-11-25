@@ -359,29 +359,33 @@ class Serializer(Builtin_Serializer):
     def get_dump_object(self, obj):
         return self._current
 
-@cache_page(24 * 60 * 60)
 @login_required()
 def get_all_leagues_json(request, all=False):
+    """
     if all and (not request.user.is_active or not request.user.is_superuser):
         return HttpResponseRedirect('/')
+    """
 
+    leagues = None
     if all:
         leagues = League.objects.all()
     else:
         espn_users = EspnUser.objects.filter(user=request.user)
-
+        logger.info('adding league %s' % str(espn_users))
         for espn_user in espn_users:
             teams = Team.objects.filter(espn_user=espn_user, league__year='2014')
             leagues = [team.league for team in teams]
 
-    data = Serializer().serialize(leagues, fields=('id', 'name', 'espn_id', 'year', 'loaded', 'failed',
-                                                   'loading', 'pages_scraped', 'total_pages'))
-    #data = serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
-    data = json.loads(data)
-    for i, league in enumerate(data):
-        league['id'] = leagues[i].id
+
     all_accounts = []
-    all_accounts += data
+    if leagues:
+        data = Serializer().serialize(leagues, fields=('id', 'name', 'espn_id', 'year', 'loaded', 'failed',
+                                                       'loading', 'pages_scraped', 'total_pages'))
+        #data = serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
+        data = json.loads(data)
+        for i, league in enumerate(data):
+            league['id'] = leagues[i].id
+        all_accounts += data
 
     return HttpResponse(json.dumps(all_accounts), content_type="application/json")
 
@@ -454,7 +458,6 @@ def get_team_draft(request, league_id, year, team_id):
 #    data = json.dumps(drafted_players)
     return HttpResponse(player_data, content_type="application/json")
 
-@cache_page(24 * 60 * 60)
 @login_required
 def show_all_leagues(request):
     template = loader.get_template('teams/all_leagues.html')
@@ -471,9 +474,12 @@ def show_all_leagues(request):
     })
     return HttpResponse(template.render(context))
 
+@login_required()
 def show_global_leagues(request):
+    """
     if not request.user.is_active or not request.user.is_superuser:
         return HttpResponseRedirect('/')
+    """
     template = loader.get_template('teams/all_leagues.html')
 
     espn_users = EspnUser.objects.filter(user=request.user)
