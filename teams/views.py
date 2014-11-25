@@ -4,8 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 import logging
 from django.shortcuts import redirect
-from django.views.decorators.cache import cache_page
-from league import settings
+
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
 from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard, DraftClaim, TeamWeekScores, \
@@ -310,7 +309,6 @@ def register(request):
     return HttpResponse(template.render(context))
 
 @login_required()
-@cache_page(24 * 60 * 60)
 def show_league(request, espn_id, year):
     league = League.objects.get(espn_id=espn_id, year=year)
     if not league.loaded:
@@ -389,7 +387,6 @@ def get_all_leagues_json(request, all=False):
 
     return HttpResponse(json.dumps(all_accounts), content_type="application/json")
 
-@cache_page(24 * 60 * 60)
 def get_team_report_card_json(request, league_id, year, team_id):
     league = League.objects.get(espn_id=league_id, year=year)
     team = Team.objects.get(league=league, espn_id=team_id)
@@ -525,7 +522,6 @@ def espn_refresh(request):
     return redirect(show_all_leagues)
 
 
-@cache_page(24 * 60 * 60)
 def backbone(request, espn_id, year):
     league = League.objects.get(espn_id=espn_id, year=year)
     teams = Team.objects.filter(league=league)
@@ -605,7 +601,6 @@ def backbone(request, espn_id, year):
     template = loader.get_template('teams/dashboard.html')
     return HttpResponse(template.render(context))
 
-@cache_page(24 * 60 * 60)
 def demo(request):
     return redirect('/leagues/espn/930248/2014/')
 
