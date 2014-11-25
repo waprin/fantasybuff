@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 import logging
 from django.shortcuts import redirect
+from django.views.decorators.cache import cache_page
 from league import settings
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
@@ -309,6 +310,7 @@ def register(request):
     return HttpResponse(template.render(context))
 
 @login_required()
+@cache_page(24 * 60 * 60)
 def show_league(request, espn_id, year):
     league = League.objects.get(espn_id=espn_id, year=year)
     if not league.loaded:
@@ -357,6 +359,7 @@ class Serializer(Builtin_Serializer):
     def get_dump_object(self, obj):
         return self._current
 
+@cache_page(24 * 60 * 60)
 @login_required()
 def get_all_leagues_json(request, all=False):
     if all and (not request.user.is_active or not request.user.is_superuser):
@@ -382,7 +385,7 @@ def get_all_leagues_json(request, all=False):
 
     return HttpResponse(json.dumps(all_accounts), content_type="application/json")
 
-
+@cache_page(24 * 60 * 60)
 def get_team_report_card_json(request, league_id, year, team_id):
     league = League.objects.get(espn_id=league_id, year=year)
     team = Team.objects.get(league=league, espn_id=team_id)
@@ -451,6 +454,7 @@ def get_team_draft(request, league_id, year, team_id):
 #    data = json.dumps(drafted_players)
     return HttpResponse(player_data, content_type="application/json")
 
+@cache_page(24 * 60 * 60)
 @login_required
 def show_all_leagues(request):
     template = loader.get_template('teams/all_leagues.html')
@@ -516,6 +520,7 @@ def espn_refresh(request):
     return redirect(show_all_leagues)
 
 
+@cache_page(24 * 60 * 60)
 def backbone(request, espn_id, year):
     league = League.objects.get(espn_id=espn_id, year=year)
     teams = Team.objects.filter(league=league)
@@ -595,6 +600,7 @@ def backbone(request, espn_id, year):
     template = loader.get_template('teams/dashboard.html')
     return HttpResponse(template.render(context))
 
+@cache_page(24 * 60 * 60)
 def demo(request):
     return redirect('/leagues/espn/930248/2014/')
 
