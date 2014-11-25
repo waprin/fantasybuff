@@ -3,6 +3,7 @@ from decimal import Decimal
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
 from teams.models import Team, Scorecard, ScorecardEntry, Player, DraftClaim, TeamWeekScores, AddDrop, TradeEntry, \
      TeamReportCard
+from teams.scraper.SqlStore import SqlStore
 from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
      get_teams_from_matchups
 from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet, \
@@ -80,16 +81,18 @@ class LeagueScraper(object):
         logger.debug("creating game %s %s %d" % (str(league), team_id, week))
         if not self.overwrite and self.store.has_game(league, team_id, week):
             return False
+        logger.warn("wtf is going on %s %s %s %s %s" % (str(league), str(team_id), str(week), str(self.store.has_game(league, team_id, week)), str(self.store.__class__.__name__)))
+        test_store = SqlStore()
+        logger.warn("wtf 2 %s " % (test_store.has_game(league, '3', 1)))
+
         game_html = self.scraper.get_game(league, team_id, week)
         self.store.write_game(league, team_id, week, game_html)
         return True
 
     def create_translog(self, league, team):
         logger.debug("create translog %s " % team[0])
-        """
         if not self.overwrite and self.store.has_translog(league.espn_id, league.year, team[0]):
             return False
-        """
         translog_html = self.scraper.get_translog(league.espn_id, league.year, team[0])
         self.store.write_translog(league.espn_id, league.year, team[0], translog_html)
         return True

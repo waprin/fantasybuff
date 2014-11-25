@@ -222,6 +222,7 @@ def load_week_from_lineup(html, week, team):
             total_points = total_points + points
         source = team.get_source_for_player(player, week)
         ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source, team=team, week=week)
+        logger.debug("creating score card entry for player %s week %s points %s" % (player.espn_id, str(week), str(points)))
     scorecard.points = total_points
     scorecard.save()
 

@@ -68,7 +68,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
         };
     }
 
-    var LINE_WIDTH = 900,
+    var LINE_WIDTH = w,
         LINE_HEIGHT = 200,
         LINE_MARGINS = {
             top: 20,

@@ -358,22 +358,24 @@ class Serializer(Builtin_Serializer):
         return self._current
 
 @login_required()
-def get_all_leagues_json(request):
-    espn_users = EspnUser.objects.filter(user=request.user)
+def get_all_leagues_json(request, all=False):
+    if all:
+        leagues = League.objects.all()
+    else:
+        espn_users = EspnUser.objects.filter(user=request.user)
+
+        for espn_user in espn_users:
+            teams = Team.objects.filter(espn_user=espn_user, league__year='2014')
+            leagues = [team.league for team in teams]
+
+    data = Serializer().serialize(leagues, fields=('id', 'name', 'espn_id', 'year', 'loaded', 'failed',
+                                                   'loading', 'pages_scraped', 'total_pages'))
+    #data = serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
+    data = json.loads(data)
+    for i, league in enumerate(data):
+        league['id'] = leagues[i].id
     all_accounts = []
-    for espn_user in espn_users:
-        teams = Team.objects.filter(espn_user=espn_user, league__year='2014')
-        leagues = [team.league for team in teams]
-
-        data = Serializer().serialize(leagues, fields=('id', 'name', 'espn_id', 'year', 'loaded', 'failed',
-                                                       'loading', 'pages_scraped', 'total_pages'))
-
-        #data = serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
-        data = json.loads(data)
-        for i, league in enumerate(data):
-            league['id'] = leagues[i].id
-
-        all_accounts += data
+    all_accounts += data
 
     return HttpResponse(json.dumps(all_accounts), content_type="application/json")
 
@@ -456,9 +458,28 @@ def show_all_leagues(request):
 
     context = RequestContext(request, {
         'navigation': ['Leagues'],
-        'espn_user' : espn_user
+        'espn_user' : espn_user,
+        'global': False
     })
     return HttpResponse(template.render(context))
+
+def show_global_leagues(request):
+    if not request.user.is_active or not request.user.is_superuser:
+        return HttpResponseRedirect('/')
+    template = loader.get_template('teams/all_leagues.html')
+
+    espn_users = EspnUser.objects.filter(user=request.user)
+    if len(espn_users) > 0:
+        espn_user = espn_users[0]
+
+    context = RequestContext(request, {
+        'navigation': ['Leagues'],
+        'espn_user' : espn_user,
+        'global': True
+    })
+    return HttpResponse(template.render(context))
+
+
 
 @login_required
 def espn_refresh(request):
@@ -522,10 +543,10 @@ def backbone(request, espn_id, year):
     sorted_trades = list(trades)
     if len(sorted_trades) > 0:
         no_trade = False
-        sorted_trades.sort(key=lambda t: t.get_value_cumulative())
+        sorted_trades.sort(key=lambda t: t.get_value_cumulative(league))
         best_trade = sorted_trades[0]
 
-        if best_trade.get_total_points_for() > best_trade.get_total_points_against():
+        if best_trade.get_total_points_for(league) > best_trade.get_total_points_against(league):
             logger.debug("setting left trade as winner")
             trade_left = 'trade-winner'
             trade_right = 'trade-loser'
@@ -546,6 +567,8 @@ def backbone(request, espn_id, year):
         'current_team': current_team,
         'no_trade': no_trade,
         'trade': best_trade,
+        'total_points_for': best_trade.get_total_points_for(league),
+        'total_points_against': best_trade.get_total_points_against(league),
         'left': trade_left,
         'right': trade_right,
         'best_waiver': best_waiver,

@@ -2,8 +2,15 @@ define ['jquery', 'underscore', 'backbone', 'lib/text!app/templates/league_templ
   class League extends Backbone.Model
 
   class EspnLeagues extends Backbone.Collection
-    url: '/leagues'
+
+    getUrl: ->
+      console.log "getting url"
+      if window.global_leagues then '/global_leagues' else '/leagues'
+
+    url: @prototype.getUrl,
+
     model: League
+
     initialize: ->
       _.bindAll @, 'fetch'
 
