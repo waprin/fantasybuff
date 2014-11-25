@@ -480,7 +480,7 @@ def show_global_leagues(request):
     if not request.user.is_active or not request.user.is_superuser:
         return HttpResponseRedirect('/')
     """
-    template = loader.get_template('teams/all_leagues.html')
+    template = loader.get_template('teams/public_leagues.html')
 
     espn_users = EspnUser.objects.filter(user=request.user)
     espn_user = None
@@ -491,7 +491,6 @@ def show_global_leagues(request):
     context = RequestContext(request, {
         'navigation': ['Leagues'],
         'espn_user' : espn_user,
-        'global': True
     })
     return HttpResponse(template.render(context))
 

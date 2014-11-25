@@ -1,0 +1,37 @@
+{% extends "teams/base.html" %}
+
+{% block pagescripts %}
+  <script type="text/javascript">
+    window.global_leagues = true;
+  </script>
+  <link href="/static/css/all_leagues.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div id="page-wrapper">
+    <div class="container-fluid">
+
+
+      <!--<img  src="/static/ajax-loader.gif" id="league_loading_gif" />-->
+      <div class="row leagues-panel">
+        <h3>Public Leagues</h3>
+
+        <div id="accounts_app">
+          <div id="accounts_list"></div>
+        </div>
+        <br/>
+
+        <p>Note: Leagues will be automatically updated Tuesdays at midnight, assuming at least one league member has
+          enabled automatic updates. Otherwise, after Tuesdays you will be prompted with the opportunity to reload.</p>
+
+        <p>Note: Historical Leagues (before 2014) are supported but temporarily disabled during this beta period.</p>
+      </div>
+    </div>
+    <!--row-->
+  </div><!--container-fluid-->
+  </div>
+{% endblock %}
+
+{% block endscripts %}
+  <script data-main="/static/js/main" src="/static/require.js"></script>
+{% endblock %}
