@@ -136,6 +136,68 @@ class LeagueCreatorTest(unittest.TestCase):
         self.assertEquals(scorecard.points, 84)
         self.assertEquals(scorecard2.points, 105)
 
+    def test_load_game_on_error(self):
+        league = League.objects.create(espn_id='976898',year='2014')
+        team = Team.objects.create(espn_id='2', league=league)
+        team2 = Team.objects.create(espn_id='9', league=league)
+        game_html = open('new_error.html')
+        load_scores_from_game(league, 3, game_html)
+
+        scorecard = Scorecard.objects.get(team=team, week=3)
+        scorecard2 = Scorecard.objects.get(team=team2, week=3)
+        self.assertEquals(scorecard.points, Decimal('129.2'))
+        self.assertEquals(scorecard2.points, Decimal('115.4'))
+
+    def test_load_translog_error(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='976898', year='2014')
+        team = Team.objects.create(espn_id='7', league=league)
+        filebrowser = FileBrowser()
+        html = filebrowser.get_translog('976898', '2014', '7')
+        load_transactions_from_translog(html, '2014', team)
+
+    def test_load_translog_error_eli_manning(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='976898', year='2014')
+
+        team = Team.objects.create(espn_id='7', league=league)
+        filebrowser = FileBrowser()
+        html = filebrowser.get_translog('976898', '2014', '8')
+        load_transactions_from_translog(html, '2014', team)
+
+        eli_manning = AddDrop.objects.filter(player__name='Eli Manning')
+        self.assertGreater(eli_manning.count(), 0)
+
+    def test_load_translog_error_allen_robinson(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='976898', year='2014')
+
+        team = Team.objects.create(espn_id='5', league=league)
+        filebrowser = FileBrowser()
+        html = filebrowser.get_translog('976898', '2014', '5')
+        load_transactions_from_translog(html, '2014', team)
+
+        allen_robinson = AddDrop.objects.filter(player__name='Allen Robinson')
+        self.assertGreater(allen_robinson.count(), 0)
+
+    def test_load_translog_error_toby_gerhart(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='976898', year='2014')
+
+        team = Team.objects.create(espn_id='2', league=league)
+        filebrowser = FileBrowser()
+        html = filebrowser.get_translog('976898', '2014', '2')
+        load_transactions_from_translog(html, '2014', team)
+
+        toby_gerhart = TradeEntry.objects.filter(players_added__name='Toby Gerhart')
+        self.assertGreater(toby_gerhart.count(), 0)
+
+
+
     def test_get_real_num_weeks(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
         espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')

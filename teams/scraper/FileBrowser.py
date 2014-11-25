@@ -67,7 +67,7 @@ class FileBrowser(object):
         return open(self.standings_path(league)).read()
 
     def write_standings(self, league, html):
-        with open(self.matchup_path(league), 'w') as f:
+        with open(self.standings_path(league), 'w') as f:
             f.write(html)
 
     def settings_path(self, league_id, year):

@@ -93,6 +93,7 @@ class LeagueScraper(object):
         logger.debug("create translog %s " % team[0])
         if not self.overwrite and self.store.has_translog(league.espn_id, league.year, team[0]):
             return False
+
         translog_html = self.scraper.get_translog(league.espn_id, league.year, team[0])
         self.store.write_translog(league.espn_id, league.year, team[0], translog_html)
         return True
@@ -144,7 +145,6 @@ class LeagueScraper(object):
             logger.debug("scrape_core: 2014 logic")
             for week in range(1, num_weeks + 1):
                 self.create_weekly_matchups(league, week)
-
         else:
             raise Exception("Unsupported year %s" % league.year)
         for team in teams:
@@ -240,7 +240,7 @@ class LeagueScraper(object):
     def load_transactions(self, league):
         teams = Team.objects.filter(league=league)
         for team in teams:
-            logger.debug("loading translog for team %s" % team.espn_id)
+            logger.info("loading translog for team %s %s" % (team.espn_id, league.espn_id))
             DraftClaim.objects.filter(team=team).delete()
             AddDrop.objects.filter(team=team).delete()
             TradeEntry.objects.filter(team=team).delete()
@@ -248,7 +248,7 @@ class LeagueScraper(object):
             load_transactions_from_translog(transaction_html, team.league.year, team)
 
     def load_lineups(self, league):
-        logger.debug("loading linups for league %s" % league)
+        logger.info("loading linups for league %s" % league)
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
         teams = Team.objects.filter(league=league)
@@ -269,7 +269,7 @@ class LeagueScraper(object):
                 load_scores_from_game(league, week, html)
 
     def load_optimal_lineups(self, league):
-        logger.debug("loading optimal lineups for league %s" % league)
+        logger.info("loading optimal lineups for league %s" % league)
         teams = Team.objects.filter(league=league)
         for team in teams:
             weeks = [entry.week for entry in Scorecard.objects.filter(team=team)]
@@ -286,7 +286,7 @@ class LeagueScraper(object):
                     entry.save()
 
         for team in teams:
-            logger.debug("calculating deltas for team %s" % team.team_name)
+            logger.info("calculating deltas for team %s" % team.team_name)
             actual_weeks = list(Scorecard.objects.filter(team=team, actual=True))
             if not actual_weeks:
                 continue

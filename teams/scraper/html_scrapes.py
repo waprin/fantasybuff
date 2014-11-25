@@ -38,6 +38,9 @@ def get_teams_from_standings(html):
         team_tuples.append( (team_id, team_name, owner_name) )
     return team_tuples
 
+def get_player_from_game(html):
+    pass
+
 def get_num_weeks_from_matchups(html):
     pool = BeautifulSoup(html)
     body_copy = pool.find('div', 'bodyCopy')

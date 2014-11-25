@@ -558,6 +558,14 @@ def backbone(request, espn_id, year):
     best_waiver = league.get_most_waiver_points()
     most_perfect_lineups = league.get_most_perfect_lineups()
 
+
+    points_for = None
+    points_against = None
+    if best_trade:
+        points_for = best_trade.get_total_points_for(league)
+        points_against = best_trade.get_total_points_against(league)
+
+
     context = RequestContext(request, {
         'navigation': ['Leagues'],
         'teams': teams,
@@ -567,8 +575,8 @@ def backbone(request, espn_id, year):
         'current_team': current_team,
         'no_trade': no_trade,
         'trade': best_trade,
-        'total_points_for': best_trade.get_total_points_for(league),
-        'total_points_against': best_trade.get_total_points_against(league),
+        'total_points_for': points_for,
+        'total_points_against': points_against,
         'left': trade_left,
         'right': trade_right,
         'best_waiver': best_waiver,

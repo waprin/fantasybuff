@@ -6,12 +6,10 @@ import django
 
 PROJECT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 
-try:
-    os.environ['FBUFF_DEBUG']
-    DEBUG = True
+DEBUG = os.path.isfile(".debug_file")
+if DEBUG:
     print "Debug is TRUE"
-except KeyError:
-    DEBUG = False
+else:
     print "Debug is FALSE"
 
 
@@ -207,7 +205,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         }, 'file': {
@@ -231,7 +229,7 @@ LOGGING = {
          'teams' : {
             'handlers' : ['console', 'file'],
             'propogate' : True,
-            'level' : 'DEBUG',
+            'level' : 'INFO',
          }
     }
 }

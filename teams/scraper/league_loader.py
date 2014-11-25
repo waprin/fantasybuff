@@ -1,6 +1,7 @@
 from decimal import Decimal
 import datetime
 from django.core.exceptions import ObjectDoesNotExist
+from league import settings
 from teams.models import League, Player, ScoreEntry, Team, Scorecard, ScorecardEntry, PlayerScoreStats, DraftClaim, \
     TradeEntry, AddDrop
 from teams.scraper.html_scrapes import get_leagues_from_entrance
@@ -243,14 +244,21 @@ def load_scores_from_game(league, week, html):
     team_blocks = [(team_ids[0], first_team_block), (team_ids[1], second_team_block)]
 
     for team_block in team_blocks:
+        logger.debug("loading team_block %s " % team_block[0])
         team = Team.objects.get(league=league, espn_id=team_block[0])
         scorecard = Scorecard.objects.create(team=team, week=week, actual=True)
 
         player_rows = team_block[1].find_all('tr', id=re.compile(r'plyr\d*'))
         total_points = Decimal(0)
         for player_row in player_rows:
+            logger.debug("going through slot!")
             slot = player_row.td.string
-            player_link = player_row.find('td', 'playertablePlayerName').a
+            try:
+                player_link = player_row.find('td', 'playertablePlayerName').a
+            except AttributeError:
+                logger.info("ignoring row %s " % ''.join(list(player_row.strings)))
+                continue
+
             player_id = player_link['playerid']
             points = player_row.find('td', 'appliedPoints').string
             if points == '--':
@@ -272,6 +280,9 @@ def load_scores_from_game(league, week, html):
             ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source, week=week, team=team)
             if slot != 'Bench':
                 total_points += points
+
+
+
         scorecard.points = total_points
         scorecard.save()
 
@@ -279,7 +290,7 @@ def clean_player(player_name):
     str(player_name)
     if player_name[-1] == '*':
         player_name = player_name[:-1]
-    return ' '.join(player_name.split()[:2])
+    return ' '.join(player_name.split()[:3])
 
 def add_player(player_name, team, added, date):
     player_name = clean_player(player_name)
@@ -303,6 +314,7 @@ def load_transactions_from_translog(html, year, team):
         date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
         date = date.replace(year=int(year))
         logger.debug("date is %s" % str(date))
+        logger.debug('tranaction type is %s' % transaction_type)
 
         if transaction_type == 'Draft':
             logger.debug("loading player %s" % str(row.contents[2]))
@@ -313,6 +325,8 @@ def load_transactions_from_translog(html, year, team):
                 logger.error("row contents was %s" % str(row.contents[2]))
 
             player_name = clean_player(player_name)
+            logger.debug("saving player %s" % (player_name))
+
             try:
                 player = Player.objects.get(name=player_name)
             except Player.DoesNotExist:
@@ -322,6 +336,7 @@ def load_transactions_from_translog(html, year, team):
             draft_round = draft_round + 1
             draft_entry.save()
         elif transaction_type == 'Trade Processed':
+            logger.debug('processing trade: %s' % str(row))
             trade_strings = ' '.join(row.contents[2].strings)
             trades = re.findall(r'(\S+?) traded (.+?) to (\S+?)( |$)', trade_strings)
             added_players = []
@@ -356,18 +371,17 @@ def load_transactions_from_translog(html, year, team):
                     added_players.append(player)
                 else:
                     removed_players.append(player)
-            TradeEntry.objects.create_if_not_exists(date, team, other_team, added_players, removed_players)
+                TradeEntry.objects.create_if_not_exists(date, team, other_team, added_players, removed_players)
 
         elif transaction_type == 'Add/Drop':
-            dropped = re.search('dropped', row.contents[2].contents[0].string) is not None
-            logger.debug("add drop date is %s" % str(date))
-            if dropped:
-                add_player(row.contents[2].contents[1].string, team, False, date)
-                add_player(row.contents[2].contents[5].string, team, True, date)
-            else:
-                add_player(row.contents[2].contents[1].string, team, True, date)
-                add_player(row.contents[2].contents[5].string, team, False, date)
-        elif transaction_type == 'Add':
+            content = list(row.contents[2].strings)
+            for i in range(0, len(content), 3):
+                dropped = re.search('dropped', content[i]) is not None
+                if dropped:
+                    add_player(content[i+1], team, False, date)
+                else:
+                    add_player(content[i+1], team, True, date)
+        elif transaction_type == 'Add' or transaction_type == 'Add (Waivers)':
             add_player(row.contents[2].contents[1].string, team, True, date)
         elif transaction_type == 'Drop':
             add_player(row.contents[2].contents[1].string, team, False, date)
