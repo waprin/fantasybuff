@@ -22,9 +22,20 @@ d3.bullet = function() {
           measurez = measures.call(this, d, i).slice().sort(d3.descending),
           g = d3.select(this);
 
+      var min = Math.min(rangez[rangez.length - 1], markerz[markerz.length - 1], measurez[measurez.length - 1]);
+      var max =  Math.max(rangez[0], markerz[0], measurez[0]);
+      var oldMin = min;
+
+
+      max = max - min;
+      min = min - min;
+
+      console.log("min is ", min);
+      console.log("max is ", max);
+
       // Compute the new x-scale.
       var x1 = d3.scale.linear()
-          .domain([0, Math.max(rangez[0], markerz[0], measurez[0])])
+          .domain([min,max])
           .range(reverse ? [width, 0] : [0, width]);
 
       // Retrieve the old x-scale, if this is an update.
@@ -36,8 +47,8 @@ d3.bullet = function() {
       this.__chart__ = x1;
 
       // Derive width-scales from the x-scales.
-      var w0 = bulletWidth(x0),
-          w1 = bulletWidth(x1);
+      var w0 = bulletWidth(x0, oldMin),
+          w1 = bulletWidth(x1, oldMin);
 
       // Update the range rects.
       var range = g.selectAll("rect.range")
@@ -61,45 +72,47 @@ d3.bullet = function() {
 
       // Update the measure rects.
       var measure = g.selectAll("rect.measure")
+
           .data(measurez);
 
       measure.enter().append("rect")
           .attr("class", function(d, i) { return "measure s" + i; })
-          .attr("width", w0)
+          .attr("width", w0 )
           .attr("height", height / 3)
           .attr("x", reverse ? x0 : 0)
           .attr("y", height / 3)
-/*        .transition()
+        /*.transition()
           .duration(0)
           .attr("width", w1)
           .attr("x", reverse ? x1 : 0);*/
 
       measure.transition()
           .duration(1000)
-          .attr("width", w1)
+          .attr("width", w1 )
           .attr("height", height / 3)
           .attr("x", reverse ? x1 : 0)
           .attr("y", height / 3);
 
       // Update the marker lines.
+      console.log("got markerz: ", markerz)
       var marker = g.selectAll("line.marker")
           .data(markerz);
 
       marker.enter().append("line")
           .attr("class", "marker")
-          .attr("x1", x0)
-          .attr("x2", x0)
+          .attr("x1", x0 )
+          .attr("x2", x0 )
           .attr("y1", height / 6)
           .attr("y2", height * 5 / 6)
         .transition()
           .duration(duration)
-          .attr("x1", x1)
-          .attr("x2", x1);
+          .attr("x1", x1 + oldMin)
+          .attr("x2", x1 + oldMin);
 
       marker.transition()
           .duration(duration)
-          .attr("x1", x1)
-          .attr("x2", x1)
+          .attr("x1", x1 )
+          .attr("x2", x1 )
           .attr("y1", height / 6)
           .attr("y2", height * 5 / 6);
 
@@ -213,29 +226,30 @@ d3.bullet = function() {
   return bullet;
 };
 
-function bulletRanges(d) {
-  return d.ranges;
+function bulletRanges(d, oldMin) {
+  return d.ranges - oldMin;
 }
 
-function bulletMarkers(d) {
-  return d.markers;
+function bulletMarkers(d, oldMin) {
+  return d.markers - oldMin;
 }
 
-function bulletMeasures(d) {
-  return d.measures;
+function bulletMeasures(d, oldMin) {
+  return d.measures - oldMin;
 }
 
-function bulletTranslate(x) {
+function bulletTranslate(x, oldMin) {
   return function(d) {
-    return "translate(" + x(d) + ",0)";
+    return "translate(" + x(d) - oldMin + ",0)";
   };
 }
 
-function bulletWidth(x) {
+function bulletWidth(x, oldMin) {
   var x0 = x(0);
   return function(d) {
-    return Math.abs(x(d) - x0);
+
+    var theAnswer = Math.abs(x(d) - x0) - oldMin;
+      console.log("the answer is ", theAnswer);
   };
 }
-
 })();
