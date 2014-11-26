@@ -24,11 +24,11 @@ d3.bullet = function() {
 
       var min = Math.min(rangez[rangez.length - 1], markerz[markerz.length - 1], measurez[measurez.length - 1]);
       var max =  Math.max(rangez[0], markerz[0], measurez[0]);
-      var oldMin = min;
+      /*var oldMin = min;
 
 
       max = max - min;
-      min = min - min;
+      min = min - min;*/
 
       console.log("min is ", min);
       console.log("max is ", max);
@@ -40,15 +40,15 @@ d3.bullet = function() {
 
       // Retrieve the old x-scale, if this is an update.
       var x0 = this.__chart__ || d3.scale.linear()
-          .domain([0, Infinity])
+          .domain([-999999, 9999999])
           .range(x1.range());
 
       // Stash the new scale.
       this.__chart__ = x1;
 
       // Derive width-scales from the x-scales.
-      var w0 = bulletWidth(x0, oldMin),
-          w1 = bulletWidth(x1, oldMin);
+      var w0 = bulletWidth(x0, min),
+          w1 = bulletWidth(x1, min);
 
       // Update the range rects.
       var range = g.selectAll("rect.range")
@@ -106,8 +106,8 @@ d3.bullet = function() {
           .attr("y2", height * 5 / 6)
         .transition()
           .duration(duration)
-          .attr("x1", x1 + oldMin)
-          .attr("x2", x1 + oldMin);
+          .attr("x1", x1)
+          .attr("x2", x1);
 
       marker.transition()
           .duration(duration)
@@ -227,29 +227,30 @@ d3.bullet = function() {
 };
 
 function bulletRanges(d, oldMin) {
-  return d.ranges - oldMin;
+  return d.ranges;
 }
 
 function bulletMarkers(d, oldMin) {
-  return d.markers - oldMin;
+  return d.markers;
 }
 
 function bulletMeasures(d, oldMin) {
-  return d.measures - oldMin;
+  return d.measures;
 }
 
 function bulletTranslate(x, oldMin) {
   return function(d) {
-    return "translate(" + x(d) - oldMin + ",0)";
+    return "translate(" + x(d) + ",0)";
   };
 }
 
 function bulletWidth(x, oldMin) {
-  var x0 = x(0);
+  var x0 = x(oldMin);
   return function(d) {
 
-    var theAnswer = Math.abs(x(d) - x0) - oldMin;
+    var theAnswer = Math.abs(x(d) - x0);
       console.log("the answer is ", theAnswer);
+      return theAnswer;
   };
 }
 })();

@@ -22,7 +22,7 @@
 
 #main {
     margin-left: 20px;
-    padding-bottom: 200px;
+    padding-bottom: 500px;
 }
 
 @media screen and (max-width: 760px) {
@@ -85,7 +85,7 @@ div.best-trade-panel div.row {
 
 .light-blue-header {
     background-color: hsl(210, 90%, 70%);
-    color: white;
+    color: white;a
 }
 
 

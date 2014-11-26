@@ -1,11 +1,11 @@
 require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], function ($, Backbone, _, d3) {
-    'use strict';
+    /*'use strict';*/
     /*jslint todo: true*/
     /*jslint nomen: true*/
     /*globals d3,console*/
 
-    var viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-    var w;
+    var viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
+        w;
     if (viewportWidth > 700) {
         w = viewportWidth * 0.7;
     } else {
@@ -163,9 +163,9 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
 
     $(document).ready(function () {
         var data = [
-                {"title": "Lineup", "subtitle": "Points Missed", "ranges": [0, 100], "measures": [90], "markers": [0]},
+/*                {"title": "Lineup", "subtitle": "Points Missed", "ranges": [0, 100], "measures": [90], "markers": [0]},
                 {"title": "Waiver", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [35], "markers": [0]},
-                {"title": "Draft", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [25], "markers": [0]},
+                {"title": "Draft", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [25], "markers": [0]},*/
                 {"title": "Trades", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [50], "markers": [0]}
             ],
 
@@ -223,7 +223,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                     console.log("rendering report card");
                     if (this.model.get('average_waiver_score') !== undefined) {
                         console.log("rendering lineup score", this.model.get('lineup_score'));
-                        data[0].ranges[0] = this.model.get('min_average_lineup');
+                   /*     data[0].ranges[0] = this.model.get('min_average_lineup');
                         data[0].ranges[1] = this.model.get('max_average_lineup');
                         data[0].measures[0] = this.model.get('average_lineup_score');
                         data[0].markers[0] = this.model.get('average_lineup_score');
@@ -241,7 +241,11 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                         data[3].ranges[0] = this.model.get('min_average_trade');
                         data[3].ranges[1] = this.model.get('max_average_trade');
                         data[3].measures[0] = this.model.get('average_trade_score');
-                        data[3].markers[0] = this.model.get('average_trade_score');
+                        data[3].markers[0] = this.model.get('average_trade_score');*/
+                        data[0].ranges[0] = this.model.get('min_average_trade');
+                        data[0].ranges[1] = this.model.get('max_average_trade');
+                        data[0].measures[0] = this.model.get('average_trade_score');
+                        data[0].markers[0] = this.model.get('average_trade_score');
                         console.log("done hacking data", data);
                     } else {
                         return this;
@@ -427,11 +431,9 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                 app_router.navigate('reportcard/' + id, {replace: true});
             } else if (window.mode === DRAFT) {
                 app_router.navigate('draft/' + id, {replace: true});
-            }
-            else if (window.mode === WAIVER) {
+            } else if (window.mode === WAIVER) {
                 app_router.navigate('waiver/' + id, {replace: true});
-            }
-            else if (window.mode === TRADE) {
+            } else if (window.mode === TRADE) {
                 app_router.navigate('trade/' + id, {replace: true});
             }
         });
