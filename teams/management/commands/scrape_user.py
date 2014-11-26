@@ -55,11 +55,12 @@ def defer_espn_user_scrape(espn_user):
         team.league.save()
         if team.league.year == '2014':
             queue = django_rq.get_queue('default')
+            queue.enqueue(defer_league_scrape, espn_user, team.league)
         """
         else:
             queue = django_rq.get_queue('low')
         """
-        queue.enqueue(defer_league_scrape, espn_user, team.league)
+
     espn_user.loaded = True
     espn_user.save()
 

@@ -1,5 +1,9 @@
     <% if (loaded) { %>
-       <a href="/leagues/espn/<%=espn_id %>/<%=year %>/"><li><%=name %> <%=year %></li></a>
+    <li>
+        <a href="/leagues/espn/<%=espn_id %>/<%=year %>/"><%=name %> <%=year %>  </a>
+            Last Synchronized: <%= lineups_scrape_finish_time %> <div class="calculated">Last Calculated <%= league_loaded_finish_time %></div>
+    </li>
+
     <% } else if (failed) { %>
        <li class="failed">Failed: <%=name %> <%=year %></li>
     <% } else if (!loading) { %>

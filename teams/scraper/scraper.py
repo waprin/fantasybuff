@@ -24,10 +24,18 @@ def get_real_num_weeks(num_weeks, league):
 
 class LeagueScraper(object):
 
-    def __init__(self, scraper, store, overwrite=False):
+    def __init__(self, scraper, store, overwrite=False, update=True):
+        """
+        :param scraper: Object that implements the interface to get pages
+        :param store: Object we are going to put pages, has interface to put pages and check for existence
+        :param overwrite: If true we will overwrite all the league files (default False)
+        :param update: If true we will overwrite the league files that change (like translog) (deafult True
+        :return:
+        """
         self.scraper = scraper
         self.store = store
         self.overwrite = overwrite
+        self.update = update
 
     def create_welcome_page(self, user):
         if not self.overwrite and self.store.has_entrance(user):
@@ -91,7 +99,7 @@ class LeagueScraper(object):
 
     def create_translog(self, league, team):
         logger.debug("create translog %s " % team[0])
-        if not self.overwrite and self.store.has_translog(league.espn_id, league.year, team[0]):
+        if not self.overwrite and not self.update and self.store.has_translog(league.espn_id, league.year, team[0]):
             return False
 
         translog_html = self.scraper.get_translog(league.espn_id, league.year, team[0])

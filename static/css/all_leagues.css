@@ -10,3 +10,7 @@
 .user-panel {
     font-size: 16px;
 }
+
+.calculated {
+    display: none;
+}
