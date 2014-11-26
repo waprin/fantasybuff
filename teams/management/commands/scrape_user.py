@@ -21,14 +21,15 @@ def reset_league(league):
     league.save()
 
 
-def defer_league_scrape(espn_user, league):
+def defer_league_scrape(espn_user, league, load_only=False):
     store = SqlStore()
     scraper = get_scraper(espn_user)
     league_scraper = LeagueScraper(scraper, store)
     try:
         league.failed = False
         league.save()
-        league_scraper.scrape_league(league)
+        if not load_only:
+            league_scraper.scrape_league(league)
         league_scraper.load_league(league)
     except Exception as e:
         logger.error("caught excepting scraping league %s %s, resetting: %s" % (league.espn_id, league.year, traceback.format_exc()))
@@ -67,13 +68,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         espn_id = args[0]
         year = args[1]
+        load_only = args[2] == 'True'
 
         if not espn_id or not year:
             logger.error("must specify espn id and year")
             return
         league = League.objects.get(year=year, espn_id=espn_id)
         espn_user = EspnUser.objects.all()[0]
-        defer_league_scrape(espn_user, league)
+        defer_league_scrape(espn_user, league, load_only)
 
 
 

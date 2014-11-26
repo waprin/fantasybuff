@@ -205,7 +205,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         }, 'file': {
@@ -229,7 +229,7 @@ LOGGING = {
          'teams' : {
             'handlers' : ['console', 'file'],
             'propogate' : True,
-            'level' : 'INFO',
+            'level' : 'DEBUG',
          }
     }
 }

@@ -181,9 +181,10 @@ def load_teams_from_standings(html, league):
             logger.debug("load_teams_from_standings(): team %s already existed, with espn_user=%s" % (team.team_name, team.espn_user))
         except Team.DoesNotExist:
             team = Team.objects.create(team_name=team_name, espn_id = espn_id, abbreviation=abbreviation, league=league)
-            logger.debug("load_teams_from_standings(): team %s was newly created" % (team.team_name))
+            logger.debug("load_teams_from_standings(): team %s %s was newly created" % (team.team_name, team.abbreviation))
         team.abbreviation = abbreviation
         team.team_name = team_name
+        logger.info("loaded teams %s %s" % (team.team_name, team.abbreviation))
         team.save()
 
 def __get_players_from_lineup(html):
@@ -344,6 +345,7 @@ def load_transactions_from_translog(html, year, team):
             other_team = None
 
             for trade in trades:
+                logger.debug("handling trade %s " % str(trade))
                 from_abbreviation = trade[0]
                 to_abbreviation = trade[2]
                 if to_abbreviation == team.abbreviation:
@@ -362,6 +364,7 @@ def load_transactions_from_translog(html, year, team):
                 logger.debug("for abbreviation %s found team %s" % (other_abbreviation, other_team.team_name))
                 player_name = trade[1].split(',')[0].strip()
                 player_name = clean_player(player_name)
+                logger.debug("cleaned player name is %s added is %s " % (player_name, str(added)))
 
                 try:
                     player = Player.objects.get(name=player_name)
@@ -371,6 +374,7 @@ def load_transactions_from_translog(html, year, team):
                     added_players.append(player)
                 else:
                     removed_players.append(player)
+                logger.debug("creating trade entry added: %s removed %s" % (str(added_players), str(removed_players)))
                 TradeEntry.objects.create_if_not_exists(date, team, other_team, added_players, removed_players)
 
         elif transaction_type == 'Add/Drop':

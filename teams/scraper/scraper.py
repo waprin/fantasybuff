@@ -2,7 +2,7 @@ import datetime
 from decimal import Decimal
 from teams.metrics.lineup_calculator import calculate_optimal_lineup, get_lineup_score
 from teams.models import Team, Scorecard, ScorecardEntry, Player, DraftClaim, TeamWeekScores, AddDrop, TradeEntry, \
-     TeamReportCard
+     TeamReportCard, TransLogEntry
 from teams.scraper.SqlStore import SqlStore
 from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
      get_teams_from_matchups
@@ -154,7 +154,7 @@ class LeagueScraper(object):
             league.save()
 
 
-
+        league.scraped_weeks = num_weeks
         league.lineups_scrape_finish_time = datetime.datetime.now()
         league.save()
 
@@ -199,10 +199,16 @@ class LeagueScraper(object):
         league.loading = True
         league.save()
 
+        Scorecard.objects.filter(team__league=league).delete()
+        DraftClaim.objects.filter(team__league=league).delete()
+        TradeEntry.objects.filter(team__league=league).delete()
+        AddDrop.objects.filter(team__league=league).delete()
+
         self.load_teams(league)
         self.load_transactions(league)
 
-        Scorecard.objects.filter(team__league=league).delete()
+
+
         if league.year == '2013':
             self.load_players(league)
             self.load_lineups(league)
@@ -261,8 +267,7 @@ class LeagueScraper(object):
         Scorecard.objects.filter(team__league__id=league.id).delete()
         if league.year != '2014':
             return False
-        num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
-        num_weeks = get_real_num_weeks(num_weeks, league)
+        num_weeks = league.scraped_weeks
         for week in range(1, num_weeks+1):
             htmls = self.store.get_all_games(league, week)
             for html in htmls:

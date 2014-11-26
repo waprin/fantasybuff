@@ -188,12 +188,27 @@ class LeagueCreatorTest(unittest.TestCase):
         espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
         league = League.objects.create(espn_id='976898', year='2014')
 
-        team = Team.objects.create(espn_id='2', league=league)
+        team = Team.objects.create(espn_id='2', league=league, abbreviation='WAGN')
+        team = Team.objects.create(espn_id='5', league=league, abbreviation='BART')
         filebrowser = FileBrowser()
         html = filebrowser.get_translog('976898', '2014', '2')
         load_transactions_from_translog(html, '2014', team)
 
         toby_gerhart = TradeEntry.objects.filter(players_added__name='Toby Gerhart')
+        self.assertGreater(toby_gerhart.count(), 0)
+
+    def test_load_translog_error_toby_gerhart_2(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='976898', year='2014')
+
+        team1 = Team.objects.create(espn_id='2', league=league, abbreviation='BART')
+        team2 = Team.objects.create(espn_id='10', league=league, abbreviation='WAGN')
+        filebrowser = FileBrowser()
+        html = filebrowser.get_translog('976898', '2014', '10')
+        load_transactions_from_translog(html, '2014', team2)
+
+        toby_gerhart = TradeEntry.objects.filter(players_removed__name='Toby Gerhart')
         self.assertGreater(toby_gerhart.count(), 0)
 
 

@@ -39,6 +39,8 @@ class League(models.Model):
 
     last_updated = models.DateTimeField(null=True)
 
+    scraped_weeks = models.IntegerField()
+
     class Meta:
         unique_together = ('espn_id', 'year',)
 

@@ -560,7 +560,7 @@ def backbone(request, espn_id, year):
     if len(sorted_trades) > 0:
         no_trade = False
         sorted_trades.sort(key=lambda t: t.get_value_cumulative(league))
-        best_trade = sorted_trades[0]
+        best_trade = sorted_trades[-1]
 
         if best_trade.get_total_points_for(league) > best_trade.get_total_points_against(league):
             logger.debug("setting left trade as winner")
@@ -571,6 +571,7 @@ def backbone(request, espn_id, year):
             trade_left = 'trade-loser'
             trade_right = 'trade-winner'
 
+
     best_waiver = league.get_most_waiver_points()
     most_perfect_lineups = league.get_most_perfect_lineups()
 
@@ -578,6 +579,7 @@ def backbone(request, espn_id, year):
     points_for = None
     points_against = None
     if best_trade:
+        logger.debug("best trade added %s removed %s" % (str(best_trade.players_added.all()), str(best_trade.players_removed.all())))
         points_for = best_trade.get_total_points_for(league)
         points_against = best_trade.get_total_points_against(league)
 
