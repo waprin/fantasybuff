@@ -163,9 +163,9 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
 
     $(document).ready(function () {
         var data = [
-/*                {"title": "Lineup", "subtitle": "Points Missed", "ranges": [0, 100], "measures": [90], "markers": [0]},
+                {"title": "Lineup", "subtitle": "Points Missed", "ranges": [0, 100], "measures": [90], "markers": [0]},
                 {"title": "Waiver", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [35], "markers": [0]},
-                {"title": "Draft", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [25], "markers": [0]},*/
+                {"title": "Draft", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [25], "markers": [0]},
                 {"title": "Trades", "subtitle": "Value Gained", "ranges": [0, 100], "measures": [50], "markers": [0]}
             ],
 
@@ -223,7 +223,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                     console.log("rendering report card");
                     if (this.model.get('average_waiver_score') !== undefined) {
                         console.log("rendering lineup score", this.model.get('lineup_score'));
-                   /*     data[0].ranges[0] = this.model.get('min_average_lineup');
+                        data[0].ranges[0] = this.model.get('min_average_lineup');
                         data[0].ranges[1] = this.model.get('max_average_lineup');
                         data[0].measures[0] = this.model.get('average_lineup_score');
                         data[0].markers[0] = this.model.get('average_lineup_score');
@@ -241,7 +241,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                         data[3].ranges[0] = this.model.get('min_average_trade');
                         data[3].ranges[1] = this.model.get('max_average_trade');
                         data[3].measures[0] = this.model.get('average_trade_score');
-                        data[3].markers[0] = this.model.get('average_trade_score');*/
+                        data[3].markers[0] = this.model.get('average_trade_score');
                         data[0].ranges[0] = this.model.get('min_average_trade');
                         data[0].ranges[1] = this.model.get('max_average_trade');
                         data[0].measures[0] = this.model.get('average_trade_score');
@@ -422,6 +422,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
 
         // Instantiate the router
         app_router.on('route:getTeam', function (id) {
+            console.log("got team " , id)
             roguesReportCard.set('team_id', id);
             roguesReportCard.fetch();
             $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
@@ -451,6 +452,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             if (id) {
                 roguesReportCard.set('team_id', id);
                 roguesReportCard.fetch();
+                $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
             } else {
                 id = roguesReportCard.get('team_id', id);
             }
@@ -468,6 +470,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             if (id) {
                 roguesReportCard.set('team_id', id);
                 roguesReportCard.fetch();
+                $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
             } else {
                 id = roguesReportCard.get('team_id', id);
             }
@@ -483,6 +486,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             if (id) {
                 roguesReportCard.set('team_id', id);
                 roguesReportCard.fetch();
+                $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
             } else {
                 id = roguesReportCard.get('team_id', id);
             }
@@ -499,6 +503,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             if (id) {
                 roguesReportCard.set('team_id', id);
                 roguesReportCard.fetch();
+                $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
             } else {
                 id = roguesReportCard.get('team_id', id);
             }
@@ -514,6 +519,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             if (id) {
                 roguesReportCard.set('team_id', id);
                 roguesReportCard.fetch();
+                $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
             } else {
                 id = roguesReportCard.get('team_id', id);
             }

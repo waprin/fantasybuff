@@ -249,7 +249,7 @@ function bulletWidth(x, oldMin) {
   return function(d) {
 
     var theAnswer = Math.abs(x(d) - x0);
-      console.log("the answer is ", theAnswer);
+      /*console.log("the answer is ", theAnswer);*/
       return theAnswer;
   };
 }
