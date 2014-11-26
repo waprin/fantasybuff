@@ -252,7 +252,6 @@ def load_scores_from_game(league, week, html):
         player_rows = team_block[1].find_all('tr', id=re.compile(r'plyr\d*'))
         total_points = Decimal(0)
         for player_row in player_rows:
-            logger.debug("going through slot!")
             slot = player_row.td.string
             try:
                 player_link = player_row.find('td', 'playertablePlayerName').a
@@ -374,8 +373,8 @@ def load_transactions_from_translog(html, year, team):
                     added_players.append(player)
                 else:
                     removed_players.append(player)
-                logger.debug("creating trade entry added: %s removed %s" % (str(added_players), str(removed_players)))
-                TradeEntry.objects.create_if_not_exists(date, team, other_team, added_players, removed_players)
+            logger.debug("creating trade entry added: %s removed %s" % (str(added_players), str(removed_players)))
+            TradeEntry.objects.create_if_not_exists(date, team, other_team, added_players, removed_players)
 
         elif transaction_type == 'Add/Drop':
             content = list(row.contents[2].strings)
