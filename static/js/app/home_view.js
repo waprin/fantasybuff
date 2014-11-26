@@ -48,7 +48,7 @@ define(['jquery', 'underscore', 'backbone', 'lib/text!app/templates/league_templ
       return LeagueView.__super__.constructor.apply(this, arguments);
     }
 
-    LeagueView.prototype.tagName = 'li';
+    LeagueView.prototype.tagName = 'tr';
 
     LeagueView.prototype.template = _.template(league_template);
 

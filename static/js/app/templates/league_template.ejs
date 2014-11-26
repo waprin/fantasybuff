@@ -1,16 +1,22 @@
     <% if (loaded) { %>
-    <li>
-        <a href="/leagues/espn/<%=espn_id %>/<%=year %>/"><%=name %> <%=year %>  </a>
-            Last Synchronized: <%= lineups_scrape_finish_time %> <div class="calculated">Last Calculated <%= league_loaded_finish_time %></div>
-    </li>
-
+        <td>
+            <a href="/leagues/espn/<%=espn_id %>/<%=year %>/"><%=name %> <%=year %>  </a>
+        </td>
+        <td>
+            <%= lineups_scrape_finish_time %> <div class="calculated">Last Calculated <%= league_loaded_finish_time %></div>
+        </td>
     <% } else if (failed) { %>
-       <li class="failed">Failed: <%=name %> <%=year %></li>
+        <td>
+            Failed: <%=name %> <%=year %>
+        </td>
     <% } else if (!loading) { %>
-       <li class="queued">Queued To Load: <%=name %> <%=year %></li>
+        <td>
+            Queued To Load: <%=name %> <%=year %>
+        </td>
     <% } else { %>
+        <td>
             <% if (year === '2014') { %>
-              <li>Loading: <%=name %> <%=year %>  Scraped: <%= pages_scraped %> Total: <%= total_pages %></li>
+              Loading: <%=name %> <%=year %>  Scraped: <%= pages_scraped %> Total: <%= total_pages %>
               <div class="progress">
                   <div class="progress-bar" style="width: <%= percent_done %>%;"> </div>
               </div>
@@ -19,4 +25,5 @@
               <img class="league_loading_spinner" src="/static/ajax-loader.gif"/>
               Legacy leagues can take 5-10 minutes to load
            <% } %>
+        </td>
     <% } %>

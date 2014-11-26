@@ -16,7 +16,7 @@ define ['jquery', 'underscore', 'backbone', 'lib/text!app/templates/league_templ
 
   class LeagueView extends Backbone.View
 
-    tagName: 'li'
+    tagName: 'tr'
 
     template: _.template(league_template)
 
