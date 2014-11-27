@@ -15,7 +15,9 @@ from django.template import RequestContext, loader
 import django_rq
 from django.contrib.auth import authenticate, login, logout
 
-from teams.scraper.report_card import get_team_report_card_json
+from django.core.cache import cache
+
+from teams.scraper.report_card import get_team_report_card_json, get_league_request_context
 
 logger = logging.getLogger(__name__)
 
@@ -473,6 +475,8 @@ def espn_refresh(request):
 
 def backbone(request, espn_id, year):
     league = League.objects.get(espn_id=espn_id, year=year)
+
+
     teams = Team.objects.filter(league=league)
 
     demo = False
@@ -498,57 +502,12 @@ def backbone(request, espn_id, year):
         if team.espn_user == espn_user:
             current_team = team
 
-    no_trade = True
-    best_trade = None
-    trade_left = None
-    trade_right = None
+    cached_context = get_league_request_context(league)
+    cached_context['demo'] = demo,
+    cached_context['espn_user'] = espn_user
+    cached_context['current_team'] = current_team,
 
-    trades = TradeEntry.objects.filter(team=teams)
-    logger.debug("got trades %s" % str(trades))
-    sorted_trades = list(trades)
-    if len(sorted_trades) > 0:
-        no_trade = False
-        sorted_trades.sort(key=lambda t: t.get_value_cumulative(league))
-        best_trade = sorted_trades[-1]
-
-        if best_trade.get_total_points_for(league) > best_trade.get_total_points_against(league):
-            logger.debug("setting left trade as winner")
-            trade_left = 'trade-winner'
-            trade_right = 'trade-loser'
-        else:
-            logger.debug("setting left trade as loser")
-            trade_left = 'trade-loser'
-            trade_right = 'trade-winner'
-
-
-    best_waiver = league.get_most_waiver_points()
-    most_perfect_lineups = league.get_most_perfect_lineups()
-
-
-    points_for = None
-    points_against = None
-    if best_trade:
-        logger.debug("best trade added %s removed %s" % (str(best_trade.players_added.all()), str(best_trade.players_removed.all())))
-        points_for = best_trade.get_total_points_for(league)
-        points_against = best_trade.get_total_points_against(league)
-
-
-    context = RequestContext(request, {
-        'navigation': ['Leagues'],
-        'teams': teams,
-        'demo': demo,
-        'league': league,
-        'espn_user': espn_user,
-        'current_team': current_team,
-        'no_trade': no_trade,
-        'trade': best_trade,
-        'total_points_for': points_for,
-        'total_points_against': points_against,
-        'left': trade_left,
-        'right': trade_right,
-        'best_waiver': best_waiver,
-        'most_perfect_lineups': most_perfect_lineups
-    })
+    context = RequestContext(request, cached_context)
     template = loader.get_template('teams/dashboard.html')
     return HttpResponse(template.render(context))
 

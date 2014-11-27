@@ -1,5 +1,5 @@
 from django.core.cache import cache
-from teams.models import TeamReportCard, TeamWeekScores, League, Team
+from teams.models import TeamReportCard, TeamWeekScores, League, Team, TradeEntry
 import simplejson as json
 
 __author__ = 'bprin'
@@ -13,6 +13,8 @@ class Serializer(Builtin_Serializer):
     def get_dump_object(self, obj):
         return self._current
 
+def league_summary_cache_key(league_id, year):
+    return 'ffbuff_summary_%s_%s' % (league_id, year)
 
 def league_report_cache_key(league_id, year, team_id):
     return 'ffbuff_report_%s_%s_%s' % (league_id, year, team_id)
@@ -91,3 +93,60 @@ def get_team_report_card_json(league_id, year, team_id):
     logger.info("filling cache")
     cache.set(cache_key, data)
     return data
+
+def get_league_request_context(league):
+    hit = cache.get(league_summary_cache_key(league.espn_id, league.year))
+    if hit:
+        return hit
+
+    teams = Team.objects.filter(league=league)
+    no_trade = True
+    best_trade = None
+    trade_left = None
+    trade_right = None
+
+    trades = TradeEntry.objects.filter(team=teams)
+    logger.debug("got trades %s" % str(trades))
+    sorted_trades = list(trades)
+    if len(sorted_trades) > 0:
+        no_trade = False
+        sorted_trades.sort(key=lambda t: t.get_value_cumulative(league))
+        best_trade = sorted_trades[-1]
+
+        if best_trade.get_total_points_for(league) > best_trade.get_total_points_against(league):
+            logger.debug("setting left trade as winner")
+            trade_left = 'trade-winner'
+            trade_right = 'trade-loser'
+        else:
+            logger.debug("setting left trade as loser")
+            trade_left = 'trade-loser'
+            trade_right = 'trade-winner'
+
+
+    best_waiver = league.get_most_waiver_points()
+    most_perfect_lineups = league.get_most_perfect_lineups()
+
+
+    points_for = None
+    points_against = None
+    if best_trade:
+        logger.debug("best trade added %s removed %s" % (str(best_trade.players_added.all()), str(best_trade.players_removed.all())))
+        points_for = best_trade.get_total_points_for(league)
+        points_against = best_trade.get_total_points_against(league)
+
+
+    my_context = {
+        'navigation': ['Leagues'],
+        'teams': teams,
+        'league': league,
+        'no_trade': no_trade,
+        'trade': best_trade,
+        'total_points_for': points_for,
+        'total_points_against': points_against,
+        'left': trade_left,
+        'right': trade_right,
+        'best_waiver': best_waiver,
+        'most_perfect_lineups': most_perfect_lineups
+    }
+    cache.set(league_summary_cache_key(league.espn_id, league.year), my_context)
+    return my_context
