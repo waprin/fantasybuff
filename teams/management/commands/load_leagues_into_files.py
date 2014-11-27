@@ -10,6 +10,9 @@ __author__ = 'bprin'
 from teams.scraper.html_scrapes import get_teams_from_matchups
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Command(BaseCommand):
     def handle(self, *args, **options):
 
@@ -38,8 +41,9 @@ class Command(BaseCommand):
                     )
 
             ## matchups
-            for week in range(0, real_num_weeks()):
+            for week in range(0, real_num_weeks() + 1):
                 if store.has_matchups(league, week):
+                    logger.info("loading week %d" % week)
                     html = store.get_matchups(league, week)
                     filesystem.write_matchups(league, week, html)
                     games = get_teams_from_matchups(html)

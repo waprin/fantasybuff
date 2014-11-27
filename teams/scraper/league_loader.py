@@ -201,6 +201,7 @@ def __get_players_from_lineup(html):
     return players
 
 def load_week_from_lineup(html, week, team):
+    logger.info("creaing scorecard for week %s  team %s" % (str(week), team.team_name))
     scorecard, created = Scorecard.objects.get_or_create(team=team, week=week, actual=True)
     if not created:
             logger.warn("created lineup %s %s %s %d" % (team.league.espn_id, team.league.year, team.espn_id, week))
@@ -247,6 +248,7 @@ def load_scores_from_game(league, week, html):
     for team_block in team_blocks:
         logger.debug("loading team_block %s " % team_block[0])
         team = Team.objects.get(league=league, espn_id=team_block[0])
+        logger.info("creating scorecard for team %s week %s" % (team.team_name, str(week)))
         scorecard = Scorecard.objects.create(team=team, week=week, actual=True)
 
         player_rows = team_block[1].find_all('tr', id=re.compile(r'plyr\d*'))

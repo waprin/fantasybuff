@@ -59,8 +59,11 @@ class LeagueScraper(object):
         return True
 
     def create_matchups_page(self, league, week):
+        logger.debug("create matchups page for %d %s" % (week, str(self.store.has_matchups(league, week))))
         if not self.overwrite and self.store.has_matchups(league, week):
             return False
+
+        logger.debug("getting matchups")
         matchups_html = self.scraper.get_matchups(league, week)
         self.store.write_matchups(league, week, matchups_html)
         return True
@@ -136,6 +139,7 @@ class LeagueScraper(object):
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
+        logger.info("scraping %d weeks" % num_weeks)
 
         league.pages_scraped = 0
         league.loaded = False
@@ -276,8 +280,10 @@ class LeagueScraper(object):
         if league.year != '2014':
             return False
         num_weeks = league.scraped_weeks
+        logger.info("num weeks is %d" % num_weeks)
         for week in range(1, num_weeks+1):
             htmls = self.store.get_all_games(league, week)
+            logger.info("for week %d got %d games" % (week, len(htmls)))
             for html in htmls:
                 load_scores_from_game(league, week, html)
 
