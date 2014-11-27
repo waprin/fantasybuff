@@ -39,7 +39,7 @@ def load_leagues_from_entrance(html, espn_user):
         try:
             league = League.objects.get(espn_id=league_tuple[1], year=league_tuple[2])
         except League.DoesNotExist:
-            league = League.objects.create(espn_id=league_tuple[1], year=league_tuple[2], name=league_tuple[0], loaded=False)
+            league = League.objects.create(espn_id=league_tuple[1], year=league_tuple[2], name=league_tuple[0], loaded=False, scraped_weeks=0)
         leagues.append(league)
 
         try:

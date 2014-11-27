@@ -15,6 +15,7 @@ class EspnUser(models.Model):
     loaded = models.BooleanField(default=False)
     failed = models.BooleanField(default=False)
     allow_save = models.BooleanField(default=False)
+    allow_email = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.username
@@ -531,3 +532,6 @@ class MailingList(models.Model):
 class BetaInvite(models.Model):
     invite = models.CharField(max_length=50)
     used = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return "%s %s" % (str(self.invite), str(self.used))

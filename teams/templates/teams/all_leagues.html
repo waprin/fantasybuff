@@ -19,20 +19,12 @@
               {{ espn_user.username }}
             </td>
           </tr>
-          <!--<tr>
+          <tr>
             <td>
             Successfully Connected:
             </td>
-            <td>
+            <td id="user-loaded">
               {{ espn_user.loaded }}
-            </td>
-          </tr>-->
-          <tr>
-            <td>
-              Password Saved for Automatic Updates:
-            </td>
-            <td>
-              {{ espn_user.allow_save }}
             </td>
           </tr>
         </table>
@@ -68,11 +60,8 @@
               <input name="username" class="form-control">
               <label>Password</label>
               <input name="password" type="password" class="form-control">
+              <button type="submit" class="btn btn-default">Login</button>
             </div>
-            <input type="checkbox" name="save_password"/>
-
-            <p>Save My ESPN Password For Automatic Updates</p>
-            <button type="submit" class="btn btn-default">Login</button>
           </form>
         </div>
       </div>

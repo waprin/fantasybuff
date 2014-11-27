@@ -95,6 +95,7 @@ define(['jquery', 'underscore', 'backbone', 'lib/text!app/templates/league_templ
 
     AppView.prototype.addOne = function(league) {
       var leagueView;
+      $("#user-loaded").html("True");
       leagueView = new LeagueView({
         model: league
       });

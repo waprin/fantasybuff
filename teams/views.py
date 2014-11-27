@@ -52,15 +52,16 @@ def signup(request):
 
 
     invite_code = request.POST.get('invite_code')
-
+    invite = None
     try:
-        invite = BetaInvite.objects.get(invite = invite_code)
+        logger.debug("getting invite '%s' " % (invite_code))
+        invite = BetaInvite.objects.get(invite = 'whyme')
         if invite.used:
             messages.add_message(request, messages.INFO, 'Invite Code Already Used')
             return HttpResponseRedirect("/register/")
-        invite.used = True
-        invite.save()
+
     except BetaInvite.DoesNotExist:
+        logger.debug("invalid invite code")
         messages.add_message(request, messages.INFO, 'Invalid Invite Code')
         return HttpResponseRedirect("/register/")
 
@@ -69,9 +70,10 @@ def signup(request):
     email = request.POST.get('email')
     espn_username = request.POST.get('espn_username')
     espn_password = request.POST.get('espn_password')
-    allow_save = request.POST.get('save_password')
+    allow_public = request.POST.get('allow_public')
+    allow_email = request.POST.get('allow_email')
 
-    if not password or not email or not espn_username or not espn_password:
+    if not password or not email or not espn_username or not espn_password or not allow_public:
         messages.add_message(request, messages.INFO, 'Missing Required Fields')
         return HttpResponseRedirect("/register/")
 
@@ -87,8 +89,11 @@ def signup(request):
     user = authenticate(username=email, password=password)
     if user is not None:
         if user.is_active:
+            invite.used=True
+            invite.save()
+
             login(request, user)
-            espn_user = EspnUser.objects.create(user=request.user, username=espn_username, password=espn_password, loaded=False, allow_save=allow_save)
+            espn_user = EspnUser.objects.create(user=request.user, username=espn_username, password=espn_password, loaded=False, allow_save=True, allow_email=allow_email)
             queue = django_rq.get_queue('low')
             queue.enqueue(defer_espn_user_scrape, espn_user)
             return redirect(show_all_leagues)
@@ -510,12 +515,7 @@ def espn_refresh(request):
         espn_user = EspnUser.objects.create(user=request.user, username=username, password=password, loaded=False)
 
     espn_user.password = password
-    allow_save = request.POST.get('save_password')
-    if not allow_save:
-        allow_save = False
-    espn_user.allow_save = allow_save
-
-    logger.debug("setting allow save to %s" % (espn_user.allow_save))
+    espn_user.loaded = False
     espn_user.save()
 
     django_rq.enqueue(defer_espn_user_scrape, espn_user)

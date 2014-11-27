@@ -46,6 +46,7 @@ define ['jquery', 'underscore', 'backbone', 'lib/text!app/templates/league_templ
           setTimeout @collection.fetch, 5000
 
     addOne: (league) ->
+      $("#user-loaded").html("True")
       leagueView = new LeagueView { model: league }
       $('#accounts_list').append(leagueView.render().el)
 

@@ -22,6 +22,8 @@ def reset_league(league):
 
 
 def defer_league_scrape(espn_user, league, load_only=False):
+    reset_league(league)
+
     store = SqlStore()
     scraper = get_scraper(espn_user)
     league_scraper = LeagueScraper(scraper, store)
@@ -49,17 +51,9 @@ def defer_espn_user_scrape(espn_user):
         if team.league.loaded is True:
             logger.info("league %s already loaded, skipping" % str(team.league))
             continue
-        team.league.loading = True
-        team.league.loaded = False
-        team.league.failed = False
-        team.league.save()
         if team.league.year == '2014':
             queue = django_rq.get_queue('default')
             queue.enqueue(defer_league_scrape, espn_user, team.league)
-        """
-        else:
-            queue = django_rq.get_queue('low')
-        """
 
     espn_user.loaded = True
     espn_user.save()
