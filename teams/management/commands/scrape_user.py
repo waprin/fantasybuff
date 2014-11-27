@@ -69,8 +69,8 @@ class Command(BaseCommand):
             logger.error("must specify espn id and year")
             return
         league = League.objects.get(year=year, espn_id=espn_id)
-        espn_user = EspnUser.objects.all()[0]
-        defer_league_scrape(espn_user, league, load_only)
+        team = Team.objects.filter(league=league).exclude(espn_user=None)[0]
+        defer_league_scrape(team.espn_user, league, load_only)
 
 
 
