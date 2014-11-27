@@ -298,28 +298,6 @@ class LeagueScraper(object):
                     entry.scorecard = optimal_scorecard
                     entry.save()
 
-        for team in teams:
-            logger.info("calculating deltas for team %s" % team.team_name)
-            actual_weeks = list(Scorecard.objects.filter(team=team, actual=True))
-            if not actual_weeks:
-                continue
-            optimal_weeks = list(Scorecard.objects.filter(team=team, actual=False))
-            actual_weeks.sort(key=lambda x: x.week)
-            optimal_weeks.sort(key=lambda x: x.week)
-
-            deltas = []
-            for i, week in enumerate(actual_weeks):
-                optimal_points = optimal_weeks[i].points
-                delta = optimal_points - week.points
-                optimal_weeks[i].delta = delta
-                optimal_weeks[i].save()
-                logger.debug("saving deltas for team %s %f" % (team.team_name, optimal_weeks[i].delta))
-                deltas.append(delta)
-
-            average_delta = sum(deltas) / Decimal(len(deltas))
-            team.average_delta = average_delta
-            team.save()
-
     def load_team_report_cards(self, league):
         TeamWeekScores.objects.filter(team__league=league).delete()
         TeamReportCard.objects.filter(team__league=league).delete()
@@ -331,13 +309,14 @@ class LeagueScraper(object):
         for team in teams:
             for week in range(1, num_weeks+1):
                 TeamWeekScores.objects.create(team=team,
+                                              lineup_score=team.get_lineup_points(week),
                                               draft_score=team.get_draft_points(week),
                                               waiver_score=team.get_waiver_points(week),
                                               trade_score=team.get_trade_points(week),
                                               week=week)
             TeamReportCard.objects.create(
                 team=team,
-                average_lineup_score=None,
+                average_lineup_score=team.get_lineup_average(),
                 average_draft_score=team.get_draft_average(),
                 average_waiver_score=team.get_waiver_average(),
                 average_trade_score=team.get_trade_average(),

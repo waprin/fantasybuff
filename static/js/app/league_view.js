@@ -184,8 +184,8 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                     if (fieldName === 'trade_scores') {
                         return [this.get('trade_min'), this.get('trade_max')];
                     }
-                    if (fieldName === 'lineups') {
-                        return [0, 50];
+                    if (fieldName === 'lineup_scores') {
+                        return [this.get('lineup_min'), this.get('lineup_max')];
                     }
                     throw "Can't find fieldName " + fieldName;
                 },
@@ -344,8 +344,8 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             lineupView = new LineChartView({
                 model: roguesReportCard,
                 el: $('#lineup_vis_container'),
-                fieldName: 'lineups',
-                updateEvent: "change:lineups",
+                fieldName: 'lineup_scores',
+                updateEvent: "change:lineup_scores",
                 range: [0, 50]
             }),
             draftView = new LineChartView({
@@ -418,7 +418,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
 
         // Instantiate the router
         app_router.on('route:getTeam', function (id) {
-            console.log("got team " , id)
+            console.log("got team " , id);
             roguesReportCard.set('team_id', id);
             roguesReportCard.fetch();
             $(".team-link-header").html("Team: " + $("#team-link-" + id).html());

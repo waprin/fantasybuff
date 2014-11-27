@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 import logging
-from django.db.models import Sum, Avg, Count
+from django.db.models import Sum, Avg, Count, Q
 from teams.scraper.utils import real_num_weeks
 
 logger = logging.getLogger(__name__)
@@ -91,7 +91,8 @@ class Team(models.Model):
         drafted_players = [draft.player_added for draft in draft_claims]
         scorecard_entries = ScorecardEntry.objects.filter(scorecard__week=week,
                                                           scorecard__actual=True,
-                                                          player__in=drafted_players)
+                                                          player__in=drafted_players,
+                                                          team__league=self.league)
         if scorecard_entries.count() > 0:
             return scorecard_entries.aggregate(Sum('points'))['points__sum']
         else:
@@ -104,7 +105,8 @@ class Team(models.Model):
         adt_players = [adt.player for adt in add_drop_transactions]
         scorecard_entries = ScorecardEntry.objects.filter(player__in=adt_players,
                                       scorecard__week=week,
-                                      scorecard__actual=True).exclude(slot='Bench')
+                                      scorecard__actual=True,
+                                      team__league=self.league).exclude(slot='Bench')
         if scorecard_entries.count() > 0:
             return scorecard_entries.aggregate(Sum('points'))['points__sum']
         else:
@@ -119,7 +121,8 @@ class Team(models.Model):
         players_added = [player for sublist in players_added for player in sublist]
         scorecard_entries_added = ScorecardEntry.objects.filter(player__in=players_added,
                                                           scorecard__week=week,
-                                                          scorecard__actual=True).exclude(slot='Bench')
+                                                          scorecard__actual=True,
+                                                          team__league=self.league).exclude(slot='Bench')
         if scorecard_entries_added.count() > 0:
             points_for = scorecard_entries_added.aggregate(Sum('points'))['points__sum']
         else:
@@ -129,12 +132,21 @@ class Team(models.Model):
         players_dropped = [player for sublist in players_dropped for player in sublist]
         scorecard_entries_dropped = ScorecardEntry.objects.filter(player__in=players_dropped,
                                                           scorecard__week=week,
-                                                          scorecard__actual=True).exclude(slot='Bench')
+                                                          scorecard__actual=True,
+                                                          team__league=self.league).exclude(slot='Bench')
         if scorecard_entries_dropped.count() > 0:
             points_against = scorecard_entries_dropped.aggregate(Sum('points'))['points__sum']
         else:
             points_against = 0
         return points_for - points_against
+
+    def get_lineup_points(self, week):
+        logger.info("calculating deltas for team %s" % self.team_name)
+        actual = Scorecard.objects.get(team=self, actual=True, week=week)
+        optimal = Scorecard.objects.get(team=self, actual=False, week=week)
+        delta = optimal.points - actual.points
+        return delta
+
 
     def get_lineup_average(self):
         return TeamWeekScores.objects.filter(team=self).aggregate(Avg('lineup_score'))['lineup_score__avg']
@@ -153,7 +165,7 @@ class Team(models.Model):
             return 'D'
         elif AddDrop.objects.filter(player=player, added=True, team=self).count() > 0:
             return 'W'
-        elif TradeEntry.objects.filter(players_added=player, team=self).count() > 0:
+        elif TradeEntry.objects.filter(Q(players_added=player, team=self) | Q(players_removed=player, other_team=self)).count() > 0:
             return 'T'
         else:
             logger.error("Can't find source for player %s, default to do " % (player.name))
