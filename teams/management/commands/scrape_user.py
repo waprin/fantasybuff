@@ -1,6 +1,5 @@
 import traceback
-from django.contrib.auth.models import User
-from django.core import cache
+from django.core.cache import cache
 from django.core.management import BaseCommand
 from teams.management.commands.create_league import get_scraper
 from teams.models import EspnUser, League, Team
