@@ -222,7 +222,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                 render: function () {
                     console.log("rendering report card");
                     if (this.model.get('average_waiver_score') !== undefined) {
-                        console.log("rendering lineup score", this.model.get('lineup_score'));
+                        console.log("rendering lineup score", this.model.get('average_lineup_score'));
                         data[0].ranges[0] = this.model.get('min_average_lineup');
                         data[0].ranges[1] = this.model.get('max_average_lineup');
                         data[0].measures[0] = this.model.get('average_lineup_score');
@@ -242,10 +242,6 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                         data[3].ranges[1] = this.model.get('max_average_trade');
                         data[3].measures[0] = this.model.get('average_trade_score');
                         data[3].markers[0] = this.model.get('average_trade_score');
-                        data[0].ranges[0] = this.model.get('min_average_trade');
-                        data[0].ranges[1] = this.model.get('max_average_trade');
-                        data[0].measures[0] = this.model.get('average_trade_score');
-                        data[0].markers[0] = this.model.get('average_trade_score');
                         console.log("done hacking data", data);
                     } else {
                         return this;
