@@ -302,6 +302,14 @@ def add_player(player_name, team, added, date):
     logger.debug("creating add drop entry %s %s %s %s" % (team.team_name, team.espn_id, player_name, date))
     AddDrop.objects.create(date=date, team=team, player=player, added=added)
 
+def get_transaction_type(row):
+    for string in row.contents[1].strings:
+        if re.search(r'.*Add/Drop.*', string):
+            logger.debug('got transaction type')
+            return 'Add/Drop'
+    logger.debug('returning another transaction type')
+    return row.contents[1].contents[-1]
+
 def load_transactions_from_translog(html, year, team):
     logger.debug("load_transactions_from_translog %s" % year)
     soup = BeautifulSoup(html)
@@ -309,7 +317,8 @@ def load_transactions_from_translog(html, year, team):
     rows.reverse()
     draft_round = 0
     for row in rows:
-        transaction_type = row.contents[1].contents[-1]
+        transaction_type = get_transaction_type(row)
+
         date_str = ' '.join(list(row.contents[0].strings))
         date = datetime.datetime.strptime(date_str, '%a, %b %d %I:%M %p')
         date = date.replace(year=int(year))
@@ -388,6 +397,9 @@ def load_transactions_from_translog(html, year, team):
             add_player(row.contents[2].contents[1].string, team, True, date)
         elif transaction_type == 'Drop':
             add_player(row.contents[2].contents[1].string, team, False, date)
+        else:
+            logger.debug("unsupported transactino type %s " % transaction_type)
+            #logger.d("hm: %s" % str(row))
 
 
 

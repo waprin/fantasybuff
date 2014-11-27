@@ -209,7 +209,7 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         }, 'file': {
-            'level' : 'DEBUG',
+            'level' : 'INFO',
             'class' : 'logging.FileHandler',
             'formatter': 'verbose',
             'filename' : 'leagues.log',
@@ -229,7 +229,7 @@ LOGGING = {
          'teams' : {
             'handlers' : ['console', 'file'],
             'propogate' : True,
-            'level' : 'DEBUG',
+            'level' : 'INFO',
          }
     }
 }

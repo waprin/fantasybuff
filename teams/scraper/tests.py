@@ -211,6 +211,19 @@ class LeagueCreatorTest(unittest.TestCase):
         toby_gerhart = TradeEntry.objects.filter(players_removed__name='Toby Gerhart')
         self.assertGreater(toby_gerhart.count(), 0)
 
+    def test_load_translog_error_alex_smith(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='976898', year='2014')
+
+        team2 = Team.objects.create(espn_id='11', league=league, abbreviation='WAGN')
+        filebrowser = FileBrowser()
+        html = filebrowser.get_translog('930248', '2014', '11')
+        load_transactions_from_translog(html, '2014', team2)
+
+        alex_smith = AddDrop.objects.filter(player__name='Alex Smith')
+        self.assertGreater(alex_smith.count(), 0)
+
 
 
     def test_get_real_num_weeks(self):
