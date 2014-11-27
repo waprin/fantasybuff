@@ -141,7 +141,7 @@ class Team(models.Model):
         return points_for - points_against
 
     def get_lineup_points(self, week):
-        logger.info("calculating deltas for team %s %s" % (self.team_name, str(week)))
+        logger.debug("calculating deltas for team %s %s" % (self.team_name, str(week)))
         actual = Scorecard.objects.get(team=self, actual=True, week=week)
         optimal = Scorecard.objects.get(team=self, actual=False, week=week)
         delta = optimal.points - actual.points

@@ -92,10 +92,6 @@ class LeagueScraper(object):
         logger.debug("creating game %s %s %d" % (str(league), team_id, week))
         if not self.overwrite and self.store.has_game(league, team_id, week):
             return False
-        logger.warn("wtf is going on %s %s %s %s %s" % (str(league), str(team_id), str(week), str(self.store.has_game(league, team_id, week)), str(self.store.__class__.__name__)))
-        test_store = SqlStore()
-        logger.warn("wtf 2 %s " % (test_store.has_game(league, '3', 1)))
-
         game_html = self.scraper.get_game(league, team_id, week)
         self.store.write_game(league, team_id, week, game_html)
         return True
@@ -283,7 +279,7 @@ class LeagueScraper(object):
         logger.info("num weeks is %d" % num_weeks)
         for week in range(1, num_weeks+1):
             htmls = self.store.get_all_games(league, week)
-            logger.info("for week %d got %d games" % (week, len(htmls)))
+            logger.debug("for week %d got %d games" % (week, len(htmls)))
             for html in htmls:
                 load_scores_from_game(league, week, html)
 
