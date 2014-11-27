@@ -307,6 +307,12 @@ def get_transaction_type(row):
         if re.search(r'.*Add/Drop.*', string):
             logger.debug('got transaction type')
             return 'Add/Drop'
+        if re.search(r'.*Add.*', string):
+            logger.debug('got transaction type')
+            return 'Add'
+        if re.search(r'.*Drop.*', string):
+            logger.debug('got transaction type')
+            return 'Drop'
     logger.debug('returning another transaction type')
     return row.contents[1].contents[-1]
 

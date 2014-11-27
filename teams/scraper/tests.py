@@ -224,6 +224,20 @@ class LeagueCreatorTest(unittest.TestCase):
         alex_smith = AddDrop.objects.filter(player__name='Alex Smith')
         self.assertGreater(alex_smith.count(), 0)
 
+    def test_load_translog_error_mohammed(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='1044126', year='2014')
+
+        team2 = Team.objects.create(espn_id='11', league=league, abbreviation='WAGN')
+        filebrowser = FileBrowser()
+        html = filebrowser.get_translog('1044126', '2014', '7')
+        load_transactions_from_translog(html, '2014', team2)
+
+        mo_sanu = AddDrop.objects.filter(player__name='Mohamed Sanu')
+        self.assertGreater(mo_sanu.count(), 0)
+
+
 
 
     def test_get_real_num_weeks(self):
