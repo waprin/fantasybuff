@@ -45,7 +45,7 @@ class LeagueScraper(object):
         return True
 
     def create_standings_page(self, league):
-        if not self.overwrite and self.store.has_standings(league):
+        if not self.overwrite and not self.update and self.store.has_standings(league):
             return False
         standings_html = self.scraper.get_standings(league)
         self.store.write_standings(league, standings_html)

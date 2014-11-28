@@ -19,8 +19,8 @@ def reset_league(league):
     league.total_pages = 0
     league.loaded = False
     league.loading = False
-    league.failed = True
-    league.calulating = False
+    league.failed = False
+    league.calculating = False
     league.save()
 
 
