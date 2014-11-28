@@ -387,7 +387,7 @@ def get_all_leagues_json(request, all=False):
     all_accounts = []
     if leagues:
         data = Serializer().serialize(leagues, fields=('id', 'name', 'espn_id', 'year', 'loaded', 'failed',
-                                                       'loading', 'pages_scraped', 'total_pages', 'league_loaded_finish_time', 'lineups_scrape_finish_time'))
+                                                       'loading', 'pages_scraped', 'total_pages', 'league_loaded_finish_time', 'lineups_scrape_finish_time', 'calculating'))
         #data = serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
         data = json.loads(data)
         for i, league in enumerate(data):

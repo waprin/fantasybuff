@@ -16,6 +16,7 @@ class EspnUser(models.Model):
     failed = models.BooleanField(default=False)
     allow_save = models.BooleanField(default=False)
     allow_email = models.BooleanField(default=False)
+    calculating = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.username

@@ -16,10 +16,14 @@
     <% } else { %>
         <td>
             <% if (year === '2014') { %>
-              Loading: <%=name %> <%=year %>  Scraped: <%= pages_scraped %> Total: <%= total_pages %>
-              <div class="progress">
-                  <div class="progress-bar" style="width: <%= percent_done %>%;"> </div>
-              </div>
+              <% if (calculating) { %>
+                  Calculating Reports... <%=name %> <%=year %>
+              <% } else { %>
+                 Loading: <%=name %> <%=year %>  Scraped: <%= pages_scraped %> Total: <%= total_pages %>
+                <div class="progress">
+                    <div class="progress-bar" style="width: <%= percent_done %>%;"> </div>
+                </div>
+              <% } %>
             <% } else { %>
               <li>Loading: <%=name %> <%=year %></li>
               <img class="league_loading_spinner" src="/static/ajax-loader.gif"/>

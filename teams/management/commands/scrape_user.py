@@ -20,6 +20,7 @@ def reset_league(league):
     league.loaded = False
     league.loading = False
     league.failed = True
+    league.calulating = False
     league.save()
 
 
@@ -32,6 +33,7 @@ def defer_league_scrape(espn_user, league, load_only=False):
     try:
         league.failed = False
         league.loading = True
+        league.calculating = False
         league.save()
         if not load_only:
             league_scraper.scrape_league(league)

@@ -108,6 +108,10 @@ class LeagueScraper(object):
     def create_weekly_matchups(self, league, week):
         logger.debug("create weekly matchups(): begin %d " % week)
         self.create_matchups_page(league, week)
+
+        league.pages_scraped = league.pages_scraped + 1
+        league.save()
+
         matchups_html = self.store.get_matchups(league, week)
         teams = get_teams_from_matchups(matchups_html)
         logger.debug("teams is %s" % str(teams))
@@ -202,6 +206,9 @@ class LeagueScraper(object):
         logger.debug("done loading leagues for espn_user %s got %d teams" % (espn_user.username, len(Team.objects.filter(espn_user=espn_user))))
 
     def load_league(self, league):
+        league.calculating = True
+        league.save()
+
         Scorecard.objects.filter(team__league=league).delete()
         DraftClaim.objects.filter(team__league=league).delete()
         TradeEntry.objects.filter(team__league=league).delete()
