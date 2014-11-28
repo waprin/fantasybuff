@@ -4,7 +4,8 @@ from django.core.management import BaseCommand
 from teams.management.commands.create_league import get_scraper
 from teams.models import EspnUser, League, Team
 from teams.scraper.SqlStore import SqlStore
-from teams.scraper.report_card import league_report_cache_key, get_team_report_card_json, league_summary_cache_key
+from teams.scraper.report_card import league_report_cache_key, get_team_report_card_json, league_summary_cache_key, \
+    get_league_request_context
 from teams.scraper.scraper import LeagueScraper
 import django_rq
 
@@ -30,6 +31,7 @@ def defer_league_scrape(espn_user, league, load_only=False):
     league_scraper = LeagueScraper(scraper, store)
     try:
         league.failed = False
+        league.loading = True
         league.save()
         if not load_only:
             league_scraper.scrape_league(league)
@@ -39,8 +41,9 @@ def defer_league_scrape(espn_user, league, load_only=False):
         for team in teams:
             cache_key = league_report_cache_key(league.espn_id, league.year, team.espn_id)
             cache.delete(cache_key)
-            get_team_report_card_json(league.espn_id, league.year, league.team_id)
+            get_team_report_card_json(league.espn_id, league.year, team.espn_id)
         cache.delete(league_summary_cache_key(league.espn_id, league.year))
+        get_league_request_context(league)
 
     except Exception as e:
         logger.error("caught excepting scraping league %s %s, resetting: %s" % (league.espn_id, league.year, traceback.format_exc()))

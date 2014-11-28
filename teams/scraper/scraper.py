@@ -202,11 +202,6 @@ class LeagueScraper(object):
         logger.debug("done loading leagues for espn_user %s got %d teams" % (espn_user.username, len(Team.objects.filter(espn_user=espn_user))))
 
     def load_league(self, league):
-        league.loaded = False
-        league.failed = False
-        league.loading = True
-        league.save()
-
         Scorecard.objects.filter(team__league=league).delete()
         DraftClaim.objects.filter(team__league=league).delete()
         TradeEntry.objects.filter(team__league=league).delete()
