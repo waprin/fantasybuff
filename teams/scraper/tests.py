@@ -154,6 +154,8 @@ class LeagueCreatorTest(unittest.TestCase):
         league = League.objects.create(espn_id='976898', year='2014')
         team = Team.objects.create(espn_id='7', league=league)
         filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
         html = filebrowser.get_translog('976898', '2014', '7')
         load_transactions_from_translog(html, '2014', team)
 
@@ -164,6 +166,8 @@ class LeagueCreatorTest(unittest.TestCase):
 
         team = Team.objects.create(espn_id='7', league=league)
         filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
         html = filebrowser.get_translog('976898', '2014', '8')
         load_transactions_from_translog(html, '2014', team)
 
@@ -177,6 +181,8 @@ class LeagueCreatorTest(unittest.TestCase):
 
         team = Team.objects.create(espn_id='5', league=league)
         filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
         html = filebrowser.get_translog('976898', '2014', '5')
         load_transactions_from_translog(html, '2014', team)
 
@@ -191,6 +197,8 @@ class LeagueCreatorTest(unittest.TestCase):
         team = Team.objects.create(espn_id='2', league=league, abbreviation='WAGN')
         team = Team.objects.create(espn_id='5', league=league, abbreviation='BART')
         filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
         html = filebrowser.get_translog('976898', '2014', '2')
         load_transactions_from_translog(html, '2014', team)
 
@@ -205,6 +213,8 @@ class LeagueCreatorTest(unittest.TestCase):
         team1 = Team.objects.create(espn_id='2', league=league, abbreviation='BART')
         team2 = Team.objects.create(espn_id='10', league=league, abbreviation='WAGN')
         filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
         html = filebrowser.get_translog('976898', '2014', '10')
         load_transactions_from_translog(html, '2014', team2)
 
@@ -218,6 +228,8 @@ class LeagueCreatorTest(unittest.TestCase):
 
         team2 = Team.objects.create(espn_id='11', league=league, abbreviation='WAGN')
         filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
         html = filebrowser.get_translog('930248', '2014', '11')
         load_transactions_from_translog(html, '2014', team2)
 
@@ -231,6 +243,8 @@ class LeagueCreatorTest(unittest.TestCase):
 
         team2 = Team.objects.create(espn_id='11', league=league, abbreviation='WAGN')
         filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
         html = filebrowser.get_translog('1044126', '2014', '7')
         load_transactions_from_translog(html, '2014', team2)
 
@@ -245,6 +259,8 @@ class LeagueCreatorTest(unittest.TestCase):
         team2 = Team.objects.create(espn_id='11', league=league, abbreviation='RB')
         team1 = Team.objects.create(espn_id='2', league=league, abbreviation='SMD')
         filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
         html = filebrowser.get_translog('451385', '2014', '11')
         load_transactions_from_translog(html, '2014', team2)
 
@@ -269,6 +285,22 @@ class LeagueCreatorTest(unittest.TestCase):
         ahmad_bradshaw = TradeEntry.objects.filter(players_added__name='Ahmad Bradshaw')
         self.assertGreater(ahmad_bradshaw.count(), 0)
 
+
+    def test_load_translog_error_failed_load(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='1880759', year='2014')
+
+        team2 = Team.objects.create(espn_id='1', league=league, abbreviation='MM')
+        team1 = Team.objects.create(espn_id='2', league=league, abbreviation='Air')
+        filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
+        html = filebrowser.get_translog('1880759', '2014', '1')
+        load_transactions_from_translog(html, '2014', team2)
+
+        #ahmad_bradshaw = TradeEntry.objects.filter(players_added__name='Ahmad Bradshaw')
+        #self.assertGreater(ahmad_bradshaw.count(), 0)
 
 
     def test_get_real_num_weeks(self):

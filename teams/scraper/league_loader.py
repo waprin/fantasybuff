@@ -404,7 +404,10 @@ def load_transactions_from_translog(html, year, team):
 
         elif transaction_type == 'Add/Drop':
             content = list(row.contents[2].strings)
+            logger.debug("processing add drop %s" % str(content))
             for i in range(0, len(content), 3):
+                if (i + 2 >= len(content)):
+                    break
                 dropped = re.search('dropped', content[i]) is not None
                 if dropped:
                     add_player(content[i+1], team, False, date)
