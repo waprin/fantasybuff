@@ -237,6 +237,37 @@ class LeagueCreatorTest(unittest.TestCase):
         mo_sanu = AddDrop.objects.filter(player__name='Mohamed Sanu')
         self.assertGreater(mo_sanu.count(), 0)
 
+    def test_load_translog_error_aaron_rodgers(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='', year='2014')
+
+        team2 = Team.objects.create(espn_id='11', league=league, abbreviation='RB')
+        team1 = Team.objects.create(espn_id='2', league=league, abbreviation='SMD')
+        filebrowser = FileBrowser()
+        html = filebrowser.get_translog('451385', '2014', '11')
+        load_transactions_from_translog(html, '2014', team2)
+
+        aaron_rodgers = DraftClaim.objects.filter(player_added__name='Aaron Rodgers')
+        self.assertGreater(aaron_rodgers.count(), 0)
+
+
+
+    def test_load_translog_error_ahmad_bradshaw(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='451385', year='2014')
+
+        team2 = Team.objects.create(espn_id='12', league=league, abbreviation='MM')
+        team1 = Team.objects.create(espn_id='2', league=league, abbreviation='Air')
+        filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
+        html = filebrowser.get_translog('451385', '2014', '12')
+        load_transactions_from_translog(html, '2014', team2)
+
+        ahmad_bradshaw = TradeEntry.objects.filter(players_added__name='Ahmad Bradshaw')
+        self.assertGreater(ahmad_bradshaw.count(), 0)
 
 
 

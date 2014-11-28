@@ -312,9 +312,18 @@ def get_transaction_type(row):
         if re.search(r'.*Add.*', string):
             logger.debug('got transaction type')
             return 'Add'
+        if re.search(r'.*Draft.*', string):
+            logger.debug('got draft type')
+            return 'Draft'
         if re.search(r'.*Drop.*', string):
             logger.debug('got transaction type')
             return 'Drop'
+        if re.search(r'.*Trade Processed.*', string):
+            logger.debug('got trade processed')
+            return 'Trade Processed'
+        if re.search(r'.*Trade Upheld.*', string):
+            logger.debug('got accpepted trade')
+            return 'Trade Processed'
     logger.debug('returning another transaction type')
     return row.contents[1].contents[-1]
 
