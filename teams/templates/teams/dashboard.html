@@ -39,12 +39,12 @@
       </div>
       <div class="row trade-columns">
         <div class="col-xs-6 players-added {{ left }}" >
-            {% for player in trade.players_removed.all %}
+            {% for player in trade.players_added.all %}
               {{   player.name }}
             {% endfor %}
         </div>
         <div class="col-xs-6 players-added {{ right }}">
-        {% for player in trade.players_added.all %}
+        {% for player in trade.players_removed.all %}
                 {{ player.name }},
               {% endfor %}
         </div>

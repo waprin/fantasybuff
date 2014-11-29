@@ -96,8 +96,11 @@ def get_team_report_card_json(league_id, year, team_id):
 
 def get_league_request_context(league):
     hit = cache.get(league_summary_cache_key(league.espn_id, league.year))
+    """
     if hit:
+        logger.debug("returning cache hit for league summary")
         return hit
+    """
 
     teams = Team.objects.filter(league=league)
     no_trade = True
@@ -121,6 +124,7 @@ def get_league_request_context(league):
             logger.debug("setting left trade as loser")
             trade_left = 'trade-loser'
             trade_right = 'trade-winner'
+    logger.debug("best trade is for team %s %s" % (best_trade.team.team_name, best_trade.players_added.all()))
 
 
     best_waiver = league.get_most_waiver_points()

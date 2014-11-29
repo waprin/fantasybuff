@@ -169,6 +169,25 @@ class LeagueCreatorTest(unittest.TestCase):
         public = get_public_on_from_settings(html)
         self.assertFalse(public)
 
+    def test_load_mside(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='451385', year='2014')
+
+        filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
+        html = filebrowser.get_translog('451385', '2014', '9')
+        team = Team.objects.get(league=league, espn_id='9')
+        load_transactions_from_translog(html, '2014', team)
+
+        maclin = Player.objects.get(name='Jeremy Maclin')
+        trades = TradeEntry.objects.filter(players_added=maclin)
+        self.assertGreater(trades.count(), 0)
+
+        bad_trades = TradeEntry.objects.filter(players_removed=maclin)
+        self.assertEqual(bad_trades.count(), 0)
+
 
     def test_load_translog_error_eli_manning(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
