@@ -51,7 +51,7 @@ class SqlStore:
     def has_settings(self, league_id, year):
         return SettingsHtmlScrape.objects.filter(league_id=league_id, year=year).count() > 0
 
-    def write_settingss(self, league_id, year, html):
+    def write_settings(self, league_id, year, html):
         SettingsHtmlScrape.objects.create(html=html, league_id=league_id, year=year)
 
     def get_settings(self, league_id, year):
