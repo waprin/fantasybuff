@@ -113,7 +113,7 @@ def get_league_request_context(league):
     sorted_trades = list(trades)
     if len(sorted_trades) > 0:
         no_trade = False
-        sorted_trades.sort(key=lambda t: t.get_value_cumulative(league))
+        sorted_trades.sort(key=lambda t: t.get_value_cumulative())
         best_trade = sorted_trades[-1]
 
         if best_trade.get_total_points_for(league) > best_trade.get_total_points_against(league):

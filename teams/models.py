@@ -455,37 +455,37 @@ class TradeEntry(TransLogEntry):
     players_removed = models.ManyToManyField(Player, related_name='trade_dropped')
     objects = TransLogManager()
 
-    def get_points_for_week(self, week, league):
+    def get_points_for_week(self, week):
         scorecard_entries_added = ScorecardEntry.objects.filter(player__in=self.players_added.all(),
                                                           scorecard__week=week,
                                                           scorecard__actual=True,
-                                                          team__league=league,
+                                                          team__league=self.team.league,
                                                           ).exclude(slot='Bench')
         if scorecard_entries_added.count() > 0:
             return scorecard_entries_added.aggregate(Sum('points'))['points__sum']
         else:
             return 0
 
-    def get_points_against_week(self, week, league):
+    def get_points_against_week(self, week):
         scorecard_entries_dropped = ScorecardEntry.objects.filter(player__in=self.players_removed.all(),
                                                           scorecard__week=week,
                                                           scorecard__actual=True,
-                                                          team__league=league).exclude(slot='Bench')
+                                                          team__league=self.team.league).exclude(slot='Bench')
         if scorecard_entries_dropped.count() > 0:
             return scorecard_entries_dropped.aggregate(Sum('points'))['points__sum']
         else:
             return 0
 
-    def get_total_points_for(self, league):
+    def get_total_points_for(self):
         week = real_num_weeks()
-        return reduce(lambda t, w: t + self.get_points_for_week(w, league), range(1, week+1), 0)
+        return reduce(lambda t, w: t + self.get_points_for_week(w), range(1, week+1), 0)
 
-    def get_total_points_against(self, league):
+    def get_total_points_against(self):
         week = real_num_weeks()
-        return reduce(lambda t, w: t + self.get_points_against_week(w, league), range(1, week+1), 0)
+        return reduce(lambda t, w: t + self.get_points_against_week(w), range(1, week+1), 0)
 
-    def get_value_cumulative(self, league):
-        return abs(self.get_total_points_for(league) - self.get_total_points_against(league))
+    def get_value_cumulative(self):
+        return abs(self.get_total_points_for() - self.get_total_points_against())
 
 
 class AddDrop(TransLogEntry):

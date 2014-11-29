@@ -39,6 +39,7 @@ urlpatterns = patterns('',
      url(r'^leagues/espn/(\d*)/(\d\d\d\d)/(\d*)/trade/(\d*)', 'teams.views.show_trade_week'),
      url(r'^leagues/espn/(\d*)/(\d\d\d\d)/(\d*)/draft/$', 'teams.views.get_'
                                                      'team_draft'),
+     url(r'^trade', 'teams.views.trade'),
      url(r'', include('social_auth.urls')),
 
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -8,7 +8,7 @@ from django.shortcuts import redirect
 from teams.management.commands.scrape_user import defer_espn_user_scrape
 from teams.metrics.lineup_calculator import get_lineup_score
 from teams.models import Scorecard, ScorecardEntry, Team, League, EspnUser, TeamReportCard, DraftClaim, TeamWeekScores, \
-    AddDrop, TradeEntry, MailingList, BetaInvite
+    AddDrop, TradeEntry, MailingList, BetaInvite, Player
 import simplejson as json
 from django.contrib.auth.models import User
 from django.template import RequestContext, loader
@@ -524,3 +524,15 @@ def mailing_list(request):
     return redirect('/')
 
 
+def trade(request):
+    league = League.objects.filter(espn_id='451385')
+    maclin = Player.objects.get(name='Jeremy Maclin')
+    trade = TradeEntry.objects.get(team__league=league, players_added=maclin)
+
+    cached_context = {
+        'trade': trade
+    }
+    logger.debug("trade is %s" % trade.team.team_name)
+    context = RequestContext(request, cached_context)
+    template = loader.get_template('teams/trade_analyzer.html')
+    return HttpResponse(template.render(context))
