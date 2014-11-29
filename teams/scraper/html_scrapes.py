@@ -1,10 +1,13 @@
 import re
+import logging
+
 from bs4 import BeautifulSoup
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 __author__ = 'bprin'
+
 
 def get_leagues_from_entrance(html):
     pool = BeautifulSoup(html)
@@ -19,6 +22,7 @@ def get_leagues_from_entrance(html):
         leagues.append((name, espn_id, year, team_id))
     logger.debug("get_leagues_from_entrance returning " + str(leagues))
     return leagues
+
 
 def get_teams_from_standings(html):
     pool = BeautifulSoup(html)
@@ -35,11 +39,13 @@ def get_teams_from_standings(html):
         matched_name = re.search("(.*)\s*\((.*)\)", fullname)
         team_name = matched_name.group(1)
         owner_name = matched_name.group(2)
-        team_tuples.append( (team_id, team_name, owner_name) )
+        team_tuples.append((team_id, team_name, owner_name))
     return team_tuples
+
 
 def get_player_from_game(html):
     pass
+
 
 def get_num_weeks_from_matchups(html):
     pool = BeautifulSoup(html)
@@ -49,6 +55,7 @@ def get_num_weeks_from_matchups(html):
         m = matchup
     return int(m.string)
 
+
 def get_player_ids_from_lineup(html):
     soup = BeautifulSoup(html)
     player_rows = soup.find_all('td', 'playertablePlayerName')
@@ -57,10 +64,12 @@ def get_player_ids_from_lineup(html):
         ids.append(re.match(r'playername_(\d*)', player_row['id']).group(1))
     return ids
 
+
 def parse_scores_from_playersheet(html):
     pool = BeautifulSoup(html)
     rows = pool.find_all('table')[2].find_all('tr')[1:]
     return [row.find_all('td')[-1].string for row in rows]
+
 
 def get_teams_from_matchups(html):
     soup = BeautifulSoup(html)
@@ -77,6 +86,7 @@ def get_teams_from_matchups(html):
         games.append((first_id, second_id))
     return games
 
+
 def get_public_on_from_settings(html):
     soup = BeautifulSoup(html)
     rows = soup.find(id='basicSettingsTable').find_all('tr')
@@ -87,10 +97,5 @@ def get_public_on_from_settings(html):
                     return False
                 else:
                     return True
-
-
-
-
-
 
     return False

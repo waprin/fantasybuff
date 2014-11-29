@@ -4,6 +4,7 @@ __author__ = 'bprin'
 
 from teams.models import ScoringSystem, PlayerScoreStats
 
+
 def calculate_player_score(scoring_system, player):
     scoring_system = ScoringSystem()
     player = PlayerScoreStats()
@@ -11,9 +12,7 @@ def calculate_player_score(scoring_system, player):
     score += scoring_system.py25 * (int(player.pass_yards) / 25)
     score += scoring_system.td_pass * player.pass_td
     score += scoring_system.int_thrown * player.interceptions
-    #score += scoring_system.twopt_pass *
-
-
+    # score += scoring_system.twopt_pass *
 
 
 scoring_system = ScoringSystem()

@@ -272,7 +272,7 @@ class LeagueCreatorTest(unittest.TestCase):
     def test_load_translog_error_aaron_rodgers(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
         espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
-        league = League.objects.create(espn_id='451385', year='2014')
+        league = League.objects.create(espn_id='', year='2014')
 
         team2 = Team.objects.create(espn_id='11', league=league, abbreviation='RB')
         team1 = Team.objects.create(espn_id='2', league=league, abbreviation='SMD')

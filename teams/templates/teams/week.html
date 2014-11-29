@@ -2,74 +2,84 @@
 
 {% block pagescripts %}
 
-    <!-- Custom CSS -->
-    <link href="/static/css/week.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="/static/css/week.css" rel="stylesheet">
 
 
 {% endblock %}
 
 {% block content %}
-            <div class="container-fluid">
+  <div class="container-fluid">
 
 
-                <!-- /.row -->
-                <div class="row">
-                    <div class="col-lg-4">Actual Score: {{ actual_score }}</div>
-                    <div class="col-lg-4">Optimal Score: {{ optimal_score }}</div>
-                    <div class="col-lg-4">Delta: {{ delta }}</div>
-                </div>
+    <!-- /.row -->
+    <div class="row">
+      <div class="col-lg-4">Actual Score: {{ actual_score }}</div>
+      <div class="col-lg-4">Optimal Score: {{ optimal_score }}</div>
+      <div class="col-lg-4">Delta: {{ delta }}</div>
+    </div>
 
-                <div class="row">
-                    <div class="col-lg-6">
-                        <h2>Actual Lineup</h2>
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Slot</th>
-                                        <th>Position</th>
-                                        <th>Player</th>
-                                        <th>Points</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for entry in scorecard_entries %}
-                                        <tr>
-                                            <td class="entry_slot">{{ entry.slot }}</td>
-                                            <td class="entry_slot">{{ entry.player.position }}</td>
-                                            <td class="entry_slot">{{ entry.player.name }}</td>
-                                            <td class="entry_slot">{{ entry.points }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <h2>Optimal Lineup</h2>
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Slot</th>
-                                        <th>Position</th>
-                                        <th>Player</th>
-                                        <th>Points</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {% for entry in optimal_entries %}
-                                    <tr class="lineup_added_{{ entry.added }}">
-                                        <td><div class="entry_slot">{{ entry.slot }}</div></td>
-                                        <td><div class="entry_slot">{{ entry.player.position }}</div></td>
-                                        <td><div class="entry_slot">{{ entry.player.name }}</div></td>
-                                        <td><div class="entry_slot">{{ entry.points }}</div></td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <!-- /.row -->'
+    <div class="row">
+      <div class="col-lg-6">
+        <h2>Actual Lineup</h2>
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover table-striped">
+            <thead>
+            <tr>
+              <th>Slot</th>
+              <th>Position</th>
+              <th>Player</th>
+              <th>Points</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for entry in scorecard_entries %}
+              <tr>
+                <td class="entry_slot">{{ entry.slot }}</td>
+                <td class="entry_slot">{{ entry.player.position }}</td>
+                <td class="entry_slot">{{ entry.player.name }}</td>
+                <td class="entry_slot">{{ entry.points }}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <h2>Optimal Lineup</h2>
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover table-striped">
+            <thead>
+            <tr>
+              <th>Slot</th>
+              <th>Position</th>
+              <th>Player</th>
+              <th>Points</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for entry in optimal_entries %}
+              <tr class="lineup_added_{{ entry.added }}">
+                <td>
+                  <div class="entry_slot">{{ entry.slot }}</div>
+                </td>
+                <td>
+                  <div class="entry_slot">{{ entry.player.position }}</div>
+                </td>
+                <td>
+                  <div class="entry_slot">{{ entry.player.name }}</div>
+                </td>
+                <td>
+                  <div class="entry_slot">{{ entry.points }}</div>
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- /.row -->'
 {% endblock %}

@@ -1,28 +1,33 @@
 from django.core.cache import cache
-from teams.models import TeamReportCard, TeamWeekScores, League, Team, TradeEntry
 import simplejson as json
+
+from teams.models import TeamReportCard, TeamWeekScores, League, Team, TradeEntry
+
 
 __author__ = 'bprin'
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 from django.core.serializers.json import Serializer as Builtin_Serializer
+
 
 class Serializer(Builtin_Serializer):
     def get_dump_object(self, obj):
         return self._current
 
+
 def league_summary_cache_key(league_id, year):
     return 'ffbuff_summary_%s_%s' % (league_id, year)
+
 
 def league_report_cache_key(league_id, year, team_id):
     return 'ffbuff_report_%s_%s_%s' % (league_id, year, team_id)
 
 
 def get_team_report_card_json(league_id, year, team_id):
-
-    cache_key =  league_report_cache_key(league_id, year, team_id)
+    cache_key = league_report_cache_key(league_id, year, team_id)
     hit = cache.get(cache_key)
     if hit:
         logger.info("returning cache hit")
@@ -44,15 +49,16 @@ def get_team_report_card_json(league_id, year, team_id):
         waiver_scores.append({'week': week_score.week, 'value': float(week_score.waiver_score)})
         trade_scores.append({'week': week_score.week, 'value': float(week_score.trade_score)})
 
-    report_data = Serializer().serialize(report_cards, fields=('average_lineup_score', 'average_draft_score', 'average_waiver_score', 'average_trade_score'))
+    report_data = Serializer().serialize(report_cards, fields=(
+    'average_lineup_score', 'average_draft_score', 'average_waiver_score', 'average_trade_score'))
 
-    #scorecard_data = Serializer().serialize(scorecards, fields=('week', 'delta'))
+    # scorecard_data = Serializer().serialize(scorecards, fields=('week', 'delta'))
 
     #draft_data = Serializer().serialize(draft_scores, fields=('draft_score', 'week', 'waiver_score', 'trade_score'))
 
     reportcard_struct = json.loads(report_data)
     #scorecard_struct = json.loads(scorecard_data)
-#    draft_struct = json.loads(draft_data)
+    #    draft_struct = json.loads(draft_data)
 
     #reportcard_struct[0]['lineups'] = scorecard_struct
     reportcard_struct[0]['team_id'] = team.espn_id
@@ -70,8 +76,8 @@ def get_team_report_card_json(league_id, year, team_id):
     reportcard_struct[0]['draft_min'] = TeamWeekScores.get_min(league, 'draft_score')
     reportcard_struct[0]['num_teams'] = Team.objects.filter(league=league).count()
 
-#    reportcard_struct[0]['max_average_lineup'] = str(TeamReportCard.get_max(league, 'average_lineup_score'))
-#    reportcard_struct[0]['min_average_lineup'] = str(TeamReportCard.get_min(league, 'average_lineup_score'))
+    #    reportcard_struct[0]['max_average_lineup'] = str(TeamReportCard.get_max(league, 'average_lineup_score'))
+    #    reportcard_struct[0]['min_average_lineup'] = str(TeamReportCard.get_min(league, 'average_lineup_score'))
 
     #reportcard_struct[0]['max_average_lineup'] = '100.0'
     #reportcard_struct[0]['min_average_lineup'] = '0.0'
@@ -93,6 +99,7 @@ def get_team_report_card_json(league_id, year, team_id):
     logger.info("filling cache")
     cache.set(cache_key, data)
     return data
+
 
 def get_league_request_context(league):
     hit = cache.get(league_summary_cache_key(league.espn_id, league.year))
@@ -126,18 +133,16 @@ def get_league_request_context(league):
             trade_right = 'trade-winner'
     logger.debug("best trade is for team %s %s" % (best_trade.team.team_name, best_trade.players_added.all()))
 
-
     best_waiver = league.get_most_waiver_points()
     most_perfect_lineups = league.get_most_perfect_lineups()
-
 
     points_for = None
     points_against = None
     if best_trade:
-        logger.debug("best trade added %s removed %s" % (str(best_trade.players_added.all()), str(best_trade.players_removed.all())))
+        logger.debug("best trade added %s removed %s" % (
+        str(best_trade.players_added.all()), str(best_trade.players_removed.all())))
         points_for = best_trade.get_total_points_for(league)
         points_against = best_trade.get_total_points_against(league)
-
 
     my_context = {
         'navigation': ['Leagues'],

@@ -1,188 +1,188 @@
 {% extends "teams/base.html" %}
 
 
-    {% block pagescripts %}
-      <link href="/static/css/dashboard.css" rel="stylesheet">
-    {% endblock %}
+{% block pagescripts %}
+  <link href="/static/css/dashboard.css" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
 
   <h1>{{ league.name }} {{ league.year }}</h1>
   <h2>League Summary</h2>
-<div class="dashboard-header row">
+  <div class="dashboard-header row">
 
-  <div class="row league-summary">
-    <div class="best-trade-panel col-md-4">
-      <div class="summary-header dark-blue-header">
-        <h3>Best Trade</h3>
-      </div>
-    {% if no_trade %}
-      <div style="text-align: center">
-      No trades yet in this league!
-      </div>
-    {% else %}
-      <div class="row trade-columns">
-          <div class="players-added col-xs-6 {{ left }}">
-            <p>
+    <div class="row league-summary">
+      <div class="best-trade-panel col-md-4">
+        <div class="summary-header dark-blue-header">
+          <h3>Best Trade</h3>
+        </div>
+        {% if no_trade %}
+          <div style="text-align: center">
+            No trades yet in this league!
+          </div>
+        {% else %}
+          <div class="row trade-columns">
+            <div class="players-added col-xs-6 {{ left }}">
+              <p>
               <h4>
                 {{ trade.team.team_name }} Added
               </h4>
-            </p>
-          </div>
+              </p>
+            </div>
 
-        <div class="players-added col-xs-6 {{ right }}">
-          <h4>
-            {{ trade.other_team.team_name }}
-            Added
-          </h4>
-        </div>
-      </div>
-      <div class="row trade-columns">
-        <div class="col-xs-6 players-added {{ left }}" >
-            {% for player in trade.players_added.all %}
-              {{   player.name }}
-            {% endfor %}
-        </div>
-        <div class="col-xs-6 players-added {{ right }}">
-        {% for player in trade.players_removed.all %}
+            <div class="players-added col-xs-6 {{ right }}">
+              <h4>
+                {{ trade.other_team.team_name }}
+                Added
+              </h4>
+            </div>
+          </div>
+          <div class="row trade-columns">
+            <div class="col-xs-6 players-added {{ left }}">
+              {% for player in trade.players_added.all %}
+                {{ player.name }}
+              {% endfor %}
+            </div>
+            <div class="col-xs-6 players-added {{ right }}">
+              {% for player in trade.players_removed.all %}
                 {{ player.name }},
               {% endfor %}
-        </div>
+            </div>
+          </div>
+          <div class="row trade-columns">
+            <div class="col-xs-6 {{ left }}">
+              Points Since Trade {{ total_points_for }}
+            </div>
+            <div class="col-xs-6 {{ right }}">
+              Points Since Trade {{ total_points_against }}
+            </div>
+          </div>
+        {% endif %}
       </div>
-      <div class="row trade-columns">
-         <div class="col-xs-6 {{ left }}">
-           Points Since Trade {{ total_points_for }}
-         </div>
-         <div class="col-xs-6 {{ right }}">
-           Points Since Trade {{ total_points_against }}
+      <div class="col-md-4 best-panel">
+        <div class="summary-header dark-blue-header">
+          <h3>Best Waiver Wire Pickup</h3>
         </div>
-      </div>
-    {% endif %}
-    </div>
-    <div class="col-md-4 best-panel">
-      <div class="summary-header dark-blue-header">
-        <h3>Best Waiver Wire Pickup</h3>
-      </div>
-      <div class="best-panel-wrapper">
-        <div>
-          <h3>{{ best_waiver.team.team_name }}</h3>
-        </div>
-        <div>
-          <h4>{{ best_waiver.player }}</h4>
-        </div>
-        <div>
-          Total Points From Starts: <span class="strong">{{ best_waiver.points }}</span>
-        </div>
-      </div>
-
-    </div>
-    <div class="col-md-4 best-panel">
-      <div class="summary-header dark-blue-header">
-        <h3>Most Perfect Lineups</h3>
-      </div>
-      {% if most_perfect_lineups %}
         <div class="best-panel-wrapper">
           <div>
-            <h3>{{ most_perfect_lineups.team.team_name }}</h3>
+            <h3>{{ best_waiver.team.team_name }}</h3>
           </div>
           <div>
-            <h4>Total Perfect Lineups: {{ most_perfect_lineups.count }}</h4>
+            <h4>{{ best_waiver.player }}</h4>
+          </div>
+          <div>
+            Total Points From Starts: <span class="strong">{{ best_waiver.points }}</span>
           </div>
         </div>
-      {% else %}
-        <div>No Player Set A Perfect Lineup!</div>
-      {% endif %}
+
+      </div>
+      <div class="col-md-4 best-panel">
+        <div class="summary-header dark-blue-header">
+          <h3>Most Perfect Lineups</h3>
+        </div>
+        {% if most_perfect_lineups %}
+          <div class="best-panel-wrapper">
+            <div>
+              <h3>{{ most_perfect_lineups.team.team_name }}</h3>
+            </div>
+            <div>
+              <h4>Total Perfect Lineups: {{ most_perfect_lineups.count }}</h4>
+            </div>
+          </div>
+        {% else %}
+          <div>No Player Set A Perfect Lineup!</div>
+        {% endif %}
+      </div>
     </div>
   </div>
-</div>
   <div class="full-line"></div>
   <h2>Report Cards and Week-By-Week Analysis</h2>
   <h3 class="team-link-header">Team: {{ current_team.team_name }} </h3>
   <br/>
-<div class="row full-height">
+  <div class="row full-height">
 
-  <div class="col-lg-12 navigation-column">
-    <div class="container">
-            <ul id="league_navigation" class="nav nav-tabs">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Teams<b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        {% for team in teams %}
-                            <li><a id="team-link-{{ team.espn_id }}"  href="#/team/{{ team.espn_id }}">{{ team.team_name }}</a></li>
-                        {%  endfor %}
-                    </ul>
+    <div class="col-lg-12 navigation-column">
+      <div class="container">
+        <ul id="league_navigation" class="nav nav-tabs">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Teams<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              {% for team in teams %}
+                <li><a id="team-link-{{ team.espn_id }}" href="#/team/{{ team.espn_id }}">{{ team.team_name }}</a></li>
+              {% endfor %}
             </ul>
-    </div>
+        </ul>
+      </div>
 
 
-    <div class="tab-content">
+      <div class="tab-content">
         <div class="tab-pane active" id="report-card">
-            <div class="container-fluid fill">
-              <div id="reportcard_vis_container" style="text-align: center">
-              </div>
+          <div class="container-fluid fill">
+            <div id="reportcard_vis_container" style="text-align: center">
             </div>
+          </div>
         </div>
         <div>
-            <div id="lineup_vis_container" style="text-align: center">
-                <svg id="lineup-vis" width="1000" height="200">
-                    <path class="teamline" stroke="blue" stroke-width="2" fill="none"></path>
-                </svg>
-            </div>
-            </div>
+          <div id="lineup_vis_container" style="text-align: center">
+            <svg id="lineup-vis" width="1000" height="200">
+              <path class="teamline" stroke="blue" stroke-width="2" fill="none"></path>
+            </svg>
+          </div>
         </div>
-        <div>
-            <div id="draft_vis_container" style="text-align: center">
-                <svg id="draft-vis" width="1000" height="200">
-                    <path class="teamline" stroke="blue" stroke-width="2" fill="none"></path>
-                  </svg>
-            </div>
+      </div>
+      <div>
+        <div id="draft_vis_container" style="text-align: center">
+          <svg id="draft-vis" width="1000" height="200">
+            <path class="teamline" stroke="blue" stroke-width="2" fill="none"></path>
+          </svg>
         </div>
-        <div>
-            <div id="waiver_vis_container" style="text-align: center">
-                <svg id="waiver-vis" width="1000" height="200">
-                    <path class="teamline" stroke="blue" stroke-width="2" fill="none"></path>
-                </svg>
-            </div>
+      </div>
+      <div>
+        <div id="waiver_vis_container" style="text-align: center">
+          <svg id="waiver-vis" width="1000" height="200">
+            <path class="teamline" stroke="blue" stroke-width="2" fill="none"></path>
+          </svg>
         </div>
-        <div>
-            <div id="trade_vis_container" style="text-align: center">
-                <svg id="trade-vis" width="1000" height="200">
-                    <path class="teamline" stroke="blue" stroke-width="2" fill="none"></path>
-                </svg>
-            </div>
+      </div>
+      <div>
+        <div id="trade_vis_container" style="text-align: center">
+          <svg id="trade-vis" width="1000" height="200">
+            <path class="teamline" stroke="blue" stroke-width="2" fill="none"></path>
+          </svg>
         </div>
-        </div>
+      </div>
     </div>
   </div>
-</div>
+  </div>
+  </div>
 {% endblock %}
 
 {% block endscripts %}
-    {{ block.super }}
+  {{ block.super }}
 
-<!--
- <script src="http://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
-    <script type="text/javascript" src="/static/js/bullets.js"></script>
-    -->
+  <!--
+   <script src="http://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
+      <script type="text/javascript" src="/static/js/bullets.js"></script>
+      -->
 
-    <script id="lineup-table-template" type="text/template">
-                        <table class="table table-bordered table-striped">
-                            <tbody>
-                            <tr>
-                                <td>Week</td>
-                                <% _.each(scorecards, function(scorecard) { %>
-                                <td><%= scorecard.week %></td>
-                                <% }); %>
-                            </tr>
-                            <tr>
-                                <td>Delta</td>
-                                <% _.each(scorecards, function(scorecard) { %>
-                                <td><a href="<%= team_id %>/<%= field %>/<%= scorecard.week %>" ><%= scorecard.value %> </a></td>
-                                <% }); %>
-                            </tr>
-                            </tbody>
-                        </table>
-    </script>
+  <script id="lineup-table-template" type="text/template">
+    <table class="table table-bordered table-striped">
+      <tbody>
+      <tr>
+        <td>Week</td>
+        <% _.each(scorecards, function(scorecard) { %>
+        <td><%= scorecard.week %></td>
+        <% }); %>
+      </tr>
+      <tr>
+        <td>Delta</td>
+        <% _.each(scorecards, function(scorecard) { %>
+        <td><a href="<%= team_id %>/<%= field %>/<%= scorecard.week %>"><%= scorecard.value %> </a></td>
+        <% }); %>
+      </tr>
+      </tbody>
+    </table>
+  </script>
   <script data-main="/static/js/league_main" src="/static/require.js"></script>
   <!--<script src="/static/js/league_view.js"></script>-->
 {% endblock %}

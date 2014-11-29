@@ -2,8 +2,9 @@ __author__ = 'bill'
 
 import unittest
 import logging
+
 logger = logging.getLogger(__name__)
-from teams.utils.league_files import  choose_league_directory
+from teams.utils.league_files import choose_league_directory
 
 
 class UtilsTest(unittest.TestCase):
@@ -12,7 +13,7 @@ class UtilsTest(unittest.TestCase):
         league1 = 'league_000_2012_12'
         league2 = 'league_001_2012_11'
 
-        listings = ['something', '..', '.', league1, league2 ]
+        listings = ['something', '..', '.', league1, league2]
         d = choose_league_directory(listings)
         self.assertEquals(d, league2)
 
@@ -20,7 +21,7 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(d, None)
 
         l1 = 'league_000_2012_12_24_00_57_16'
-        #l2 = 'league_001_2012_12_24_00_57_16'
+        # l2 = 'league_001_2012_12_24_00_57_16'
         l3 = 'league_000_2012_12_24_00_58_05'
         l4 = 'league_001_2012_12_24_00_58_05'
         l5 = 'league_000_2012_12_24_00_58_53'

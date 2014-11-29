@@ -1,34 +1,38 @@
 from decimal import Decimal
 import datetime
-from django.core.exceptions import ObjectDoesNotExist
-from league import settings
+import re
+
+from bs4 import BeautifulSoup
+
 from teams.models import League, Player, ScoreEntry, Team, Scorecard, ScorecardEntry, PlayerScoreStats, DraftClaim, \
     TradeEntry, AddDrop
 from teams.scraper.html_scrapes import get_leagues_from_entrance
 
-import re
-from bs4 import BeautifulSoup
 
 __author__ = 'bprin'
 
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 def __get_player_id_from_playerpage(html):
     try:
         return re.findall(r'playerId=(\d+)', html)[0]
     except IndexError:
-        f = open('error_html' , 'w')
+        f = open('error_html', 'w')
         f.write(html)
         raise
 
+
 def __get_player_name_from_playerpage(html):
     pool = BeautifulSoup(html)
-    return pool.find_all('div','player-name')[0].string
+    return pool.find_all('div', 'player-name')[0].string
+
 
 def __get_player_position_from_playerpage(html):
     pool = BeautifulSoup(html)
-    return pool.find('span', {"title" : "Position Eligibility"}).contents[1].strip()
+    return pool.find('span', {"title": "Position Eligibility"}).contents[1].strip()
 
 
 def load_leagues_from_entrance(html, espn_user):
@@ -39,7 +43,8 @@ def load_leagues_from_entrance(html, espn_user):
         try:
             league = League.objects.get(espn_id=league_tuple[1], year=league_tuple[2])
         except League.DoesNotExist:
-            league = League.objects.create(espn_id=league_tuple[1], year=league_tuple[2], name=league_tuple[0], loaded=False, scraped_weeks=0)
+            league = League.objects.create(espn_id=league_tuple[1], year=league_tuple[2], name=league_tuple[0],
+                                           loaded=False, scraped_weeks=0)
         leagues.append(league)
 
         try:
@@ -54,6 +59,7 @@ def load_leagues_from_entrance(html, espn_user):
 
     return leagues
 
+
 def get_passing_stats(player_score_stats, stats):
     player_score_stats.pass_yards = int(stats[2])
     player_score_stats.pass_td = int(stats[3])
@@ -63,11 +69,13 @@ def get_passing_stats(player_score_stats, stats):
     player_score_stats.default_points = Decimal(stats[5])
     player_score_stats.save()
 
+
 def get_running_stats(player_score_stats, stats):
     player_score_stats.run_yards = int(stats[3])
     player_score_stats.run_td = int(stats[3])
     player_score_stats.default_points = Decimal(stats[5])
     player_score_stats.save()
+
 
 def get_receiving_stats(player_score_stats, stats):
     player_score_stats.receptions = int(stats[2])
@@ -75,11 +83,13 @@ def get_receiving_stats(player_score_stats, stats):
     player_score_stats.receving_td = int(stats[4])
     player_score_stats.save()
 
+
 def get_special_stats(player_score_stats, stats):
     player_score_stats.blocked_kr = int(stats[2])
     player_score_stats.int_td = int(stats[3])
     player_score_stats.fr_td = int(stats[4])
     player_score_stats.save()
+
 
 def get_kicking_stats(player_score_stats, stats):
     player_score_stats.pat_made = Decimal(stats[4])
@@ -89,11 +99,13 @@ def get_kicking_stats(player_score_stats, stats):
     player_score_stats.fg_missed = fg_missed
     player_score_stats.save()
 
+
 def get_fg_distance_stats(player_score_stats, stats):
     player_score_stats.fg_0 = Decimal(stats[2])
     player_score_stats.fg_40 = Decimal(stats[3])
     player_score_stats.fg_50 = Decimal(stats[4])
     player_score_stats.save()
+
 
 def get_stats_function(headers):
     if headers == ['WK', 'OPP', 'YDS', 'TD', 'I/F', 'PTS']:
@@ -120,7 +132,7 @@ def load_scores_from_playersheet(html, player_id, year, overwrite=False):
     pool = BeautifulSoup(html)
 
     name = __get_player_name_from_playerpage(html)
-    #player_id = __get_player_id_from_playerpage(html)
+    # player_id = __get_player_id_from_playerpage(html)
     position = __get_player_position_from_playerpage(html)
     new = True
 
@@ -144,7 +156,7 @@ def load_scores_from_playersheet(html, player_id, year, overwrite=False):
 
     stats_tables = pool.find_all(id=re.compile('moreStatsView.*'))
     for stats_table in stats_tables:
-        headers = [tr.string.strip()  for tr in stats_table.find_all('tr')[0].find_all('td')]
+        headers = [tr.string.strip() for tr in stats_table.find_all('tr')[0].find_all('td')]
         stats_function = get_stats_function(headers)
         for i, row in enumerate(stats_table.find_all('tr')[1:]):
             week = i + 1
@@ -168,7 +180,7 @@ def load_teams_from_standings(html, league):
     extract_fields = lambda row: (row.span.string[1:-1],
                                   row.contents[0].strip(),
                                   re.search(r'teamId=(\d*)', row['href']).group(1)
-                                  )
+    )
     rows = map(extract_fields, rows)
     for row in rows:
         abbreviation = row[0]
@@ -178,14 +190,17 @@ def load_teams_from_standings(html, league):
         try:
             logger.debug("load_team_from_standings(): searching for espn_id %s" % espn_id)
             team = Team.objects.get(league=league, espn_id=espn_id)
-            logger.debug("load_teams_from_standings(): team %s already existed, with espn_user=%s" % (team.team_name, team.espn_user))
+            logger.debug("load_teams_from_standings(): team %s already existed, with espn_user=%s" % (
+            team.team_name, team.espn_user))
         except Team.DoesNotExist:
-            team = Team.objects.create(team_name=team_name, espn_id = espn_id, abbreviation=abbreviation, league=league)
-            logger.debug("load_teams_from_standings(): team %s %s was newly created" % (team.team_name, team.abbreviation))
+            team = Team.objects.create(team_name=team_name, espn_id=espn_id, abbreviation=abbreviation, league=league)
+            logger.debug(
+                "load_teams_from_standings(): team %s %s was newly created" % (team.team_name, team.abbreviation))
         team.abbreviation = abbreviation
         team.team_name = team_name
         logger.info("loaded teams %s %s" % (team.team_name, team.abbreviation))
         team.save()
+
 
 def __get_players_from_lineup(html):
     pool = BeautifulSoup(html)
@@ -200,22 +215,24 @@ def __get_players_from_lineup(html):
         players.append((slot, player_id))
     return players
 
+
 def load_week_from_lineup(html, week, team):
     logger.info("creaing scorecard for week %s  team %s" % (str(week), team.team_name))
     scorecard, created = Scorecard.objects.get_or_create(team=team, week=week, actual=True)
     if not created:
-            logger.warn("created lineup %s %s %s %d" % (team.league.espn_id, team.league.year, team.espn_id, week))
+        logger.warn("created lineup %s %s %s %d" % (team.league.espn_id, team.league.year, team.espn_id, week))
     players = __get_players_from_lineup(html)
     total_points = Decimal(0)
     for player_id in players:
-        #logger.debug("loading score entry for player %s" % str(player_id))
+        # logger.debug("loading score entry for player %s" % str(player_id))
         try:
             player = Player.objects.get(espn_id=player_id[1])
         except Player.DoesNotExist:
             logger.error("could not find player id %s" % str(player_id))
             raise
         try:
-            points = ScoreEntry.objects.get(player=player, week=week, year=team.league.year).player_score_stats.default_points
+            points = ScoreEntry.objects.get(player=player, week=week,
+                                            year=team.league.year).player_score_stats.default_points
         except ScoreEntry.DoesNotExist:
             logger.error("could not find scoreentry for player id %s" % str(player_id))
             raise
@@ -224,8 +241,10 @@ def load_week_from_lineup(html, week, team):
         if slot != 'Bench':
             total_points = total_points + points
         source = team.get_source_for_player(player, week)
-        ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source, team=team, week=week)
-        logger.debug("creating score card entry for player %s week %s points %s" % (player.espn_id, str(week), str(points)))
+        ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source,
+                                      team=team, week=week)
+        logger.debug(
+            "creating score card entry for player %s week %s points %s" % (player.espn_id, str(week), str(points)))
     scorecard.points = total_points
     scorecard.save()
 
@@ -240,7 +259,7 @@ def load_scores_from_game(league, week, html):
         team_id = re.match('.*teamId=(\d*)', block['href']).group(1)
         team_ids.append(team_id)
 
-    second_team_block = pool.find_all('div', {'style' : 'clear: both;'})[1].previous_sibling
+    second_team_block = pool.find_all('div', {'style': 'clear: both;'})[1].previous_sibling
     first_team_block = second_team_block.previous_sibling
 
     team_blocks = [(team_ids[0], first_team_block), (team_ids[1], second_team_block)]
@@ -271,7 +290,7 @@ def load_scores_from_game(league, week, html):
                 player = Player.objects.get(name=name)
             except Player.DoesNotExist:
                 try:
-                    player = Player.objects.get(espn_id= player_id)
+                    player = Player.objects.get(espn_id=player_id)
                     player.other_name = name
                     player.save()
                 except Player.DoesNotExist:
@@ -279,20 +298,21 @@ def load_scores_from_game(league, week, html):
                     logger.debug('creating new player %s' % name)
                     player = Player.objects.create(espn_id=player_id, name=name, position=position)
             source = team.get_source_for_player(player, week)
-            ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source, week=week, team=team)
+            ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source,
+                                          week=week, team=team)
             if slot != 'Bench':
                 total_points += points
 
-
-
         scorecard.points = total_points
         scorecard.save()
+
 
 def clean_player(player_name):
     str(player_name)
     if player_name[-1] == '*':
         player_name = player_name[:-1]
     return ' '.join(player_name.split()[:3])
+
 
 def add_player(player_name, team, added, date):
     player_name = clean_player(player_name)
@@ -303,6 +323,7 @@ def add_player(player_name, team, added, date):
 
     logger.debug("creating add drop entry %s %s %s %s" % (team.team_name, team.espn_id, player_name, date))
     AddDrop.objects.create(date=date, team=team, player=player, added=added)
+
 
 def get_transaction_type(row):
     for string in row.contents[1].strings:
@@ -326,6 +347,7 @@ def get_transaction_type(row):
             return 'Trade Processed'
     logger.debug('returning another transaction type')
     return row.contents[1].contents[-1]
+
 
 def load_transactions_from_translog(html, year, team):
     logger.debug("load_transactions_from_translog %s" % year)
@@ -358,7 +380,7 @@ def load_transactions_from_translog(html, year, team):
             except Player.DoesNotExist:
                 player = Player.objects.create(name=player_name)
 
-            draft_entry = DraftClaim(date=date,round=draft_round, player_added=player, team=team)
+            draft_entry = DraftClaim(date=date, round=draft_round, player_added=player, team=team)
             draft_round = draft_round + 1
             draft_entry.save()
         elif transaction_type == 'Trade Processed':
@@ -410,16 +432,16 @@ def load_transactions_from_translog(html, year, team):
                     break
                 dropped = re.search('dropped', content[i]) is not None
                 if dropped:
-                    add_player(content[i+1], team, False, date)
+                    add_player(content[i + 1], team, False, date)
                 else:
-                    add_player(content[i+1], team, True, date)
+                    add_player(content[i + 1], team, True, date)
         elif transaction_type == 'Add' or transaction_type == 'Add (Waivers)':
             add_player(row.contents[2].contents[1].string, team, True, date)
         elif transaction_type == 'Drop':
             add_player(row.contents[2].contents[1].string, team, False, date)
         else:
             logger.debug("unsupported transactino type %s " % transaction_type)
-            #logger.d("hm: %s" % str(row))
+            # logger.d("hm: %s" % str(row))
 
 
 

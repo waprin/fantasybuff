@@ -1,15 +1,18 @@
 __author__ = 'bprin'
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 from functools import partial
 from decimal import Decimal
 
+
 def can_fill_slot(slot, entry):
     if slot == 'FLEX':
         return entry.player.position in ('RB', 'WR', 'TE')
     return slot == entry.player.position
+
 
 def get_lineup_score(entries):
     starters = filter(lambda entry: entry.slot != 'Bench', entries)

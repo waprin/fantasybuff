@@ -1,12 +1,15 @@
 import datetime
+import logging
+
 from django.contrib.auth.models import User
 from django.db import models
-
-import logging
 from django.db.models import Sum, Avg, Count, Q
+
 from teams.scraper.utils import real_num_weeks
 
+
 logger = logging.getLogger(__name__)
+
 
 class EspnUser(models.Model):
     user = models.ForeignKey(User)
@@ -21,11 +24,11 @@ class EspnUser(models.Model):
     def __unicode__(self):
         return self.username
 
+
 class League(models.Model):
     name = models.CharField(max_length=200)
     espn_id = models.CharField(max_length=30)
     year = models.CharField(max_length=5)
-
 
     public = models.BooleanField(default=False)
 
@@ -56,7 +59,9 @@ class League(models.Model):
 
 
     def get_most_waiver_points(self):
-        best = ScorecardEntry.objects.filter(team__league=self, scorecard__actual=True, source='W').exclude(slot='Bench').values('team_id', 'player_id').annotate(total_points=Sum('points')).order_by('total_points').reverse()
+        best = ScorecardEntry.objects.filter(team__league=self, scorecard__actual=True, source='W').exclude(
+            slot='Bench').values('team_id', 'player_id').annotate(total_points=Sum('points')).order_by(
+            'total_points').reverse()
         if len(best) == 0:
             return None
         else:
@@ -67,14 +72,15 @@ class League(models.Model):
 
 
     def get_most_perfect_lineups(self):
-        most_perfect = Scorecard.objects.filter(team__league=self, actual=False, delta=0).values('team', 'team__espn_id').annotate(count=Count('id')).order_by('count').reverse()
+        most_perfect = Scorecard.objects.filter(team__league=self, actual=False, delta=0).values('team',
+                                                                                                 'team__espn_id').annotate(
+            count=Count('id')).order_by('count').reverse()
         if len(most_perfect) == 0:
             return None
         else:
             most_perfect = most_perfect[0]
         team = Team.objects.get(id=most_perfect['team'])
-        return {'team': team, 'count' : most_perfect['count'] }
-
+        return {'team': team, 'count': most_perfect['count']}
 
 
 class Team(models.Model):
@@ -105,14 +111,13 @@ class Team(models.Model):
             return 0
 
 
-
     def __get_waiver_points(self, week, added):
         add_drop_transactions = AddDrop.objects.get_before_week(self, week).filter(added=added)
         adt_players = [adt.player for adt in add_drop_transactions]
         scorecard_entries = ScorecardEntry.objects.filter(player__in=adt_players,
-                                      scorecard__week=week,
-                                      scorecard__actual=True,
-                                      team__league=self.league).exclude(slot='Bench')
+                                                          scorecard__week=week,
+                                                          scorecard__actual=True,
+                                                          team__league=self.league).exclude(slot='Bench')
         if scorecard_entries.count() > 0:
             return scorecard_entries.aggregate(Sum('points'))['points__sum']
         else:
@@ -126,9 +131,9 @@ class Team(models.Model):
         players_added = [tt.players_added.all() for tt in trade_transactions]
         players_added = [player for sublist in players_added for player in sublist]
         scorecard_entries_added = ScorecardEntry.objects.filter(player__in=players_added,
-                                                          scorecard__week=week,
-                                                          scorecard__actual=True,
-                                                          team__league=self.league).exclude(slot='Bench')
+                                                                scorecard__week=week,
+                                                                scorecard__actual=True,
+                                                                team__league=self.league).exclude(slot='Bench')
         if scorecard_entries_added.count() > 0:
             points_for = scorecard_entries_added.aggregate(Sum('points'))['points__sum']
         else:
@@ -137,9 +142,9 @@ class Team(models.Model):
         players_dropped = [tt.players_removed.all() for tt in trade_transactions]
         players_dropped = [player for sublist in players_dropped for player in sublist]
         scorecard_entries_dropped = ScorecardEntry.objects.filter(player__in=players_dropped,
-                                                          scorecard__week=week,
-                                                          scorecard__actual=True,
-                                                          team__league=self.league).exclude(slot='Bench')
+                                                                  scorecard__week=week,
+                                                                  scorecard__actual=True,
+                                                                  team__league=self.league).exclude(slot='Bench')
         if scorecard_entries_dropped.count() > 0:
             points_against = scorecard_entries_dropped.aggregate(Sum('points'))['points__sum']
         else:
@@ -171,16 +176,18 @@ class Team(models.Model):
             return 'D'
         elif AddDrop.objects.filter(player=player, added=True, team=self).count() > 0:
             return 'W'
-        elif TradeEntry.objects.filter(Q(players_added=player, team=self) | Q(players_removed=player, other_team=self)).count() > 0:
+        elif TradeEntry.objects.filter(
+                        Q(players_added=player, team=self) | Q(players_removed=player, other_team=self)).count() > 0:
             return 'T'
         else:
             logger.error("Can't find source for player %s, default to do " % (player.name))
             return 'D'
 
     def get_player_with_most_waiver_points(self):
-        best = ScorecardEntry.objects.filter(team=self, scorecard__actual=True, source='W').exclude(slot='Bench').values('player_id').annotate(total_points=Sum('points')).order_by('total_points').reverse()[0]
+        best = \
+        ScorecardEntry.objects.filter(team=self, scorecard__actual=True, source='W').exclude(slot='Bench').values(
+            'player_id').annotate(total_points=Sum('points')).order_by('total_points').reverse()[0]
         return (Player.objects.get(id=best['player_id']), best['total_points'])
-
 
 
 class TeamReportCard(models.Model):
@@ -221,6 +228,7 @@ class TeamWeekScores(models.Model):
     def get_min(league, field):
         return getattr(TeamWeekScores.objects.filter(team__league=league).order_by(field)[0], field)
 
+
 class LeagueWeekScores(models.Model):
     league = models.ForeignKey(League)
     week = models.IntegerField()
@@ -228,6 +236,7 @@ class LeagueWeekScores(models.Model):
     trade_average = models.DecimalField(decimal_places=4, max_digits=10)
     draft_average = models.DecimalField(decimal_places=4, max_digits=10)
     waiver_average = models.DecimalField(decimal_places=4, max_digits=10)
+
 
 class Player(models.Model):
     POSITIONS = (
@@ -246,6 +255,7 @@ class Player(models.Model):
     def __unicode__(self):
         return self.name
 
+
 class Scorecard(models.Model):
     team = models.ForeignKey(Team)
     week = models.IntegerField()
@@ -256,6 +266,7 @@ class Scorecard(models.Model):
     class Meta:
         unique_together = ('team', 'week', 'actual')
 
+
 """
 class LeagueReportCard(models.Model):
     league = models.ForeignKey(League)
@@ -263,6 +274,7 @@ class LeagueReportCard(models.Model):
 
 class LeagueAverageWeek(models.Model):
 """
+
 
 class Game(models.Model):
     league = models.ForeignKey(League)
@@ -272,7 +284,9 @@ class Game(models.Model):
     html = models.TextField()
 
     def __unicode__(self):
-        return "week %d: team %s vs team %s" % (self.week, self.first_scorecard.team.team_name, self.second_scorecard.team.team_name)
+        return "week %d: team %s vs team %s" % (
+        self.week, self.first_scorecard.team.team_name, self.second_scorecard.team.team_name)
+
 
 class ScorecardEntry(models.Model):
     SLOT_TYPES = (
@@ -312,17 +326,18 @@ class ScorecardEntry(models.Model):
             if len(entries) > 0:
                 entry = entries[0]
                 if entry.slot != 'Bench':
-                        total += entries[0].points
-                        starters.append(entries[0])
+                    total += entries[0].points
+                    starters.append(entries[0])
         return (starters, total)
 
 
     def __unicode__(self):
-        return "player %s position %s slot %s points %f" % (self.player.name, self.player.position,  self.slot, self.points)
+        return "player %s position %s slot %s points %f" % (
+        self.player.name, self.player.position, self.slot, self.points)
 
     def clone(self):
-            new_kwargs = dict([(fld.name, getattr(self, fld.name)) for fld in self._meta.fields if fld.name != 'id']);
-            return self.__class__.objects.create(**new_kwargs)
+        new_kwargs = dict([(fld.name, getattr(self, fld.name)) for fld in self._meta.fields if fld.name != 'id']);
+        return self.__class__.objects.create(**new_kwargs)
 
 
 class ScoreEntry(models.Model):
@@ -366,8 +381,8 @@ class PlayerScoreStats(models.Model):
 
     default_points = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
 
-class ScoringSystem(models.Model):
 
+class ScoringSystem(models.Model):
     py25 = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
     int_thrown = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
     td_pass = models.DecimalField(decimal_places=4, max_digits=10, default=None, null=True)
@@ -427,18 +442,19 @@ class TransLogEntry(models.Model):
     class Meta:
         abstract = True
 
+
 class DraftClaim(TransLogEntry):
     player_added = models.ForeignKey(Player)
     round = models.IntegerField()
 
-class TransLogManager(models.Manager):
 
+class TransLogManager(models.Manager):
     def get_before_week(self, team, week):
         start = datetime.datetime(year=int(team.league.year), month=9, day=9)
         week_delta = datetime.timedelta(days=7)
         week = week - 1
         start_days = start + (week * week_delta)
-    #    logger.debug("getting all add/drop entires prior to date %s " % str(start_days))
+        # logger.debug("getting all add/drop entires prior to date %s " % str(start_days))
         return self.filter(team=team, date__lte=start_days)
 
     def create_if_not_exists(self, date, team, other_team, players_added, players_removed):
@@ -449,6 +465,7 @@ class TransLogManager(models.Manager):
             trade_entry.players_removed.add(player)
         trade_entry.save()
 
+
 class TradeEntry(TransLogEntry):
     other_team = models.ForeignKey(Team, related_name="other_team")
     players_added = models.ManyToManyField(Player, related_name='trade_added')
@@ -457,10 +474,10 @@ class TradeEntry(TransLogEntry):
 
     def get_points_for_week(self, week):
         scorecard_entries_added = ScorecardEntry.objects.filter(player__in=self.players_added.all(),
-                                                          scorecard__week=week,
-                                                          scorecard__actual=True,
-                                                          team__league=self.team.league,
-                                                          ).exclude(slot='Bench')
+                                                                scorecard__week=week,
+                                                                scorecard__actual=True,
+                                                                team__league=self.team.league,
+        ).exclude(slot='Bench')
         if scorecard_entries_added.count() > 0:
             return scorecard_entries_added.aggregate(Sum('points'))['points__sum']
         else:
@@ -468,9 +485,9 @@ class TradeEntry(TransLogEntry):
 
     def get_points_against_week(self, week):
         scorecard_entries_dropped = ScorecardEntry.objects.filter(player__in=self.players_removed.all(),
-                                                          scorecard__week=week,
-                                                          scorecard__actual=True,
-                                                          team__league=self.team.league).exclude(slot='Bench')
+                                                                  scorecard__week=week,
+                                                                  scorecard__actual=True,
+                                                                  team__league=self.team.league).exclude(slot='Bench')
         if scorecard_entries_dropped.count() > 0:
             return scorecard_entries_dropped.aggregate(Sum('points'))['points__sum']
         else:
@@ -478,11 +495,11 @@ class TradeEntry(TransLogEntry):
 
     def get_total_points_for(self):
         week = real_num_weeks()
-        return reduce(lambda t, w: t + self.get_points_for_week(w), range(1, week+1), 0)
+        return reduce(lambda t, w: t + self.get_points_for_week(w), range(1, week + 1), 0)
 
     def get_total_points_against(self):
         week = real_num_weeks()
-        return reduce(lambda t, w: t + self.get_points_against_week(w), range(1, week+1), 0)
+        return reduce(lambda t, w: t + self.get_points_against_week(w), range(1, week + 1), 0)
 
     def get_value_cumulative(self):
         return abs(self.get_total_points_for() - self.get_total_points_against())
@@ -494,6 +511,7 @@ class AddDrop(TransLogEntry):
     """waiver - true if picked from the waiver, false if picked from FA"""
     waiver = models.BooleanField(default=True)
     objects = TransLogManager()
+
 
 # scraper models
 
@@ -508,6 +526,7 @@ class HtmlScrape(models.Model):
 class EntranceHtmlScrape(HtmlScrape):
     user = models.ForeignKey(EspnUser)
 
+
 class MatchupsWeekHtmlScrape(HtmlScrape):
     league = models.ForeignKey(League)
     week = models.IntegerField()
@@ -515,21 +534,26 @@ class MatchupsWeekHtmlScrape(HtmlScrape):
     def __unicode__(self):
         return "%s %s" % (self.league.espn_id, str(self.week))
 
+
 class StandingsHtmlScrape(HtmlScrape):
     league = models.ForeignKey(League)
+
 
 class SettingsHtmlScrape(HtmlScrape):
     league_id = models.CharField(max_length=20)
     year = models.CharField(max_length=5)
+
 
 class RosterHtmlScrape(HtmlScrape):
     week = models.IntegerField()
     team_id = models.CharField(max_length=10)
     league = models.ForeignKey(League)
 
+
 class PlayerHtmlScrape(HtmlScrape):
     player_id = models.CharField(max_length=20)
     league = models.ForeignKey(League)
+
 
 class GameHtmlScrape(HtmlScrape):
     first_team = models.CharField(max_length=20)
@@ -537,17 +561,18 @@ class GameHtmlScrape(HtmlScrape):
     week = models.IntegerField()
     league = models.ForeignKey(League)
 
+
 class TranslogHtmlScrape(HtmlScrape):
     team_id = models.CharField(max_length=20)
     league_id = models.CharField(max_length=20)
     year = models.CharField(max_length=5)
+
 
 class MailingList(models.Model):
     email = models.CharField(max_length=50, primary_key=True)
 
     def __unicode__(self):
         return self.email
-
 
 
 class BetaInvite(models.Model):

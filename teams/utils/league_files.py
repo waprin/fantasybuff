@@ -1,6 +1,10 @@
 __author__ = 'bill'
-import re, os, time
+import re
+import os
+import time
 import logging
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,6 +26,7 @@ def choose_league_directory(listings):
             logger.debug("choose_directory(): found match on %s " % listing)
             return listing
     return None
+
 
 def create_league_directory(number):
     logger.debug('create_league_directory(): begin .. %d ' % number)

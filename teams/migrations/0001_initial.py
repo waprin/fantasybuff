@@ -6,7 +6,6 @@ from django.conf import settings
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
@@ -75,7 +74,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='GameHtmlScrape',
             fields=[
-                ('htmlscrape_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='teams.HtmlScrape')),
+                ('htmlscrape_ptr',
+                 models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False,
+                                      to='teams.HtmlScrape')),
                 ('first_team', models.CharField(max_length=20)),
                 ('second_team', models.CharField(max_length=20)),
                 ('week', models.IntegerField()),
@@ -87,7 +88,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='EntranceHtmlScrape',
             fields=[
-                ('htmlscrape_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='teams.HtmlScrape')),
+                ('htmlscrape_ptr',
+                 models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False,
+                                      to='teams.HtmlScrape')),
                 ('user', models.ForeignKey(to='teams.EspnUser')),
             ],
             options={
@@ -133,7 +136,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='MatchupsWeekHtmlScrape',
             fields=[
-                ('htmlscrape_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='teams.HtmlScrape')),
+                ('htmlscrape_ptr',
+                 models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False,
+                                      to='teams.HtmlScrape')),
                 ('week', models.IntegerField()),
                 ('league', models.ForeignKey(to='teams.League')),
             ],
@@ -146,7 +151,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
-                ('position', models.CharField(max_length=20, null=True, choices=[('QB', b'Quarterback'), ('WR', b'Wide Receiver'), ('RB', b'Running Back'), ('TE', b'Tight End'), ('D/ST', b'Defense/Special Teams'), ('K', b'Kicker')])),
+                ('position', models.CharField(max_length=20, null=True,
+                                              choices=[('QB', b'Quarterback'), ('WR', b'Wide Receiver'),
+                                                       ('RB', b'Running Back'), ('TE', b'Tight End'),
+                                                       ('D/ST', b'Defense/Special Teams'), ('K', b'Kicker')])),
                 ('espn_id', models.CharField(unique=True, max_length=20)),
             ],
             options={
@@ -156,7 +164,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PlayerHtmlScrape',
             fields=[
-                ('htmlscrape_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='teams.HtmlScrape')),
+                ('htmlscrape_ptr',
+                 models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False,
+                                      to='teams.HtmlScrape')),
                 ('player_id', models.CharField(max_length=20)),
                 ('league', models.ForeignKey(to='teams.League')),
             ],
@@ -167,7 +177,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='RosterHtmlScrape',
             fields=[
-                ('htmlscrape_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='teams.HtmlScrape')),
+                ('htmlscrape_ptr',
+                 models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False,
+                                      to='teams.HtmlScrape')),
                 ('week', models.IntegerField()),
                 ('team_id', models.CharField(max_length=10)),
                 ('league', models.ForeignKey(to='teams.League')),
@@ -193,7 +205,10 @@ class Migration(migrations.Migration):
             name='ScorecardEntry',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('slot', models.CharField(max_length=20, choices=[('QB', b'Quarterback'), ('WR', b'Wide Receiver'), ('RB', b'Running Back'), ('TE', b'Tight End'), ('FLEX', b'Flex'), ('D/ST', b'Defense/Special Teams'), ('K', b'Kicker'), ('B', b'Bench')])),
+                ('slot', models.CharField(max_length=20, choices=[('QB', b'Quarterback'), ('WR', b'Wide Receiver'),
+                                                                  ('RB', b'Running Back'), ('TE', b'Tight End'),
+                                                                  ('FLEX', b'Flex'), ('D/ST', b'Defense/Special Teams'),
+                                                                  ('K', b'Kicker'), ('B', b'Bench')])),
                 ('points', models.DecimalField(max_digits=7, decimal_places=4)),
                 ('added', models.NullBooleanField()),
                 ('player', models.ForeignKey(to='teams.Player')),
@@ -217,7 +232,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PlayerScoreStats',
             fields=[
-                ('score_entry', models.OneToOneField(related_name=b'player_score_stats', primary_key=True, serialize=False, to='teams.ScoreEntry')),
+                ('score_entry',
+                 models.OneToOneField(related_name=b'player_score_stats', primary_key=True, serialize=False,
+                                      to='teams.ScoreEntry')),
                 ('pass_yards', models.IntegerField(null=True)),
                 ('pass_td', models.IntegerField(null=True)),
                 ('interceptions', models.IntegerField(null=True)),
@@ -299,7 +316,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='SettingsHtmlScrape',
             fields=[
-                ('htmlscrape_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='teams.HtmlScrape')),
+                ('htmlscrape_ptr',
+                 models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False,
+                                      to='teams.HtmlScrape')),
                 ('league_id', models.CharField(max_length=20)),
                 ('year', models.CharField(max_length=5)),
             ],
@@ -310,7 +329,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='StandingsHtmlScrape',
             fields=[
-                ('htmlscrape_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='teams.HtmlScrape')),
+                ('htmlscrape_ptr',
+                 models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False,
+                                      to='teams.HtmlScrape')),
                 ('league', models.ForeignKey(to='teams.League')),
             ],
             options={
@@ -381,7 +402,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TranslogHtmlScrape',
             fields=[
-                ('htmlscrape_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='teams.HtmlScrape')),
+                ('htmlscrape_ptr',
+                 models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False,
+                                      to='teams.HtmlScrape')),
                 ('team_id', models.CharField(max_length=20)),
                 ('league_id', models.CharField(max_length=20)),
                 ('year', models.CharField(max_length=5)),

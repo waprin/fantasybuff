@@ -1,14 +1,15 @@
-import mechanize
 import cookielib
-import os
-
 import logging
+
+import mechanize
+
+
 logger = logging.getLogger(__name__)
 
 import time
 
-class EspnScraper:
 
+class EspnScraper:
     def __init__(self):
         self.br = mechanize.Browser()
         self.cj = cookielib.LWPCookieJar()
@@ -22,7 +23,8 @@ class EspnScraper:
         self.br.set_handle_robots(False)
         self.br.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(), max_time=1)
 
-        self.br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
+        self.br.addheaders = [('User-agent',
+                               'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
 
     def login(self, username, password):
         self.br.open("http://m.espn.go.com/wireless/login")
@@ -41,9 +43,11 @@ class EspnScraper:
     def get_roster(self, league, team_id, week):
         time.sleep(3)
         logger.debug("requesting page to get to correct year")
-        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=1&seasonId=%s" % (league.espn_id, league.year))
+        self.br.open(
+            "http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=1&seasonId=%s" % (league.espn_id, league.year))
         time.sleep(3)
-        request = "http://games.espn.go.com/ffl/playertable/prebuilt/manageroster?leagueId=%s&teamId=%s&scoringPeriodId=%d&view=overview&context=clubhouse&ajaxPath=playertable/prebuilt/manageroster&managingIr=false&droppingPlayers=false&asLM=false&r=28027522" % (league.espn_id, team_id, week)
+        request = "http://games.espn.go.com/ffl/playertable/prebuilt/manageroster?leagueId=%s&teamId=%s&scoringPeriodId=%d&view=overview&context=clubhouse&ajaxPath=playertable/prebuilt/manageroster&managingIr=false&droppingPlayers=false&asLM=false&r=28027522" % (
+        league.espn_id, team_id, week)
         logger.debug('making request: ' + request)
         r = self.br.open(request)
         return r.read()
@@ -58,7 +62,8 @@ class EspnScraper:
 
     def get_player(self, player_id, league):
         time.sleep(3)
-        request = "http://games.espn.go.com/ffl/format/playerpop/overview?leagueId=%s&playerId=%s&playerIdType=playerId&seasonId=%s" % (league.espn_id, player_id, league.year)
+        request = "http://games.espn.go.com/ffl/format/playerpop/overview?leagueId=%s&playerId=%s&playerIdType=playerId&seasonId=%s" % (
+        league.espn_id, player_id, league.year)
         logger.debug("get_player(): url is %s" % request)
         r = self.br.open(request)
         html = r.read()
@@ -67,7 +72,8 @@ class EspnScraper:
     def get_game(self, league, team_id, week):
         time.sleep(1)
         logger.debug('scrape game(): begin .. ')
-        url = "http://games.espn.go.com/ffl/boxscorefull?leagueId=%s&teamId=%s&scoringPeriodId=%d&seasonId=%s&view=scoringperiod&version=full" % (league.espn_id, team_id, week, league.year)
+        url = "http://games.espn.go.com/ffl/boxscorefull?leagueId=%s&teamId=%s&scoringPeriodId=%d&seasonId=%s&view=scoringperiod&version=full" % (
+        league.espn_id, team_id, week, league.year)
         logger.debug("scrape_game(): scraping url %s" % url)
         r = self.br.open(url)
         html = r.read()
@@ -75,8 +81,10 @@ class EspnScraper:
 
     def get_matchups(self, league, week):
         time.sleep(1)
-        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%s&seasonId=%s" % (league.espn_id, 1, league.year))
-        r = self.br.open("http://games.espn.go.com/ffl/scoreboard?leagueId=%s&matchupPeriodId=%d" % (league.espn_id, week))
+        self.br.open("http://games.espn.go.com/ffl/clubhouse?leagueId=%s&teamId=%s&seasonId=%s" % (
+        league.espn_id, 1, league.year))
+        r = self.br.open(
+            "http://games.espn.go.com/ffl/scoreboard?leagueId=%s&matchupPeriodId=%d" % (league.espn_id, week))
         html = r.read()
         return html
 
@@ -88,8 +96,9 @@ class EspnScraper:
     def get_translog(self, league_id, year, team_id):
         time.sleep(1)
         next_year = str(int(year) + 1)
-        r = self.br.open("http://games.espn.go.com/ffl/recentactivity?leagueId=%s&seasonId=%s&activityType=2&startDate=%s0805&endDate=%s1230&teamId=%s&tranType=-1" %
-                         (league_id, year, year, next_year, team_id))
+        r = self.br.open(
+            "http://games.espn.go.com/ffl/recentactivity?leagueId=%s&seasonId=%s&activityType=2&startDate=%s0805&endDate=%s1230&teamId=%s&tranType=-1" %
+            (league_id, year, year, next_year, team_id))
         html = r.read()
         return html
 

@@ -1,23 +1,29 @@
 import time
+import os
+import errno
+import re
+import logging
+
 from teams.utils.league_files import choose_league_directory, create_league_directory
-import os, errno, re
 from teams.models import League
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 __author__ = 'bill'
 
+
 def mkdir_p(path):
     try:
         os.makedirs(path)
-    except OSError as exc: # Python >2.5
+    except OSError as exc:  # Python >2.5
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
-        else: raise
+        else:
+            raise
+
 
 class FileBrowser(object):
-
     def __init__(self):
         self.d = choose_league_directory(os.listdir(os.path.join(os.getcwd(), 'leagues')))
 
@@ -33,7 +39,7 @@ class FileBrowser(object):
         logger.debug("reloading file cached browser")
         n = int(re.search(r'league_(\d+)', self.d).group(1))
         logger.debug("moving to new directory %d " % n)
-        self.d = create_league_directory(n+1)
+        self.d = create_league_directory(n + 1)
         self.initialized = False
 
     def has_entrance(self, espn_user):
@@ -160,7 +166,7 @@ class FileBrowser(object):
         return open(self.game_path(league, team_id, week)).read()
 
     def write_game(self, league, team_id, week, html):
-        with open(self.game_path(league, team_id ,week), 'w') as f:
+        with open(self.game_path(league, team_id, week), 'w') as f:
             f.write(html)
 
     def get_all_games(self, league, week):

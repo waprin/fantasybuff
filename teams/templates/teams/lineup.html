@@ -1,23 +1,23 @@
 Actual Roster just in case:
 <table>
-    {% for entry in scorecard_entries %}
+  {% for entry in scorecard_entries %}
     <tr>
-        <td>{{ entry.slot }}</td>
-        <td>{{ entry.player.name }}</td>
-        <td>{{ entry.points }}</td>
+      <td>{{ entry.slot }}</td>
+      <td>{{ entry.player.name }}</td>
+      <td>{{ entry.points }}</td>
     </tr>
-    {% endfor %}
+  {% endfor %}
 </table>
 
 Optimal Lineup
 <table>
-    {% for entry in optimal_entries %}
+  {% for entry in optimal_entries %}
     <tr>
-        <td>{{ entry.slot }}</td>
-        <td>{{ entry.player.name }}</td>
-        <td>{{ entry.points }}</td>
+      <td>{{ entry.slot }}</td>
+      <td>{{ entry.player.name }}</td>
+      <td>{{ entry.points }}</td>
     </tr>
-    {% endfor %}
+  {% endfor %}
 </table>
 
 

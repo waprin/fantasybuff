@@ -1,16 +1,17 @@
 {% extends "teams/base.html" %}
 
 {% block content %}
-    <div class="container-fluid">
-        <div class="row">
-              <table class="table table-bordered table-hover table-striped">
-                {% for team in teams %}
-                    <tr>
-                        <td><a href="{{ team.espn_id }}">  {{ team.team_name }}</a></td>
-                        <td>{{ team.average_delta }}</td>
-                    </tr>
-                {%  endfor %}
-              </table>
-         </div> <!--row -->
-    </div> <!--container-fluid-->
+  <div class="container-fluid">
+    <div class="row">
+      <table class="table table-bordered table-hover table-striped">
+        {% for team in teams %}
+          <tr>
+            <td><a href="{{ team.espn_id }}">  {{ team.team_name }}</a></td>
+            <td>{{ team.average_delta }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <!--row -->
+  </div> <!--container-fluid-->
 {% endblock %}

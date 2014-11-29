@@ -1,10 +1,28 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-  <meta charset="UTF-8">
-  <title></title>
-</head>
-<body>
+{% extends "teams/base.html" %}
 
-</body>
-</html>
+{% block pagescripts %}
+
+  <!-- Custom CSS -->
+  <link href="/static/css/trade_analyzer.css" rel="stylesheet">
+
+
+{% endblock %}
+
+{% block content %}
+
+  <h1>Trade Analyzer</h1>
+  <h1>{{ trade.date }}</h1>
+  <h2>{{ trade.team.team_name }} </h2>
+  {% for player in trade.players_added.all %}
+    <h3> {{ player.name }} </h3>
+  {% endfor %}
+  <h2>{{ trade.other_team.team_name }} </h2>
+  {% for player in trade.players_removed.all %}
+    <h3> {{ player.name }} </h3>
+  {% endfor %}
+  <h2>Points For: {{ trade.get_total_points_for }}</h2>
+  <h2>Points Against: {{ trade.get_total_points_against }}</h2>
+  <h2>Total Value: {{ trade.get_value_cumulative }}</h2>
+
+
+{% endblock %}

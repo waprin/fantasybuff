@@ -5,7 +5,6 @@ from django.db import models, migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('teams', '0008_auto_20141122_1609'),
     ]
@@ -22,7 +21,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='scorecardentry',
             name='source',
-            field=models.CharField(default='D', max_length=5, choices=[('D', b'Draft'), ('T', b'Trade'), ('W', b'Waiver')]),
+            field=models.CharField(default='D', max_length=5,
+                                   choices=[('D', b'Draft'), ('T', b'Trade'), ('W', b'Waiver')]),
             preserve_default=False,
         ),
         migrations.AddField(
