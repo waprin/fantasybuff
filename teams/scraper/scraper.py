@@ -134,7 +134,7 @@ class LeagueScraper(object):
         league.league_scrape_start_time = datetime.datetime.now()
 
         self.create_standings_page(league)
-        #self.create_settings_page(league)
+        self.create_settings_page(league)
         self.create_matchups_page(league, 1)
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
