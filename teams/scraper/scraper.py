@@ -211,7 +211,7 @@ class LeagueScraper(object):
         league.calculating = True
         league.save()
 
-        html = self.store.get_settings(league)
+        html = self.store.get_settings(league.espn_id, league.year)
         is_public = get_public_on_from_settings(html)
         logger.info("setting league %s to public %s" % (league.espn_id, str(is_public)))
         league.public = is_public
