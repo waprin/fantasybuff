@@ -123,7 +123,7 @@ def get_league_request_context(league):
         sorted_trades.sort(key=lambda t: t.get_value_cumulative())
         best_trade = sorted_trades[-1]
 
-        if best_trade.get_total_points_for(league) > best_trade.get_total_points_against(league):
+        if best_trade.get_total_points_for() > best_trade.get_total_points_against():
             logger.debug("setting left trade as winner")
             trade_left = 'trade-winner'
             trade_right = 'trade-loser'
@@ -141,8 +141,8 @@ def get_league_request_context(league):
     if best_trade:
         logger.debug("best trade added %s removed %s" % (
         str(best_trade.players_added.all()), str(best_trade.players_removed.all())))
-        points_for = best_trade.get_total_points_for(league)
-        points_against = best_trade.get_total_points_against(league)
+        points_for = best_trade.get_total_points_for()
+        points_against = best_trade.get_total_points_against()
 
     my_context = {
         'navigation': ['Leagues'],

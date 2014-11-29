@@ -436,7 +436,7 @@ class ScoringSystem(models.Model):
 
 
 class TransLogEntry(models.Model):
-    date = models.DateField()
+    date = models.DateTimeField()
     team = models.ForeignKey(Team)
 
     class Meta:

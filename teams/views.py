@@ -1,4 +1,6 @@
 from decimal import Decimal
+import logging
+
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
@@ -19,7 +21,9 @@ from django.core.cache import cache
 
 from teams.scraper.report_card import get_team_report_card_json, get_league_request_context
 
+
 logger = logging.getLogger(__name__)
+
 
 def signin(request):
     try:
@@ -52,14 +56,13 @@ def signin(request):
         return HttpResponse(template.render(context))
         # Return an 'invalid login' error message.
 
+
 def signup(request):
-
-
     invite_code = request.POST.get('invite_code')
     invite = None
     try:
         logger.debug("getting invite '%s' " % (invite_code))
-        invite = BetaInvite.objects.get(invite = invite_code)
+        invite = BetaInvite.objects.get(invite='whyme')
         if invite.used:
             messages.add_message(request, messages.INFO, 'Invite Code Already Used')
             return HttpResponseRedirect("/register/")
@@ -68,7 +71,6 @@ def signup(request):
         logger.debug("invalid invite code")
         messages.add_message(request, messages.INFO, 'Invalid Invite Code')
         return HttpResponseRedirect("/register/")
-
 
     password = request.POST.get('password')
     email = request.POST.get('email')
@@ -181,13 +183,16 @@ d = { 'QB': 1,
        'Bench': 1000,
 }
 
+
 def order_entries(entries):
     def slot_key(entry):
         try:
             return d[entry.slot]
         except KeyError:
             return 500
+
     return sorted(entries, key=slot_key)
+
 
 def show_week(request, espn_league_id, year, espn_team_id, week):
     logger.debug("entering show_week")
@@ -221,7 +226,6 @@ def show_week(request, espn_league_id, year, espn_team_id, week):
     return HttpResponse(template.render(context))
 
 
-
 def show_trade_week(request, league_id, year, team_id, week):
     league = League.objects.get(espn_id=league_id, year=year)
     team = Team.objects.get(espn_id=team_id, league=league)
@@ -250,7 +254,6 @@ def show_trade_week(request, league_id, year, team_id, week):
     return HttpResponse(template.render(context))
 
 
-
 def show_waiver_week(request, league_id, year, team_id, week):
     logger.debug("entering show waiver week %s" % week)
     league = League.objects.get(espn_id=league_id, year=year)
@@ -263,7 +266,8 @@ def show_waiver_week(request, league_id, year, team_id, week):
     added = []
     dropped = []
     for adt in add_drop_transactions:
-        entries = ScorecardEntry.objects.filter(player=adt.player, scorecard__week=week, scorecard__team__league=team.league)
+        entries = ScorecardEntry.objects.filter(player=adt.player, scorecard__week=week,
+                                                scorecard__team__league=team.league)
         if len(entries) > 0:
             entry = entries[0]
             if entry.slot != 'Bench':
@@ -279,7 +283,7 @@ def show_waiver_week(request, league_id, year, team_id, week):
         'total_score': total,
         'added': added,
         'dropped': dropped,
-        'add_drop_transactions' : add_drop_transactions,
+        'add_drop_transactions': add_drop_transactions,
         'team_name': team.team_name
     })
     return HttpResponse(template.render(context))
@@ -301,7 +305,8 @@ def show_draftscore_week(request, league_id, year, team_id, week):
             started = False
             total_points = scorecard_entry.points
 
-        drafted_players[i] = {'player': player, 'scorecard_entry': scorecard_entry, 'started': started, 'total_points': total_points}
+        drafted_players[i] = {'player': player, 'scorecard_entry': scorecard_entry, 'started': started,
+                              'total_points': total_points}
 
     team_week_scores = TeamWeekScores.objects.get(week=int(week), team=team)
     logger.debug("rturning drafted player %s" % drafted_players)
@@ -314,11 +319,13 @@ def show_draftscore_week(request, league_id, year, team_id, week):
 
     return HttpResponse(template.render(context))
 
+
 def register(request):
     logger.info("loading register template")
     template = loader.get_template('teams/register.html')
     context = RequestContext(request)
     return HttpResponse(template.render(context))
+
 
 @login_required()
 def show_league(request, espn_id, year):
@@ -335,6 +342,7 @@ def show_league(request, espn_id, year):
     })
     return HttpResponse(template.render(context))
 
+
 def _decode_list(data):
     rv = []
     for item in data:
@@ -346,6 +354,7 @@ def _decode_list(data):
             item = _decode_dict(item)
         rv.append(item)
     return rv
+
 
 def _decode_dict(data):
     rv = {}
@@ -362,12 +371,13 @@ def _decode_dict(data):
     return rv
 
 
-
 from django.core.serializers.json import Serializer as Builtin_Serializer
+
 
 class Serializer(Builtin_Serializer):
     def get_dump_object(self, obj):
         return self._current
+
 
 @login_required()
 def get_all_leagues_json(request, all=False):
@@ -386,18 +396,20 @@ def get_all_leagues_json(request, all=False):
             teams = Team.objects.filter(espn_user=espn_user, league__year='2014')
             leagues = [team.league for team in teams]
 
-
     all_accounts = []
     if leagues:
         data = Serializer().serialize(leagues, fields=('id', 'name', 'espn_id', 'year', 'loaded', 'failed',
-                                                       'loading', 'pages_scraped', 'total_pages', 'league_loaded_finish_time', 'lineups_scrape_finish_time', 'calculating'))
-        #data = serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
+                                                       'loading', 'pages_scraped', 'total_pages',
+                                                       'league_loaded_finish_time', 'lineups_scrape_finish_time',
+                                                       'calculating'))
+        # data = serialize('json', leagues, fields=('name','espn_id', 'year', 'loaded', 'pages_scraped', 'total_pages'))
         data = json.loads(data)
         for i, league in enumerate(data):
             league['id'] = leagues[i].id
         all_accounts += data
 
     return HttpResponse(json.dumps(all_accounts), content_type="application/json")
+
 
 def get_team_report_card_json_view(request, league_id, year, team_id):
     data = get_team_report_card_json(league_id, year, team_id)
@@ -411,8 +423,9 @@ def get_team_draft(request, league_id, year, team_id):
     drafts = DraftClaim.objects.filter(team=team)
     drafted_players = [draft.player_added for draft in drafts]
     player_data = Serializer().serialize(drafted_players, fields=('name', 'position'))
-#    data = json.dumps(drafted_players)
+    # data = json.dumps(drafted_players)
     return HttpResponse(player_data, content_type="application/json")
+
 
 @login_required
 def show_all_leagues(request):
@@ -425,10 +438,11 @@ def show_all_leagues(request):
 
     context = RequestContext(request, {
         'navigation': ['Leagues'],
-        'espn_user' : espn_user,
+        'espn_user': espn_user,
         'global': False
     })
     return HttpResponse(template.render(context))
+
 
 @login_required()
 def show_global_leagues(request):
@@ -443,13 +457,11 @@ def show_global_leagues(request):
     if len(espn_users) > 0:
         espn_user = espn_users[0]
 
-
     context = RequestContext(request, {
         'navigation': ['Leagues'],
-        'espn_user' : espn_user,
+        'espn_user': espn_user,
     })
     return HttpResponse(template.render(context))
-
 
 
 @login_required
@@ -460,8 +472,8 @@ def espn_refresh(request):
     except KeyError:
         return redirect(show_all_leagues)
 
-#    logger.debug("creating espn user %s %s %s" % (request.user.username, username, password))
-#    espn_user = EspnUser.objects.filter(user=request.user)[0]
+        # logger.debug("creating espn user %s %s %s" % (request.user.username, username, password))
+    #    espn_user = EspnUser.objects.filter(user=request.user)[0]
 
     try:
         espn_user = EspnUser.objects.filter(user=request.user, username=username)[0]
@@ -479,12 +491,11 @@ def espn_refresh(request):
 def backbone(request, espn_id, year):
     league = League.objects.get(espn_id=espn_id, year=year)
 
-
     teams = Team.objects.filter(league=league)
 
     demo = False
     if not request.user.is_authenticated():
-        if league.espn_id =='930248' and league.year =='2014':
+        if league.espn_id == '930248' and league.year == '2014':
             demo = True
             logger.info('using default user for demo')
             user = User.objects.get(username='waprin@gmail.com')
@@ -514,8 +525,10 @@ def backbone(request, espn_id, year):
     template = loader.get_template('teams/dashboard.html')
     return HttpResponse(template.render(context))
 
+
 def demo(request):
     return redirect('/leagues/espn/930248/2014/')
+
 
 def mailing_list(request):
     email = request.POST.get('email')
@@ -530,8 +543,16 @@ def trade(request):
     maclin = Player.objects.get(name='Jeremy Maclin')
     trade = TradeEntry.objects.get(team__league=league, players_added=maclin)
 
+    entries_for = []
+    for player in trade.players_added.all():
+        entries_for += list(ScorecardEntry.objects.filter(player=player, scorecard__team__league=league))
+
+    week_after_trade = num_weeks_before_date(trade.date)
+    current_weeks = real_num_weeks()
     cached_context = {
-        'trade': trade
+        'trade': trade,
+        'start_week': week_after_trade,
+        'weeks': range(week_after_trade, current_weeks + 1)
     }
     logger.debug("trade is %s" % trade.team.team_name)
     context = RequestContext(request, cached_context)
