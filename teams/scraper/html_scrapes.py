@@ -76,3 +76,21 @@ def get_teams_from_matchups(html):
         second_id = re.search(r'teamscrg_(\d*)_', second_id_string).group(1)
         games.append((first_id, second_id))
     return games
+
+def get_public_on_from_settings(html):
+    soup = BeautifulSoup(html)
+    rows = soup.find(id='basicSettingsTable').find_all('tr')
+    for row in rows:
+        if row.td.label:
+            if row.td.label.string == 'Make League Viewable to Public':
+                if row.td.next_sibling.string == 'No':
+                    return False
+                else:
+                    return True
+
+
+
+
+
+
+    return False

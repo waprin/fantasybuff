@@ -159,6 +159,17 @@ class LeagueCreatorTest(unittest.TestCase):
         html = filebrowser.get_translog('976898', '2014', '7')
         load_transactions_from_translog(html, '2014', team)
 
+    def test_load_settings(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='930248', year='2014')
+
+        filebrowser = FileBrowser()
+        html = filebrowser.get_settings(league.espn_id, league.year)
+        public = get_public_on_from_settings(html)
+        self.assertFalse(public)
+
+
     def test_load_translog_error_eli_manning(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
         espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')

@@ -5,7 +5,7 @@ from teams.models import Team, Scorecard, ScorecardEntry, Player, DraftClaim, Te
      TeamReportCard, TransLogEntry
 from teams.scraper.SqlStore import SqlStore
 from teams.scraper.html_scrapes import get_teams_from_standings, get_num_weeks_from_matchups, get_player_ids_from_lineup, \
-     get_teams_from_matchups
+     get_teams_from_matchups, get_public_on_from_settings
 from teams.scraper.league_loader import load_leagues_from_entrance, load_scores_from_playersheet, \
     load_teams_from_standings, load_week_from_lineup, load_scores_from_game, load_transactions_from_translog
 from teams.scraper.utils import real_num_weeks
@@ -52,7 +52,7 @@ class LeagueScraper(object):
         return True
 
     def create_settings_page(self, league):
-        if not self.overwrite and self.store.has_settings(league.espn_id, league.year):
+        if not self.overwrite and not self.update and self.store.has_settings(league.espn_id, league.year):
             return False
         settings_html = self.scraper.get_settings(league.espn_id, league.year)
         self.store.write_settings(league.espn_id, league.year, settings_html)
@@ -136,6 +136,8 @@ class LeagueScraper(object):
         self.create_standings_page(league)
         self.create_settings_page(league)
         self.create_matchups_page(league, 1)
+        f = open("ugg.html", 'w')
+        f.write(self.store.get_standings(league))
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
@@ -208,6 +210,13 @@ class LeagueScraper(object):
     def load_league(self, league):
         league.calculating = True
         league.save()
+
+        html = self.store.get_settings(league)
+        is_public = get_public_on_from_settings(html)
+        logger.info("setting league %s to public %s" % (league.espn_id, str(is_public)))
+        league.public = is_public
+        league.save()
+
 
         Scorecard.objects.filter(team__league=league).delete()
         DraftClaim.objects.filter(team__league=league).delete()

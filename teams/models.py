@@ -26,6 +26,9 @@ class League(models.Model):
     espn_id = models.CharField(max_length=30)
     year = models.CharField(max_length=5)
 
+
+    public = models.BooleanField(default=False)
+
     loaded = models.BooleanField(default=False)
     loading = models.BooleanField(default=False)
 

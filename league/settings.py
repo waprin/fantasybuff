@@ -229,7 +229,7 @@ LOGGING = {
          'teams' : {
             'handlers' : ['console', 'file'],
             'propogate' : True,
-            'level' : 'INFO',
+            'level' : 'DEBUG',
          }
     }
 }

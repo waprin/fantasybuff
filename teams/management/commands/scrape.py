@@ -93,8 +93,10 @@ class EspnScraper:
         html = r.read()
         return html
 
-    def get_settings(self):
-        pass
-
+    def get_settings(self, league_id, year):
+        time.sleep(1)
+        r = self.br.open("http://games.espn.go.com/ffl/leaguesetup/settings?leagueId=%s" % (league_id))
+        html = r.read()
+        return html
 
 
