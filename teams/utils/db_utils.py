@@ -1,5 +1,6 @@
 __author__ = 'bprin'
 
+import logging
 logger = logging.getLogger(__name__)
 
 from teams.models import *

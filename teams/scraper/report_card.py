@@ -131,7 +131,7 @@ def get_league_request_context(league):
             logger.debug("setting left trade as loser")
             trade_left = 'trade-loser'
             trade_right = 'trade-winner'
-    logger.debug("best trade is for team %s %s" % (best_trade.team.team_name, best_trade.players_added.all()))
+        logger.debug("best trade is for team %s %s" % (best_trade.team.team_name, best_trade.players_added.all()))
 
     best_waiver = league.get_most_waiver_points()
     most_perfect_lineups = league.get_most_perfect_lineups()

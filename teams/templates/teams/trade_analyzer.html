@@ -23,20 +23,26 @@
   <h2>Points For: {{ trade.get_total_points_for }}</h2>
   <h2>Points Against: {{ trade.get_total_points_against }}</h2>
   <h2>Total Value: {{ trade.get_value_cumulative }}</h2>
-    <ul id="league_navigation" class="nav nav-tabs">
-      {% for week in weeks %}
-        <li>Week {{ week }}</li>
-      {% endfor %}
-        </ul>
-      </div>
-  <div class="tab-content">
-    {% for week in weeks %}
-      <div class="tab-pane {% if week == start_week %} active {% endif %}">
-      <h2>Week {{ week }}</h2>
-      </div>
-    {% endfor %}
+
+  <div id="weekly-tab">
+
   </div>
+
+  <div class="tab-content">
+    <div id="week-6 tab-pane">
+        Some week 6 content
+      </div>
+    <div id="week-7 tab-pane">
+        more week 7 content
+      </div>
+   </div>
+
 <script data-main="/static/js/trade_analyzer_main" src="/static/require.js"></script>
+  <script type="text/javascript">
+    define('global', {
+      weeks: {{ weeks }},
+  });
+</script>
 
 
 {% endblock %}
