@@ -29,13 +29,11 @@
   </div>
 
   <div class="tab-content">
-    <div id="week-6 tab-pane">
-        Some week 6 content
+    {% for week in weeks %}
+    <div id="week-{{ week }}-tab" class="week-tab">
+        Some week {{ week }} content
       </div>
-    <div id="week-7 tab-pane">
-        more week 7 content
-      </div>
-   </div>
+    {% endfor %}
 
 <script data-main="/static/js/trade_analyzer_main" src="/static/require.js"></script>
   <script type="text/javascript">
