@@ -31,9 +31,13 @@
   <div class="tab-content">
     {% for week in weeks %}
     <div id="week-{{ week.week }}-tab" class="week-tab">
-        {{ week.week }}
-        {% for entry in week.entries %}
-          <h4>{{   entry.player.name }}</h4>
+    <h3>FOR</h3>
+        {% for entry in week.entries_for %}
+          <h4>{{   entry.player.name }} {{ entry.slot }} {{ entry.points }}</h4>
+        {% endfor %}
+      <h3>AGAINST</h3>
+            {% for entry in week.entries_against %}
+          <h4>{{   entry.player.name }} {{ entry.slot }} {{ entry.points }}</h4>
         {% endfor %}
       </div>
     {% endfor %}
