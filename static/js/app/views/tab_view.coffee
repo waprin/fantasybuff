@@ -15,8 +15,12 @@ define ['jquery', 'underscore', 'backbone'], ($, _, Backbone) ->
                 child.addClass('active')
             else
                 child.removeClass('active')
-        $(".week-tab").hide()
-        week_id = "#week-#{id[0]}-tab"
+
+        $(".#{options.prefix}-tab").hide()
+        if options.use_id
+          week_id = "##{options.prefix}-#{id[0]}-tab"
+        else
+          week_id = "##{options.prefix}-#{name}-tab"
         $(week_id).show();
 
     render: (tabs) ->

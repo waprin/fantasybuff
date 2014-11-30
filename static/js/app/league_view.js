@@ -1,4 +1,4 @@
-require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], function ($, Backbone, _, d3) {
+require(['app/views/tab_view', 'jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], function (tab_view, $, Backbone, _, d3) {
     /*'use strict';*/
     /*jslint todo: true*/
     /*jslint nomen: true*/
@@ -23,7 +23,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
         };
 
 
-    function BulletChart(data) {
+    function BulletChart(element_selector, data) {
         console.log('creating bullet chart', data);
         console.log(data);
         var margin = MARGINS;
@@ -36,7 +36,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                 .height(height),
 
 
-            svg = d3.select("#reportcard_vis_container").selectAll("svg")
+            svg = d3.select(element_selector).selectAll("svg")
                 .data(data)
                 .enter().append("svg")
                 .attr("class", "bullet")
@@ -213,7 +213,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             }),
 
             ReportCardView = Backbone.View.extend({
-                el: $("#reportcard_vis_container"),
+                el: $("#dashboard-reportcard-tab"),
 
                 initialize: function () {
                     this.listenTo(this.model, "change:average_waiver_score", this.render);
@@ -247,7 +247,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                         return this;
                     }
                     if (!this.bulletChart) {
-                        this.bulletChart = new BulletChart(data);
+                        this.bulletChart = new BulletChart("#dashboard-reportcard-tab", data);
                     } else {
                         this.bulletChart.updateBullets(data);
                     }
@@ -281,7 +281,6 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                     this.listenTo(this.model, options.updateEvent, this.updateLineChart);
                     this.fieldName = options.fieldName;
                     this.range = options.range;
-                    this.built = false;
                 },
 
                 updateLineChart: function () {
@@ -296,75 +295,30 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
                     return this;
                 }
             }),
-            TabView = Backbone.View.extend({
-                el: $("#league_navigation"),
-
-                initialize: function () {
-                    var _that = this;
-                    /*jslint unparam:true*/
-                    Backbone.history.on('route', function (router, name) {
-                        if (name.substring(0, 4) !== 'load') {
-                            return;
-                        }
-                        name = name.substring(5);
-                        _.each(_that.$el.children(), function (child) {
-                            child = $(child);
-                            if (child.attr('class') === 'dropdown') {
-                                return;
-                            }
-                            if (child.attr('id').split('-')[0] === name) {
-                                child.addClass('active');
-                            } else {
-                                child.removeClass('active');
-                            }
-                        });
-                    });
-                    /*jslint unparam:false*/
-                },
-
-                render: function (tabs) {
-                    var dropdown = this.$('.dropdown'),
-                        first = true,
-                        first_item,
-                        _that = this;
-                    this.$el.empty();
-                    this.$el.append(dropdown);
-
-                    _.each(tabs, function (tab) {
-                        var elm = _that.$el.append('<li id="' + tab.id + '-tab"><a href="#' + tab.id + '" >' + tab.name + '</a></li>');
-                        if (first) {
-                            first_item = elm;
-                            first = false;
-                        }
-                    });
-                    first_item.addClass('active');
-                    return this;
-                }
-            }),
             lineupView = new LineChartView({
                 model: roguesReportCard,
-                el: $('#lineup_vis_container'),
+                el: $('#dashboard-lineups-tab'),
                 fieldName: 'lineup_scores',
                 updateEvent: "change:lineup_scores",
                 range: [0, 50]
             }),
             draftView = new LineChartView({
                 model: roguesReportCard,
-                el: $('#draft_vis_container'),
+                el: $('#dashboard-draft-tab'),
                 fieldName: 'draft_scores',
                 updateEvent: "change:draft_scores",
                 range: [100, 300]
             }),
             waiverView = new LineChartView({
                 model: roguesReportCard,
-                el: $('#waiver_vis_container'),
+                el: $('#dashboard-waiver-tab'),
                 fieldName: 'waiver_scores',
                 updateEvent: "change:waiver_scores",
                 range: [-50, 50]
             }),
             tradeView = new LineChartView({
                 model: roguesReportCard,
-                el: $('#trade_vis_container'),
+                el: $('#dashboard-trade-tab'),
                 fieldName: 'trade_scores',
                 updateEvent: "change:trade_scores",
                 range: [-50, 50]
@@ -379,29 +333,21 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             AppRouter = Backbone.Router.extend({
                 routes: {
                     "team/:id": "getTeam",
-                    "lineups/:id": "load_lineups",
-                    "lineups": "load_lineups",
-                    "reportcard/:id": "load_reportcard",
-                    "reportcard": "load_reportcard",
-                    "draft/:id": "load_draft",
-                    "draft": "load_draft",
-                    "waiver/:id": "load_waiver",
-                    "waiver": "load_waiver",
-                    "trade/:id": "load_trade",
-                    "trade": "load_trade",
+                    "lineups/:id": "lineups",
+                    "lineups": "lineups",
+                    "reportcard/:id": "reportcard",
+                    "reportcard": "reportcard",
+                    "draft/:id": "draft",
+                    "draft": "draft",
+                    "waiver/:id": "waiver",
+                    "waiver": "waiver",
+                    "trade/:id": "trade",
+                    "trade": "trade",
                     "*actions": "default" // Backbone will try match the route above first
                 }
             }),
-            app_router = new AppRouter(),
-            tabView = new TabView();
+            app_router = new AppRouter();
 
-        tabView.render([
-            {id: 'reportcard', name: "Report Card"},
-            {id: 'lineups', name: "Lineups"},
-            {id: 'draft', name : 'Draft'},
-            {id: 'waiver', name: 'Waiver'},
-            {id: 'trade', name: 'Trade'}
-        ]);
         lineupView.render();
         draftView.render();
         reportCardView.render();
@@ -415,6 +361,22 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
         $(tradeView.el).hide();
 
         window.mode = REPORT_CARD;
+        var activeMatch = function (child, name, id) {
+            "use strict";
+            var child_id = child.attr("id");
+            console.log("ok child is is " + child_id + " id is " + name + " : " + (child_id === name));
+            return child_id === name;
+        };
+
+        var tabView = new tab_view.TabView({"activeMatch": activeMatch, "prefix": "dashboard"});
+
+        $("#league_navigation").append(tabView.render([
+            {id: 'reportcard', name: "Report Card", href: "#reportcard"},
+            {id: 'lineups', name: "Lineups", href: "#lineups"},
+            {id: 'draft', name : 'Draft', href: "#draft"},
+            {id: 'waiver', name: 'Waiver', href: "#waiver"},
+            {id: 'trade', name: 'Trade', href: "#trade"}
+        ]).el);
 
         // Instantiate the router
         app_router.on('route:getTeam', function (id) {
@@ -435,15 +397,9 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             }
         });
 
-        app_router.on('route:load_lineups', function (id) {
+        app_router.on('route:lineups', function (id) {
             console.log('in load lineups');
             window.mode = LINEUPS;
-
-            $(reportCardView.el).hide();
-            $(lineupView.el).show();
-            $(draftView.el).hide();
-            $(waiverView.el).hide();
-            $(tradeView.el).hide();
 
             if (id) {
                 roguesReportCard.set('team_id', id);
@@ -456,13 +412,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
 
         });
 
-        app_router.on('route:load_reportcard', function (id) {
-            $(lineupView.el).hide();
-            $(reportCardView.el).show();
-            $(draftView.el).hide();
-            $(waiverView.el).hide();
-            $(tradeView.el).hide();
-
+        app_router.on('route:reportcard', function (id) {
             if (id) {
                 roguesReportCard.set('team_id', id);
                 roguesReportCard.fetch();
@@ -472,13 +422,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             }
             app_router.navigate('reportcard/' + id, {replace: true});
         });
-        app_router.on('route:load_draft', function (id) {
-            $(lineupView.el).hide();
-            $(reportCardView.el).hide();
-            $(draftView.el).show();
-            $(waiverView.el).hide();
-            $(tradeView.el).hide();
-
+        app_router.on('route:draft', function (id) {
             if (id) {
                 roguesReportCard.set('team_id', id);
                 roguesReportCard.fetch();
@@ -488,14 +432,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             }
             app_router.navigate('draft/' + id, {replace: true});
         });
-        app_router.on('route:load_waiver', function (id) {
-            console.log('in load waiver');
-            $(lineupView.el).hide();
-            $(reportCardView.el).hide();
-            $(draftView.el).hide();
-            $(waiverView.el).show();
-            $(tradeView.el).hide();
-
+        app_router.on('route:waiver', function (id) {
             if (id) {
                 roguesReportCard.set('team_id', id);
                 roguesReportCard.fetch();
@@ -505,13 +442,7 @@ require(['jquery', 'backbone', 'underscore', 'd3', 'd3.bullet', 'bootstrap'], fu
             }
             app_router.navigate('waiver/' + id, {replace: true});
         });
-        app_router.on('route:load_trade', function (id) {
-            $(lineupView.el).hide();
-            $(reportCardView.el).hide();
-            $(draftView.el).hide();
-            $(waiverView.el).hide();
-            $(tradeView.el).show();
-
+        app_router.on('route:trade', function (id) {
             if (id) {
                 roguesReportCard.set('team_id', id);
                 roguesReportCard.fetch();

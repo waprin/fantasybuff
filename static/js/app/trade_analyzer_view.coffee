@@ -20,4 +20,4 @@ define ['jquery', 'underscore', 'backbone', 'app/views/tab_view', 'global'], ($,
       return answer
     for week in global.weeks
       tabs.push({'id': "week-#{week}", 'name': "Week #{week}", 'href': "week/#{week}"})
-    $("#weekly-tab").append(new tab_view.TabView({"activeMatch": activeMatch}).render(tabs).el)
+    $("#weekly-tab").append(new tab_view.TabView({"activeMatch": activeMatch, "prefix": "week", "use_id": true}).render(tabs).el)
