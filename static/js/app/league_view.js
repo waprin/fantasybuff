@@ -199,7 +199,7 @@ require(['app/views/tab_view', 'jquery', 'backbone', 'underscore', 'd3', 'd3.bul
                         return a.week - b.week;
                     });
                     if (name === 'lineups') {
-                        console.log("cleaning up lineups");
+/*                        console.log("cleaning up lineups");*/
                         _.each(scorecards, function (scorecard) {
                             scorecard.value = scorecard.delta;
                         });
@@ -220,7 +220,7 @@ require(['app/views/tab_view', 'jquery', 'backbone', 'underscore', 'd3', 'd3.bul
                 },
 
                 render: function () {
-                    console.log("rendering report card");
+/*                    console.log("rendering report card");*/
                     if (this.model.get('average_waiver_score') !== undefined) {
                         console.log("rendering lineup score", this.model.get('average_lineup_score'));
                         data[0].ranges[0] = this.model.get('min_average_lineup');
@@ -325,11 +325,6 @@ require(['app/views/tab_view', 'jquery', 'backbone', 'underscore', 'd3', 'd3.bul
             }),
 
             reportCardView = new ReportCardView({model: roguesReportCard}),
-            REPORT_CARD = 1,
-            LINEUPS = 2,
-            DRAFT = 3,
-            WAIVER = 4,
-            TRADE = 5,
             AppRouter = Backbone.Router.extend({
                 routes: {
                     "team/:id": "getTeam",
@@ -360,7 +355,7 @@ require(['app/views/tab_view', 'jquery', 'backbone', 'underscore', 'd3', 'd3.bul
         $(waiverView.el).hide();
         $(tradeView.el).hide();
 
-        window.mode = REPORT_CARD;
+        window.mode = "reportcard";
         var activeMatch = function (child, name, id) {
             "use strict";
             var child_id = child.attr("id");
@@ -378,79 +373,28 @@ require(['app/views/tab_view', 'jquery', 'backbone', 'underscore', 'd3', 'd3.bul
             {id: 'trade', name: 'Trade', href: "#trade"}
         ]).el);
 
+
+        app_router.on('route', function (name, id) {
+            "use strict";
+            id = id[0];
+            if (name === 'getTeam') {
+                name = window.mode;
+            } else {
+                console.log("chaning window mode to " + name);
+                window.mode = name;
+            }
+            if (id) {
+                roguesReportCard.set('team_id', id);
+                roguesReportCard.fetch().done(function () {
+                    $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
+                });
+            }
+
+        });
+
         // Instantiate the router
         app_router.on('route:getTeam', function (id) {
-            console.log("got team " , id);
-            roguesReportCard.set('team_id', id);
-            roguesReportCard.fetch();
-            $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
-            if (window.mode === LINEUPS) {
-                app_router.navigate('lineups/' + id, {replace: true});
-            } else if (window.mode === REPORT_CARD) {
-                app_router.navigate('reportcard/' + id, {replace: true});
-            } else if (window.mode === DRAFT) {
-                app_router.navigate('draft/' + id, {replace: true});
-            } else if (window.mode === WAIVER) {
-                app_router.navigate('waiver/' + id, {replace: true});
-            } else if (window.mode === TRADE) {
-                app_router.navigate('trade/' + id, {replace: true});
-            }
-        });
-
-        app_router.on('route:lineups', function (id) {
-            console.log('in load lineups');
-            window.mode = LINEUPS;
-
-            if (id) {
-                roguesReportCard.set('team_id', id);
-                roguesReportCard.fetch();
-                $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
-            } else {
-                id = roguesReportCard.get('team_id', id);
-            }
-            app_router.navigate('lineups/' + id, {replace: true});
-
-        });
-
-        app_router.on('route:reportcard', function (id) {
-            if (id) {
-                roguesReportCard.set('team_id', id);
-                roguesReportCard.fetch();
-                $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
-            } else {
-                id = roguesReportCard.get('team_id', id);
-            }
-            app_router.navigate('reportcard/' + id, {replace: true});
-        });
-        app_router.on('route:draft', function (id) {
-            if (id) {
-                roguesReportCard.set('team_id', id);
-                roguesReportCard.fetch();
-                $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
-            } else {
-                id = roguesReportCard.get('team_id', id);
-            }
-            app_router.navigate('draft/' + id, {replace: true});
-        });
-        app_router.on('route:waiver', function (id) {
-            if (id) {
-                roguesReportCard.set('team_id', id);
-                roguesReportCard.fetch();
-                $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
-            } else {
-                id = roguesReportCard.get('team_id', id);
-            }
-            app_router.navigate('waiver/' + id, {replace: true});
-        });
-        app_router.on('route:trade', function (id) {
-            if (id) {
-                roguesReportCard.set('team_id', id);
-                roguesReportCard.fetch();
-                $(".team-link-header").html("Team: " + $("#team-link-" + id).html());
-            } else {
-                id = roguesReportCard.get('team_id', id);
-            }
-            app_router.navigate('trade/' + id, {replace: true});
+            app_router.navigate(window.mode + '/' + id, {replace: true});
         });
 
         app_router.on('route:default', function () {

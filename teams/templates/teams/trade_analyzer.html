@@ -30,15 +30,18 @@
 
   <div class="tab-content">
     {% for week in weeks %}
-    <div id="week-{{ week }}-tab" class="week-tab">
-        Some week {{ week }} content
+    <div id="week-{{ week.week }}-tab" class="week-tab">
+        {{ week.week }}
+        {% for entry in week.entries %}
+          <h4>{{   entry.player.name }}</h4>
+        {% endfor %}
       </div>
     {% endfor %}
 
 <script data-main="/static/js/trade_analyzer_main" src="/static/require.js"></script>
   <script type="text/javascript">
     define('global', {
-      weeks: {{ weeks }},
+      weeks: {{ week_range }}
   });
 </script>
 

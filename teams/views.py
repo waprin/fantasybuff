@@ -549,10 +549,22 @@ def trade(request):
 
     week_after_trade = num_weeks_before_date(trade.date)
     current_weeks = real_num_weeks()
+
+    week_range = range(week_after_trade, current_weeks + 1)
+    weeks = []
+    for week in week_range:
+        players_added = trade.players_added
+        entries = []
+        for player in players_added.all():
+            entries = ScorecardEntry.objects.filter(player=player, week=week, scorecard__actual=True, scorecard__team__league=league)
+        weeks.append({'week': week, 'entries': entries})
+
+    logger.debug("returning weeks %s" % (str(weeks)))
     cached_context = {
         'trade': trade,
         'start_week': week_after_trade,
-        'weeks': range(week_after_trade, current_weeks + 1)
+        'weeks': weeks,
+        'week_range': week_range
     }
     logger.debug("trade is %s" % trade.team.team_name)
     context = RequestContext(request, cached_context)

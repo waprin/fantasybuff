@@ -3,43 +3,37 @@ define ['jquery', 'underscore', 'backbone'], ($, _, Backbone) ->
     'tagName': 'ul',
     'className': 'nav nav-tabs'
 
-    initialize: (options) ->
-      Backbone.history.on 'route', (router, name, id) =>
-        console.log("comparign to router #{router} name #{name} id #{id}")
-        _.each @$el.children(), (child) ->
-            console.log "in child"
-            child = $(child);
-            if child.attr('class') == 'dropdown'
-                return;
-            if options.activeMatch child, name, id[0]
-                child.addClass('active')
-            else
-                child.removeClass('active')
-
-        $(".#{options.prefix}-tab").hide()
-        if options.use_id
-          week_id = "##{options.prefix}-#{id[0]}-tab"
+    update: (name, id) ->
+      if name == "getTeam"
+        return
+      _.each @$el.children(), (child) =>
+        child = $(child)
+        if child.attr('class') == 'dropdown'
+          return;
+        if @options.activeMatch child, name, id
+          if child.hasClass('active')
+            return
+          $(".#{@options.prefix}-tab").hide()
+          child.addClass('active')
+          if @options.use_id
+            week_id = "##{@options.prefix}-#{id}-tab"
+          else
+            week_id = "##{@options.prefix}-#{name}-tab"
+          $(week_id).show();
         else
-          week_id = "##{options.prefix}-#{name}-tab"
-        $(week_id).show();
+          child.removeClass('active')
+
+    initialize: (options) ->
+      @options = options
+      Backbone.history.on 'route', (router, name, id) =>
+        @update(name, id[0])
 
     render: (tabs) ->
-      first = false
       render_tab = (tab) ->
         "<li id=\"#{tab.id}\"><a href=\"##{tab.href}\">#{tab.name}</a></li> "
       @$el.append render_tab(tab) for tab in tabs
+      $(@$('li')[0]).addClass('active')
       $("#" + @$('li')[0]['id'] + "-tab").show()
       @
-
-    ###
-    if name.substring(0, 4) != 'load'
-            return
-        name = name.substring(5);
-
-
-            if (child.attr('id').split('-')[0] == name)
-
-    ###
-
 
   TabView: TabView

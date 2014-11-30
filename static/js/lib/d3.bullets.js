@@ -30,8 +30,8 @@ d3.bullet = function() {
       max = max - min;
       min = min - min;*/
 
-      console.log("min is ", min);
-      console.log("max is ", max);
+      /*console.log("min is ", min);
+      console.log("max is ", max);*/
 
       // Compute the new x-scale.
       var x1 = d3.scale.linear()
@@ -94,7 +94,7 @@ d3.bullet = function() {
           .attr("y", height / 3);
 
       // Update the marker lines.
-      console.log("got markerz: ", markerz)
+/*      console.log("got markerz: ", markerz)*/
       var marker = g.selectAll("line.marker")
           .data(markerz);
 
