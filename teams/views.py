@@ -62,7 +62,7 @@ def signup(request):
     invite = None
     try:
         logger.debug("getting invite '%s' " % (invite_code))
-        invite = BetaInvite.objects.get(invite='whyme')
+        invite = BetaInvite.objects.get(invite='invite_code')
         if invite.used:
             messages.add_message(request, messages.INFO, 'Invite Code Already Used')
             return HttpResponseRedirect("/register/")
@@ -560,7 +560,16 @@ def trade(request):
         for player in trade.players_removed.all():
             entries_against += list(ScorecardEntry.objects.filter(player=player, week=week, scorecard__actual=True, scorecard__team__league=league))
 
-        weeks.append({'week': week, 'entries_for': entries_for, 'entries_against': entries_against })
+
+        weeks.append(
+            {
+            'week': week,
+            'entries_for': entries_for,
+            'entries_against': entries_against,
+            'points_for': trade.get_points_for_week(week),
+            'points_against': trade.get_points_against_week(week)
+            }
+        )
 
     logger.debug("returning weeks %s" % (str(weeks)))
     cached_context = {

@@ -7,3 +7,20 @@ h3 {
 .week-tab {
     display:none;
 }
+
+#main {
+    margin-left: 20px;
+    padding-bottom: 250px;
+}
+
+.tab-content {
+    padding-left: 30px;
+}
+
+.trade-analyzer .row {
+    margin: 0px;
+}
+
+.total-difference {
+    margin-left: 20px;
+}

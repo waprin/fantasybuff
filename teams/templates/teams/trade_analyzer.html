@@ -12,35 +12,71 @@
 
   <h1>Trade Analyzer</h1>
   <h1>{{ trade.date }}</h1>
-  <h2>{{ trade.team.team_name }} </h2>
-  {% for player in trade.players_added.all %}
-    <h3> {{ player.name }} </h3>
-  {% endfor %}
-  <h2>{{ trade.other_team.team_name }} </h2>
-  {% for player in trade.players_removed.all %}
-    <h3> {{ player.name }} </h3>
-  {% endfor %}
-  <h2>Points For: {{ trade.get_total_points_for }}</h2>
-  <h2>Points Against: {{ trade.get_total_points_against }}</h2>
-  <h2>Total Value: {{ trade.get_value_cumulative }}</h2>
-
+  <div class="row trade-analyzer">
+    <div class="col-sm-6">
+      <h2>{{ trade.team.team_name }} </h2>
+      {% for player in trade.players_added.all %}
+        <h3> {{ player.name }}, {{ player.position }}</h3>
+      {% endfor %}
+    </div>
+    <div class="col-sm-6">
+      <h2>{{ trade.other_team.team_name }} </h2>
+      {% for player in trade.players_removed.all %}
+        <h3> {{ player.name }}, {{ player.position }} </h3>
+      {% endfor %}
+    </div>
+    <div class="row">
+      <div class="col-sm-6">
+        <h2>Points: {{ trade.get_total_points_for }}</h2>
+      </div>
+      <div class="col-sm-6">
+        <h2>Points: {{ trade.get_total_points_against }}</h2>
+      </div>
+    </div>
+    <div class="total-difference">
+      <h2>Total Difference: {{ trade.get_value_cumulative }}</h2>
+    </div>
+  </div>
   <div id="weekly-tab">
 
   </div>
 
   <div class="tab-content">
     {% for week in weeks %}
-    <div id="week-{{ week.week }}-tab" class="week-tab">
-    <h3>FOR</h3>
-        {% for entry in week.entries_for %}
-          <h4>{{   entry.player.name }} {{ entry.slot }} {{ entry.points }}</h4>
+    <div id="week-{{ week.week }}-tab" class="week-tab row">
+    <div class="row">
+      <div class="col-xs-6">
+        <h3>{{ trade.team.team_name }}</h3>
+        <table class="table table-bordered table-hover table-striped">
+          {% for entry in week.entries_for %}
+            <tr>
+              <td>{{   entry.player.name }}</td>
+              <td>{{ entry.slot }}</td>
+              <td>{{ entry.points }}</td>
+            </tr>
+          {% endfor %}
+        <h3>Total Points For: {{ week.points_for }}</h3>
+        </table>
+      </div>
+      <div class="col-xs-6">
+        <h3>{{ trade.other_team.team_name }}</h3>
+      <table class="table table-bordered table-hover table-striped">
+        {% for entry in week.entries_against %}
+          <tr>
+            <td>{{   entry.player.name }}</td>
+            <td>{{ entry.slot }}</td>
+            <td>{{ entry.points }}</td>
+          </tr>
         {% endfor %}
-      <h3>AGAINST</h3>
-            {% for entry in week.entries_against %}
-          <h4>{{   entry.player.name }} {{ entry.slot }} {{ entry.points }}</h4>
-        {% endfor %}
+      <h3>Total Points Against: {{ week.points_against }}</h3>
+      </table>
+
+    </div>
+      </div>
       </div>
     {% endfor %}
+
+    </div>
 
 <script data-main="/static/js/trade_analyzer_main" src="/static/require.js"></script>
   <script type="text/javascript">

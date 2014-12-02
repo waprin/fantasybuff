@@ -226,19 +226,19 @@ d3.bullet = function() {
   return bullet;
 };
 
-function bulletRanges(d, oldMin) {
+function bulletRanges(d) {
   return d.ranges;
 }
 
-function bulletMarkers(d, oldMin) {
+function bulletMarkers(d) {
   return d.markers;
 }
 
-function bulletMeasures(d, oldMin) {
+function bulletMeasures(d) {
   return d.measures;
 }
 
-function bulletTranslate(x, oldMin) {
+function bulletTranslate(x) {
   return function(d) {
     return "translate(" + x(d) + ",0)";
   };

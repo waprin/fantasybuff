@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Sum, Avg, Count, Q
 
-from teams.scraper.utils import real_num_weeks
+from teams.scraper.utils import real_num_weeks, num_weeks_before_date
 
 
 logger = logging.getLogger(__name__)
@@ -494,12 +494,14 @@ class TradeEntry(TransLogEntry):
             return 0
 
     def get_total_points_for(self):
-        week = real_num_weeks()
-        return reduce(lambda t, w: t + self.get_points_for_week(w), range(1, week + 1), 0)
+        week_start = num_weeks_before_date(self.date)
+        week_end = real_num_weeks()
+        return reduce(lambda t, w: t + self.get_points_for_week(w), range(week_start, week_end + 1), 0)
 
     def get_total_points_against(self):
-        week = real_num_weeks()
-        return reduce(lambda t, w: t + self.get_points_against_week(w), range(1, week + 1), 0)
+        week_start = num_weeks_before_date(self.date)
+        week_end = real_num_weeks()
+        return reduce(lambda t, w: t + self.get_points_against_week(w), range(week_start, week_end + 1), 0)
 
     def get_value_cumulative(self):
         return abs(self.get_total_points_for() - self.get_total_points_against())
