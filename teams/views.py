@@ -76,6 +76,9 @@ def signup(request):
     espn_password = request.POST.get('espn_password')
     allow_email = request.POST.get('allow_email')
 
+    if not allow_email:
+        allow_email = False
+
     if not password or not email or not espn_username or not espn_password:
         messages.add_message(request, messages.INFO, 'Missing Required Fields')
         return HttpResponseRedirect("/register/")
