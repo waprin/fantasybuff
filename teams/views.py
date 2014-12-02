@@ -59,7 +59,7 @@ def signup(request):
     invite = None
     try:
         logger.debug("getting invite '%s' " % (invite_code))
-        invite = BetaInvite.objects.get(invite = 'whyme')
+        invite = BetaInvite.objects.get(invite = invite_code)
         if invite.used:
             messages.add_message(request, messages.INFO, 'Invite Code Already Used')
             return HttpResponseRedirect("/register/")
