@@ -15,8 +15,6 @@ __author__ = 'bill'
 import logging
 logger = logging.getLogger(__name__)
 
-
-
 def get_real_num_weeks(num_weeks, league):
     if int(league.year) < 2014:
         return num_weeks
@@ -143,9 +141,6 @@ class LeagueScraper(object):
         num_weeks = get_real_num_weeks(num_weeks, league)
         logger.info("scraping %d weeks" % num_weeks)
 
-        league.pages_scraped = 0
-        league.loaded = False
-        league.save()
         if league.year == '2014':
             estimate = self.__get_num_pages_to_scrape(len(teams), num_weeks)
             league.total_pages = estimate
@@ -190,6 +185,8 @@ class LeagueScraper(object):
         league.save()
 
     def scrape_league(self, league):
+        league.pages_scraped = 0
+        league.save()
         self.scrape_core_and_matchups(league)
         if league.year == '2013':
             self.scrape_players(league)
