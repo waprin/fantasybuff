@@ -42,7 +42,7 @@ define ['jquery', 'underscore', 'backbone', 'lib/text!app/templates/league_templ
         isLoaded = (model) ->
           model.get('loaded')
 
-        if not _.every @collection.models, isLoaded
+        if _.isEmpty @collection.models or not _.every @collection.models, isLoaded
           setTimeout @collection.fetch, 5000
 
     addOne: (league) ->

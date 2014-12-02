@@ -86,7 +86,7 @@ define(['jquery', 'underscore', 'backbone', 'lib/text!app/templates/league_templ
           isLoaded = function(model) {
             return model.get('loaded');
           };
-          if (!_.every(_this.collection.models, isLoaded)) {
+          if (_.isEmpty(_this.collection.models || !_.every(_this.collection.models, isLoaded))) {
             return setTimeout(_this.collection.fetch, 5000);
           }
         };
