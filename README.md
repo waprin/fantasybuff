@@ -4,22 +4,22 @@
 
 To run locally, you need to install all the dependencies, preferably in a virtualenv,
  
- pip install requirements.txt
+   pip install requirements.txt
  
 you need to setup a Postgres server (configuring in league/settings.py), then run all the migrations,
  
-  python manage.py migrate
+    python manage.py migrate
   
 then 
 
-  python manage.py runserver
+    python manage.py runserver
   
 Should start up the development server. Unfortunately, any user or league loading will not function because the 
 development server uses a built in cache, even though the loading takes place on a Redis cache. So if you want the full 
 app locally, you also need to install Redis and Foreman and then just run
 
-  python manage.py collectstatic
-  foreman start
+    python manage.py collectstatic
+    foreman start
   
 This should probably all be in a Vagrant file but it's not.
 
@@ -27,11 +27,11 @@ This should probably all be in a Vagrant file but it's not.
 
 There are two totally independent test suites, the Django tests which are run the standard django way
   
-  python manage.py tests
+    python manage.py tests
   
 and the Karma tests which are run the standard Karma way
 
-  karma start
+    karma start
 
 ## Guide to the Files
 
