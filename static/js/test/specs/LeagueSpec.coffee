@@ -30,6 +30,7 @@ define ['jquery', 'underscore', 'app/home_view'], ($, _, home) ->
         loaded: false
         loading: true
         failed: false
+        calculating: false
       leagueView = new home.LeagueView({model: league})
       el = leagueView.render().el
 

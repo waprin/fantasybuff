@@ -24,9 +24,9 @@ class LineupCalculatorTest(unittest.TestCase):
         rb_player1 = Player.objects.create(name='b', position='RB', espn_id='2')
         wr_player1 = Player.objects.create(name='f', position='WR', espn_id='6')
 
-        qb_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=qb_player, slot='QB', points=5.0)
-        rb_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player1, slot='Flex', points=0.0)
-        wr_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player1, slot='RB', points=5.0)
+        qb_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=qb_player, slot='QB', points=5.0, week=1)
+        rb_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player1, slot='Flex', points=0.0, week=1)
+        wr_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player1, slot='RB', points=5.0, week=1)
 
         entries = [qb_entry, rb_entry, wr_entry]
         flex_slot = partial(can_fill_slot, 'FLEX')
@@ -46,21 +46,21 @@ class LineupCalculatorTest(unittest.TestCase):
         wr_player3 = Player.objects.create(name='h', position='WR', espn_id='8')
 
         entries = []
-        qb_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=qb_player, slot='QB', points=5)
+        qb_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=qb_player, slot='QB', points=5, week=1)
         entries.append(qb_entry)
-        flex_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player1, slot='FLEX', points=0)
+        flex_entry = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player1, slot='FLEX', points=0, week=1)
         entries.append(flex_entry)
-        rb_entry1 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player2, slot='RB', points=2)
+        rb_entry1 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player2, slot='RB', points=2, week=1)
         entries.append(rb_entry1)
-        rb_entry2 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player3, slot='RB', points=5)
+        rb_entry2 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player3, slot='RB', points=5, week=1)
         entries.append(rb_entry2)
-        wr_entry1 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player1, slot='WR', points=2)
+        wr_entry1 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player1, slot='WR', points=2, week=1)
         entries.append(wr_entry1)
-        wr_entry2 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player2, slot='WR', points=9)
+        wr_entry2 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player2, slot='WR', points=9, week=1)
         entries.append(wr_entry2)
-        bench_entry1 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player4, slot='Bench', points=10)
+        bench_entry1 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=rb_player4, slot='Bench', points=10, week=1)
         entries.append(bench_entry1)
-        bench_entry2 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player3, slot='Bench', points=7)
+        bench_entry2 = ScorecardEntry.objects.create(scorecard=self.scorecard, player=wr_player3, slot='Bench', points=7, week=1)
         entries.append(bench_entry2)
 
         self.assertEquals(int(get_lineup_score(entries)), 5 + 2 + 5 + 2 + 9)
