@@ -1,10 +1,11 @@
 from django.contrib.auth.models import User
-from teams.models import EspnUser, ScoreEntry, PlayerScoreStats, DraftClaim, TradeEntry, AddDrop, League
-from teams.scraper.FileBrowser import FileBrowser
-from teams.scraper.SqlStore import SqlStore
 from django.utils import unittest
+
+from teams.models import EspnUser, ScoreEntry, PlayerScoreStats, League
+from teams.scraper.FileBrowser import FileBrowser
 from teams.scraper.html_scrapes import get_leagues_from_entrance
 from teams.utils.db_utils import clearDb
+
 
 __author__ = 'bill'
 
@@ -13,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 from scraper import *
 
-class IntegrationTest(unittest.TestCase):
 
+class IntegrationTest(unittest.TestCase):
     def setUp(self):
         clearDb()
         self.browser = FileBrowser()
@@ -50,7 +51,6 @@ class IntegrationTest(unittest.TestCase):
 
 
 class LeagueCreatorTest(unittest.TestCase):
-
     def setUp(self):
         clearDb()
         self.browser = FileBrowser()
@@ -75,9 +75,9 @@ class LeagueCreatorTest(unittest.TestCase):
 
 
     def test_load_legacy_entire_lineup(self):
-        league = League.objects.create(espn_id='930248',year='2013')
-        team_id='1'
-        week=1
+        league = League.objects.create(espn_id='930248', year='2013')
+        team_id = '1'
+        week = 1
         team = Team.objects.create(league=league, espn_id=team_id)
         roster_html = self.browser.get_roster(league, team_id, week
         )
@@ -286,7 +286,6 @@ class LeagueCreatorTest(unittest.TestCase):
         self.assertGreater(aaron_rodgers.count(), 0)
 
 
-
     def test_load_translog_error_ahmad_bradshaw(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
         espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
@@ -317,7 +316,7 @@ class LeagueCreatorTest(unittest.TestCase):
         html = filebrowser.get_translog('1880759', '2014', '1')
         load_transactions_from_translog(html, '2014', team2)
 
-        #ahmad_bradshaw = TradeEntry.objects.filter(players_added__name='Ahmad Bradshaw')
+        # ahmad_bradshaw = TradeEntry.objects.filter(players_added__name='Ahmad Bradshaw')
         #self.assertGreater(ahmad_bradshaw.count(), 0)
 
 
@@ -347,7 +346,6 @@ class LeagueCreatorTest(unittest.TestCase):
         self.assertEquals(1, trade_count)
         self.assertEquals(1, trade_count_other)
 
-
         team6 = Team.objects.get(espn_id=6, league=league)
         hoyer = Player.objects.get(name="Brian Hoyer")
         waiver_add = AddDrop.objects.get(team=team6, player=hoyer)
@@ -371,8 +369,8 @@ class LeagueCreatorTest(unittest.TestCase):
         davis_entry = ScorecardEntry.objects.filter(player=davis, week=6)[0]
         self.assertEquals(davis_entry.source, 'W')
 
-class ScraperTest(unittest.TestCase):
 
+class ScraperTest(unittest.TestCase):
     def setUp(self):
         clearDb()
         self.browser = FileBrowser()
