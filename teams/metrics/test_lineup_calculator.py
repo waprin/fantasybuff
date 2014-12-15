@@ -1,6 +1,8 @@
 from functools import partial
 
 from django.contrib.auth.models import User
+from teams.scraper.FileBrowser import FileBrowser
+from teams.scraper.league_loader import load_scores_from_game
 
 
 __author__ = 'bprin'
@@ -86,4 +88,16 @@ class LineupCalculatorTest(unittest.TestCase):
         self.assertTrue(found1 and found2)
 
         self.assertEquals(int(get_lineup_score(optimal_lineup)), 5 + 2 + 5 + 10 + 9 + 7)
+
+
+    def test_calculate_real_lineup(self):
+        league = League.objects.create(espn_id='930248', year='2014')
+        file_browser = FileBrowser()
+        rogues = Team.objects.create(league=league, espn_id='6')
+        team2 = Team.objects.create(league=league, espn_id='1')
+        game_html = file_browser.get_game(league, '1', 1)
+        load_scores_from_game(league, 1, game_html)
+        sc = Scorecard.objects.filter(week=1, team=rogues, actual=True)
+        entries = ScorecardEntry.objects.filter(scorecard=sc)
+        optimal_lineup = calculate_optimal_lineup(entries)
 

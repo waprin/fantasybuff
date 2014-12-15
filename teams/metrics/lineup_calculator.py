@@ -34,8 +34,11 @@ def calculate_optimal_lineup(entries):
 
     optimal_entries = []
     for slot in slots:
+        logger.debug("attempting to fill slot %s " % slot)
         available_players = get_available_player(entries, optimal_entries)
+        logger.debug("first available players : %s " % str(available_players))
         available_players = filter(partial(can_fill_slot, slot), available_players)
+        logger.debug("appropriate for slot : %s " % str(available_players))
 
         if available_players:
             best_player = max(available_players, key=lambda entry: entry.points)

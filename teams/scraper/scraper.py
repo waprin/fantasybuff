@@ -136,8 +136,7 @@ class LeagueScraper(object):
         self.create_standings_page(league)
         self.create_settings_page(league)
         self.create_matchups_page(league, 1)
-        f = open("ugg.html", 'w')
-        f.write(self.store.get_standings(league))
+
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
         num_weeks = get_real_num_weeks(num_weeks, league)
@@ -273,6 +272,12 @@ class LeagueScraper(object):
             TradeEntry.objects.filter(team=team).delete()
             transaction_html = self.store.get_translog(league.espn_id, league.year, team.espn_id)
             load_transactions_from_translog(transaction_html, team.league.year, team)
+
+        draft_claims_len = DraftClaim.objects.filter(team__league=league).count()
+        add_drop_len = AddDrop.objects.filter(team__league=league).count()
+        trades_len = TradeEntry.objects.filter(team__league=league).count()
+        logger.info("added %d draft claims %d add drops %d trades " % (draft_claims_len, add_drop_len, trades_len))
+
 
     def load_lineups(self, league):
         logger.info("loading linups for league %s" % league)

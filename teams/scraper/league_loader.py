@@ -137,10 +137,17 @@ def load_scores_from_playersheet(html, player_id, year, overwrite=False):
     new = True
 
     try:
-        player = Player.objects.get(name=name)
+        player = Player.objects.get(name=name, position=position)
     except Player.DoesNotExist:
         new = False
-        player = Player.objects.create(name=name, espn_id=player_id, position=position)
+
+        try:
+            player = Player.objects.get(name=name)
+            player.position = position
+            player.save()
+        except Player.DoesNotExist:
+            player = Player.objects.create(name=name, espn_id=player_id, position=position)
+            logger.debug("creating player with position %s " % player.name)
 
     player.espn_id = player_id
     player.position = position
@@ -286,17 +293,23 @@ def load_scores_from_game(league, week, html):
                 points = '0'
             points = Decimal(points)
             name = player_link.string
+            position = player_link.next_sibling.split()[-1]
+
             try:
-                player = Player.objects.get(name=name)
+                player = Player.objects.get(name=name, position=position)
             except Player.DoesNotExist:
                 try:
-                    player = Player.objects.get(espn_id=player_id)
-                    player.other_name = name
+                    player = Player.object.get(name=name)
+                    player.position = position
                     player.save()
-                except Player.DoesNotExist:
-                    position = player_link.next_sibling.split()[-1]
-                    logger.debug('creating new player %s' % name)
-                    player = Player.objects.create(espn_id=player_id, name=name, position=position)
+                except:
+                    try:
+                        player = Player.objects.get(espn_id=player_id)
+                        player.other_name = name
+                        player.save()
+                    except Player.DoesNotExist:
+                        logger.debug('creating new player %s' % name)
+                        player = Player.objects.create(espn_id=player_id, name=name, position=position)
             source = team.get_source_for_player(player, week)
             ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source,
                                           week=week, team=team)
@@ -319,6 +332,7 @@ def add_player(player_name, team, added, date):
     try:
         player = Player.objects.get(name=player_name)
     except Player.DoesNotExist:
+        logger.debug("creating player %s based on add/drop " % player_name)
         player = Player.objects.create(name=player_name)
 
     logger.debug("creating add drop entry %s %s %s %s" % (team.team_name, team.espn_id, player_name, date))
@@ -378,6 +392,7 @@ def load_transactions_from_translog(html, year, team):
             try:
                 player = Player.objects.get(name=player_name)
             except Player.DoesNotExist:
+                logger.debug("creating player %s based on draft " % player_name)
                 player = Player.objects.create(name=player_name)
 
             draft_entry = DraftClaim(date=date, round=draft_round, player_added=player, team=team)
@@ -416,6 +431,7 @@ def load_transactions_from_translog(html, year, team):
                 try:
                     player = Player.objects.get(name=player_name)
                 except Player.DoesNotExist:
+                    logger.debug("creating player %s based on trade " % player_name)
                     player = Player.objects.create(name=player_name)
                 if added:
                     added_players.append(player)

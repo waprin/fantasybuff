@@ -20,6 +20,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.cache import cache
 
 from teams.scraper.report_card import get_team_report_card_json, get_league_request_context
+from teams.scraper.utils import num_weeks_before_date, real_num_weeks
 
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,15 @@ def signup(request):
     invite = None
     try:
         logger.debug("getting invite '%s' " % (invite_code))
-        invite = BetaInvite.objects.get(invite='invite_code')
+        """
+        try:
+            invite = BetaInvite.objects.get(invite='me')
+            logger.error('actually got me')
+        except:
+            logger.error("failed to even get me")
+        """
+
+        invite = BetaInvite.objects.get(invite=invite_code)
         if invite.used:
             messages.add_message(request, messages.INFO, 'Invite Code Already Used')
             return HttpResponseRedirect("/register/")

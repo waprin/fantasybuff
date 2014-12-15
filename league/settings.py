@@ -205,7 +205,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         }, 'file': {
@@ -227,6 +227,11 @@ LOGGING = {
             'level' : 'INFO',
            },
          'teams' : {
+            'handlers' : ['console', 'file'],
+            'propogate' : True,
+            'level' : 'INFO',
+         },
+         'teams.scraper.league_loader' : {
             'handlers' : ['console', 'file'],
             'propogate' : True,
             'level' : 'DEBUG',
@@ -273,4 +278,4 @@ try:
 except KeyError:
     ALLOW_SIGNUPS = True
 
-DB_SCRAPE=True
+DB_SCRAPE=False

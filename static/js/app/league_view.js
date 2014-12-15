@@ -114,7 +114,7 @@ require(['app/views/tab_view', 'app/d3/linechart', 'jquery', 'backbone', 'unders
                     scorecards.sort(function (a, b) {
                         return a.week - b.week;
                     });
-                    if (name === 'lineups') {
+                    if (name === 'lineup') {
 /*                        console.log("cleaning up lineups");*/
                         _.each(scorecards, function (scorecard) {
                             scorecard.value = scorecard.delta;
@@ -213,7 +213,7 @@ require(['app/views/tab_view', 'app/d3/linechart', 'jquery', 'backbone', 'unders
             }),
             lineupView = new LineChartView({
                 model: roguesReportCard,
-                el: $('#dashboard-lineups-tab'),
+                el: $('#dashboard-lineup-tab'),
                 fieldName: 'lineup_scores',
                 updateEvent: "change:lineup_scores",
                 range: [0, 50]
@@ -244,8 +244,8 @@ require(['app/views/tab_view', 'app/d3/linechart', 'jquery', 'backbone', 'unders
             AppRouter = Backbone.Router.extend({
                 routes: {
                     "team/:id": "getTeam",
-                    "lineups/:id": "lineups",
-                    "lineups": "lineups",
+                    "lineup/:id": "lineup",
+                    "lineup": "lineup",
                     "reportcard/:id": "reportcard",
                     "reportcard": "reportcard",
                     "draft/:id": "draft",
@@ -283,7 +283,7 @@ require(['app/views/tab_view', 'app/d3/linechart', 'jquery', 'backbone', 'unders
 
         $("#league_navigation").append(tabView.render([
             {id: 'reportcard', name: "Report Card", href: "#reportcard"},
-            {id: 'lineups', name: "Lineups", href: "#lineups"},
+            {id: 'lineup', name: "Lineups", href: "#lineup"},
             {id: 'draft', name : 'Draft', href: "#draft"},
             {id: 'waiver', name: 'Waiver', href: "#waiver"},
             {id: 'trade', name: 'Trade', href: "#trade"}

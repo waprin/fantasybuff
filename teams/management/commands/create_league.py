@@ -38,5 +38,6 @@ class Command(BaseCommand):
         file_browser = FileBrowser()
         league_scraper = LeagueScraper(scraper, file_browser)
         leagues = League.objects.filter(espn_id='930248', year='2014')
+        print "length of leagues is %d" % len(leagues)
         for league in leagues:
             league_scraper.scrape_league(league)
