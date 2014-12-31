@@ -35,6 +35,7 @@ def calculate_optimal_lineup(entries):
     optimal_entries = []
     for slot in slots:
         logger.debug("attempting to fill slot %s " % slot)
+        logger.debug("before all players %s optimal are %s" % (str(entries), str(optimal_entries)))
         available_players = get_available_player(entries, optimal_entries)
         logger.debug("first available players : %s " % str(available_players))
         available_players = filter(partial(can_fill_slot, slot), available_players)

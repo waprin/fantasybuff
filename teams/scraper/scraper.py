@@ -220,7 +220,6 @@ class LeagueScraper(object):
         league.public = is_public
         league.save()
 
-
         Scorecard.objects.filter(team__league=league).delete()
         DraftClaim.objects.filter(team__league=league).delete()
         TradeEntry.objects.filter(team__league=league).delete()
@@ -228,8 +227,6 @@ class LeagueScraper(object):
 
         self.load_teams(league)
         self.load_transactions(league)
-
-
 
         if league.year == '2013':
             self.load_players(league)
@@ -313,8 +310,12 @@ class LeagueScraper(object):
                 scorecard = Scorecard.objects.get(team=team, week=week, actual=True)
                 scorecard_entries = ScorecardEntry.objects.filter(scorecard=scorecard)
                 logger.debug("calculating optimal lineup for team %s week %d" % (team.espn_id, week))
+                logger.debug("started with entries %s" % str(scorecard_entries))
                 optimal_entries = calculate_optimal_lineup(scorecard_entries)
+                logger.debug("got optimal entries %s" % str(optimal_entries))
                 total_points = get_lineup_score(optimal_entries)
+                if total_points < scorecard.points:
+                    raise Exception("optimal score is less than actual score")
                 optimal_scorecard = Scorecard.objects.create(team=team, week=week, actual=False, points=total_points)
                 for entry in optimal_entries:
                     logger.debug("adding optimal scorecard entry")

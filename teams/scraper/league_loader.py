@@ -295,20 +295,23 @@ def load_scores_from_game(league, week, html):
             name = str(player_link.string)
             position = str(player_link.next_sibling.split()[-1])
             try:
-                player = Player.objects.get(name=name, position=position)
+                player = Player.objects.get(name=name, position=position, espn_id=player_id)
             except Player.DoesNotExist:
                 try:
                     player = Player.objects.get(name=name)
                     player.position = position
+                    player.espn_id = player_id
                     player.save()
                 except Player.DoesNotExist:
                     try:
                         player = Player.objects.get(espn_id=player_id)
+                        player.position = position
                         player.other_name = name
                         player.save()
                     except Player.DoesNotExist:
                         logger.debug('creating new player %s' % name)
                         player = Player.objects.create(espn_id=player_id, name=name, position=position)
+
             source = team.get_source_for_player(player, week)
             ScorecardEntry.objects.create(scorecard=scorecard, player=player, slot=slot, points=points, source=source,
                                           week=week, team=team)
@@ -323,6 +326,8 @@ def clean_player(player_name):
     str(player_name)
     if player_name[-1] == '*':
         player_name = player_name[:-1]
+    if player_name == 'Steve Smith Sr.':
+        return "Steve Smith"
     return ' '.join(player_name.split()[:3])
 
 
