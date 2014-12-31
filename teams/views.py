@@ -60,17 +60,8 @@ def signin(request):
 
 def signup(request):
     invite_code = request.POST.get('invite_code')
-    invite = None
     try:
         logger.debug("getting invite '%s' " % (invite_code))
-        """
-        try:
-            invite = BetaInvite.objects.get(invite='me')
-            logger.error('actually got me')
-        except:
-            logger.error("failed to even get me")
-        """
-
         invite = BetaInvite.objects.get(invite=invite_code)
         if invite.used:
             messages.add_message(request, messages.INFO, 'Invite Code Already Used')
@@ -85,7 +76,6 @@ def signup(request):
     email = request.POST.get('email')
     espn_username = request.POST.get('espn_username')
     espn_password = request.POST.get('espn_password')
-    allow_public = request.POST.get('allow_public')
     allow_email = request.POST.get('allow_email')
 
     if not allow_email:
