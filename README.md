@@ -23,6 +23,7 @@ app locally, you also need to install Redis and Foreman and then just run
   
 This should probably all be in a Vagrant file but it's not.
 
+
 ## Guide to Running Tests
 
 There are two totally independent test suites, the Django tests which are run the standard django way
@@ -62,5 +63,7 @@ file system rather than the live ESPN site.
 
 
 ### Lots more to write in this README , documentation is very overdue for this project.
+
+
 
  

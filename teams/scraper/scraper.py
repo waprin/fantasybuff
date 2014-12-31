@@ -113,16 +113,18 @@ class LeagueScraper(object):
         league.save()
 
         matchups_html = self.store.get_matchups(league, week)
-        teams = get_teams_from_matchups(matchups_html)
+        teams = get_teams_from_matchups(matchups_html, week)
         logger.debug("teams is %s" % str(teams))
-        for team_id in teams:
+        for team_id in teams[0]:
             team_id = team_id[0]
             logger.debug("create weekly matchups(): %s %s %d" % (league, team_id, week))
-            self.create_game(league, team_id, week)
 
-            logger.debug("increasing pages scraped to %d for weekly matchup " % (league.pages_scraped + 1))
-            league.pages_scraped = league.pages_scraped + 1
-            league.save()
+            for week in teams[1]:
+                self.create_game(league, team_id, week)
+
+                logger.debug("increasing pages scraped to %d for weekly matchup " % (league.pages_scraped + 1))
+                league.pages_scraped = league.pages_scraped + 1
+                league.save()
 
     def __get_num_pages_to_scrape(self, num_teams, num_weeks):
         matchup_pages = num_weeks
@@ -139,7 +141,7 @@ class LeagueScraper(object):
 
         teams = get_teams_from_standings(self.store.get_standings(league))
         num_weeks = get_num_weeks_from_matchups(self.store.get_matchups(league, 1))
-        num_weeks = get_real_num_weeks(num_weeks, league)
+        #num_weeks = get_real_num_weeks(num_weeks, league)
         logger.info("scraping %d weeks" % num_weeks)
 
         league.pages_scraped = 0
@@ -299,7 +301,8 @@ class LeagueScraper(object):
             htmls = self.store.get_all_games(league, week)
             logger.debug("for week %d got %d games" % (week, len(htmls)))
             for html in htmls:
-                load_scores_from_game(league, week, html)
+                logger.debug("loading game from %s" % str(html[1]))
+                load_scores_from_game(league, week, html[0])
 
     def load_optimal_lineups(self, league):
         logger.info("loading optimal lineups for league %s" % league)

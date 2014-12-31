@@ -11,7 +11,7 @@ from django.utils.timezone import  is_aware, make_aware
 def num_weeks_before_date(date):
     start = datetime.datetime(year=2014, month=9, day=9)
     week = datetime.timedelta(days=7)
-    max_week = 17
+    max_week = 15
     start_days = [start + (weeknum * week) for weeknum in range(0, max_week)]
     start_days = map(lambda day: make_aware(day, timezone=pytz.utc), start_days)
     if not is_aware(date):

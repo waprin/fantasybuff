@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
             ## settings
             if store.has_settings(league.espn_id, league.year):
-                filesystem.write_settings(league, store.get_settings(league))
+                filesystem.write_settings(league.espn_id, league.year, store.get_settings(league.espn_id, league.year))
 
             for team in Team.objects.filter(league=league):
                 ## translog

@@ -287,22 +287,21 @@ def load_scores_from_game(league, week, html):
                 logger.info("ignoring row %s " % ''.join(list(player_row.strings)))
                 continue
 
-            player_id = player_link['playerid']
+            player_id = str(player_link['playerid'])
             points = player_row.find('td', 'appliedPoints').string
             if points == '--':
                 points = '0'
             points = Decimal(points)
-            name = player_link.string
-            position = player_link.next_sibling.split()[-1]
-
+            name = str(player_link.string)
+            position = str(player_link.next_sibling.split()[-1])
             try:
                 player = Player.objects.get(name=name, position=position)
             except Player.DoesNotExist:
                 try:
-                    player = Player.object.get(name=name)
+                    player = Player.objects.get(name=name)
                     player.position = position
                     player.save()
-                except:
+                except Player.DoesNotExist:
                     try:
                         player = Player.objects.get(espn_id=player_id)
                         player.other_name = name

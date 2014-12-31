@@ -109,6 +109,6 @@ class SqlStore:
     def get_all_games(self, league, week):
         htmls = []
         for game_html in GameHtmlScrape.objects.filter(league=league, week=week):
-            htmls.append(game_html.html)
+            htmls.append((game_html.html, game_html.first_team))
         return htmls
 

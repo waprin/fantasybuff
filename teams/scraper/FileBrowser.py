@@ -176,7 +176,7 @@ class FileBrowser(object):
         game_files = os.listdir(dirpath)
         htmls = []
         for game_file in game_files:
-            htmls.append(open(game_file).read())
+            htmls.append((open(game_file).read(), game_file))
         return htmls
 
     def translog_path(self, league_id, year, team_id):

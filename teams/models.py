@@ -172,6 +172,7 @@ class Team(models.Model):
         return TeamWeekScores.objects.filter(team=self).aggregate(Avg('trade_score'))['trade_score__avg']
 
     def get_source_for_player(self, player, week):
+        logger.debug("attempting to get source for player %s for team %s " % (player.name, self.team_name))
         if DraftClaim.objects.filter(player_added=player, team=self).count():
             return 'D'
         elif AddDrop.objects.filter(player=player, added=True, team=self).count() > 0:
@@ -578,7 +579,7 @@ class MailingList(models.Model):
 
 
 class BetaInvite(models.Model):
-    invite = models.CharField(max_length=50)
+    invite = models.CharField(max_length=50, unique=True)
     used = models.BooleanField(default=False)
 
     def __unicode__(self):

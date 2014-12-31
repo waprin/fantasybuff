@@ -90,6 +90,7 @@ class LeagueCreatorTest(unittest.TestCase):
         scorecard = Scorecard.objects.get(team=team, week=1)
         self.assertEquals(scorecard.points, 96)
 
+    @unittest.skip("currently dont worry about loading players, legacy leagues only")
     def test_load_player(self):
         html = self.browser.get_player('2580', year='2014')
         brees = Player.objects.create(name='Drew Brees', espn_id='2580', position='QB')
@@ -148,6 +149,34 @@ class LeagueCreatorTest(unittest.TestCase):
         load_teams_from_standings(html, league)
         html = filebrowser.get_translog('976898', '2014', '7')
         load_transactions_from_translog(html, '2014', team)
+
+    def test_load_translog_error2(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='930248', year='2014')
+        team = Team.objects.create(espn_id='6', league=league)
+        filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
+        html = filebrowser.get_translog('930248', '2014', '8')
+        load_transactions_from_translog(html, '2014', team)
+        foles = Player.objects.get(name='Nick Foles')
+        DraftClaim.objects.get(player_added=foles)
+
+
+
+
+    def test_load_translog_source(self):
+        user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
+        espn_user = EspnUser.objects.create(pk=1, user=user, username='gothamcityrogues', password='sincere1')
+        league = League.objects.create(espn_id='930248', year='2014')
+        team = Team.objects.create(espn_id='7', league=league)
+        filebrowser = FileBrowser()
+        html = filebrowser.get_standings(league)
+        load_teams_from_standings(html, league)
+        html = filebrowser.get_translog('930248', '2014', '7')
+        load_transactions_from_translog(html, '2014', team)
+
 
     def test_load_settings(self):
         user = User.objects.create_user('waprin@gmail.com', 'waprin@gmail.com', 'sincere1')
@@ -331,8 +360,8 @@ class LeagueCreatorTest(unittest.TestCase):
         self.league_scraper.create_leagues(espn_user)
 
         current_league = League.objects.filter(year=2014)[0]
-        current_num_weeks = get_real_num_weeks(14, league=current_league)
-        self.assertLessEqual(current_num_weeks, 14)
+        current_num_weeks = get_real_num_weeks(17, league=current_league)
+        self.assertLessEqual(current_num_weeks, 17)
 
     def test_load_translog(self):
         league = League.objects.create(espn_id='930248',year='2014')
@@ -394,6 +423,7 @@ class ScraperTest(unittest.TestCase):
         self.assertIn(('Bizarro League III', '1880759', '2014', '9'), leagues)
 
 
+    @unittest.skip("we dont scrape lineups in 2014 leagues currently")
     def test_scrape_players_from_lineup(self):
         league = League.objects.create(name='ib', espn_id='930248', year='2014')
         html = self.browser.get_roster(league, '1', 1)
@@ -416,22 +446,39 @@ class ScraperTest(unittest.TestCase):
         self.assertTrue(self.browser.has_matchups(league, 1))
 
         num_weeks = get_num_weeks_from_matchups(self.browser.get_matchups(league, 1))
-        self.assertEquals(num_weeks, 13)
+        self.assertEquals(num_weeks, 15)
 
         league = League.objects.create(name='ib', espn_id='930248', year='2014')
         self.assertTrue(self.browser.has_matchups(league, 1))
 
         num_weeks = get_num_weeks_from_matchups(self.browser.get_matchups(league, 1))
-        self.assertEquals(num_weeks, 13)
+        self.assertEquals(num_weeks, 15)
 
     def test_get_matchups_from_matchups_page(self):
         league = League.objects.create(name='ib', espn_id='930248', year='2014')
         self.assertTrue(self.browser.has_matchups(league, 1))
 
-        matchups = get_teams_from_matchups(self.browser.get_matchups(league, 1))
-        self.assertEquals(len(matchups), 6)
+        matchups = get_teams_from_matchups(self.browser.get_matchups(league, 1), 1)
+        self.assertEquals(len(matchups[0]), 6)
         for i in range(1, 13):
-            self.assertTrue(str(i) in [item for sublist in matchups for item in sublist])
+            self.assertTrue(str(i) in [item for sublist in matchups[0] for item in sublist])
+        self.assertEquals(len(matchups[1]), 1)
+        self.assertEquals(matchups[1][0], 1)
+
+    def test_get_matchups_during_playoffs(self):
+        league = League.objects.create(name='ib', espn_id='930248', year='2014')
+        self.assertTrue(self.browser.has_matchups(league, 15))
+
+        matchups = get_teams_from_matchups(self.browser.get_matchups(league, 15), 15)
+        logger.info("matchup during playoffs %s" % str(matchups))
+        self.assertEquals(len(matchups[0]), 6)
+        for i in range(1, 13):
+            self.assertTrue(str(i) in [item for sublist in matchups[0] for item in sublist])
+        self.assertEquals(len(matchups[1]), 2)
+        self.assertEquals(matchups[1][0], 16)
+        self.assertEquals(matchups[1][1], 17)
+
+
 
 
 

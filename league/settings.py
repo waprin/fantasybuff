@@ -209,7 +209,7 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         }, 'file': {
-            'level' : 'INFO',
+            'level' : 'DEBUG',
             'class' : 'logging.FileHandler',
             'formatter': 'verbose',
             'filename' : 'leagues.log',
@@ -278,4 +278,4 @@ try:
 except KeyError:
     ALLOW_SIGNUPS = True
 
-DB_SCRAPE=False
+DB_SCRAPE=True

@@ -46,15 +46,11 @@ def get_teams_from_standings(html):
 def get_player_from_game(html):
     pass
 
-
 def get_num_weeks_from_matchups(html):
-    pool = BeautifulSoup(html)
-    body_copy = pool.find('div', 'bodyCopy')
-    matchups = body_copy.find_all('a', title=re.compile(r'Week'))
-    for matchup in matchups:
-        m = matchup
-    return int(m.string)
-
+    soup = BeautifulSoup(html)
+    matchups = soup.find_all('a', href=re.compile(r'matchupPeriodId'))
+    values = map(lambda matchup: int(re.search('matchupPeriodId=(\d*)', matchup['href']).group(1)), matchups)
+    return values[-1]
 
 def get_player_ids_from_lineup(html):
     soup = BeautifulSoup(html)
@@ -71,8 +67,16 @@ def parse_scores_from_playersheet(html):
     return [row.find_all('td')[-1].string for row in rows]
 
 
-def get_teams_from_matchups(html):
+def get_teams_from_matchups(html, week):
     soup = BeautifulSoup(html)
+
+    weeks_tags = soup.find('div', 'boxscoreLinks').find_all('strong')
+    if weeks_tags:
+        weeks = map(lambda tag: int(tag.string[3:-1]), weeks_tags)
+    else:
+        weeks = [week]
+
+
     matchups = soup.find_all('table', 'matchup')
 
     games = []
@@ -84,7 +88,7 @@ def get_teams_from_matchups(html):
         second_id_string = teams[1]['id']
         second_id = re.search(r'teamscrg_(\d*)_', second_id_string).group(1)
         games.append((first_id, second_id))
-    return games
+    return games, weeks
 
 
 def get_public_on_from_settings(html):
